@@ -97,9 +97,9 @@ const BODY = String.raw`
 <header class="lab-header"><div class="lab-wrap lab-head-inner">
  <a class="lab-brand" href="/" aria-label="ANEVUM home">@BRAND@<span>ANEVUM</span></a>
  <nav class="lab-nav" aria-label="Primary navigation">
-  <a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="#experiences">Experiences</a><a href="/original-works">Archive</a><a href="#contact">Contact</a>
+  <a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="#experiences">Experiences</a><a href="/original-works/archive">Archive</a><a href="#contact">Contact</a>
  </nav>
- <details class="lab-mobile"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="#experiences">Experiences</a><a href="/original-works">Archive</a><a href="#contact">Contact</a></nav></details>
+ <details class="lab-mobile"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="#experiences">Experiences</a><a href="/original-works/archive">Archive</a><a href="#contact">Contact</a></nav></details>
 </div></header>
 <main id="main" tabindex="-1">
  <section class="lab-hero" aria-labelledby="lab-home-title"><div class="lab-art" aria-hidden="true"></div><div class="lab-wrap lab-hero-copy">
@@ -117,7 +117,7 @@ const BODY = String.raw`
   <div class="lab-grid">
    <a class="lab-card" href="https://github.com/devonalanakins/rhen"><span class="lab-card-number">01 / Computational systems</span><h3>Rhen language</h3><p>An experimental programming language and a study of how software can be expressed.</p><div class="lab-card-bottom"><span class="lab-card-tag">Source repository</span><span class="lab-card-arrow" aria-hidden="true">→</span></div></a>
    <a class="lab-card" href="https://github.com/devonalanakins/brandle"><span class="lab-card-number">02 / Interactive systems</span><h3>Brandle</h3><p>A five-letter browser word game, explored through interaction and design.</p><div class="lab-card-bottom"><span class="lab-card-tag">Source repository</span><span class="lab-card-arrow" aria-hidden="true">→</span></div></a>
-   <a class="lab-card" href="/original-works"><span class="lab-card-number">03 / Imagined worlds</span><h3>Original Works</h3><p>The earlier ANEVUM creative universe, preserved as a distinct public archive.</p><div class="lab-card-bottom"><span class="lab-card-tag">Public archive</span><span class="lab-card-arrow" aria-hidden="true">→</span></div></a>
+   <a class="lab-card" href="/original-works/archive"><span class="lab-card-number">03 / Imagined worlds</span><h3>Original Works</h3><p>The earlier ANEVUM creative universe, preserved as a distinct public archive.</p><div class="lab-card-bottom"><span class="lab-card-tag">Public archive</span><span class="lab-card-arrow" aria-hidden="true">→</span></div></a>
   </div>
  </section>
  <div class="lab-lower">
@@ -135,7 +135,7 @@ const BODY = String.raw`
    <div class="lab-row-heading"><h2 class="lab-title-label" id="lab-experiences-heading">Experiences &amp; archive</h2></div>
    <div class="lab-archive-visual" aria-hidden="true"></div>
    <p>Worlds, interactive studies and earlier creative work—kept visible without inventing new releases.</p>
-   <a class="lab-view-link" href="/original-works">Visit the original works archive <span aria-hidden="true">→</span></a>
+   <a class="lab-view-link" href="/original-works/archive">Visit the original works archive <span aria-hidden="true">→</span></a>
   </aside>
  </div>
  <section id="about" class="lab-section" aria-labelledby="lab-about-heading"><h2 id="lab-about-heading" class="lab-title-label">Why ANEVUM exists</h2><p class="lab-intro" style="max-width:790px;margin-top:20px">ANEVUM is an independent laboratory for exploratory engineering and creative work. It is built by Devon Akins, without a fictional staff, commercial promise, or required publishing schedule.</p></section>
