@@ -25,12 +25,14 @@ async function evalJS(expression){
  if(r.exceptionDetails)throw Error(r.exceptionDetails.text||"runtime exception");
  return r.result?.value;
 }
-async function waitFor(fn,label){
+async function waitFor(fn,label,{failFast=false}={}){
+ let lastError;
  for(let i=0;i<110;i++){
-  try{const v=await fn();if(v)return v;}catch{}
+  try{const v=await fn();if(v)return v;}
+  catch(error){lastError=error;if(failFast)throw error;}
   await sleep(110);
  }
- throw Error("Timed out waiting for "+label);
+ throw Error("Timed out waiting for "+label+(lastError?": "+lastError.message:""));
 }
 async function view(pathname,width,height,name,saveScreenshot=false){
  // Exact apex is the independent Living Laboratory. Legacy routes continue
@@ -119,16 +121,26 @@ async function view(pathname,width,height,name,saveScreenshot=false){
 }
 try {
  await waitFor(async()=>{if(server.exitCode!==null)throw Error("local server exited");return (await fetch(base+"/original-works")).status===200; },"loopback server");
- const lookup=spawnSync("which",["google-chrome"],{encoding:"utf8"});
- const chromeBin=lookup.status===0?lookup.stdout.trim():process.env.CHROME_BIN||"chromium";
- chrome=spawn(chromeBin,["--headless=new","--no-sandbox","--disable-gpu","--disable-dev-shm-usage","--no-first-run","--disable-background-networking","--remote-debugging-address=127.0.0.1","--remote-debugging-port=0","--user-data-dir="+profile,"about:blank"],{stdio:"ignore"});
+ const candidate=process.env.CHROME_BIN||(["google-chrome","google-chrome-stable","chromium","chromium-browser"].map(binary=>{
+  const lookup=spawnSync("which",[binary],{encoding:"utf8"});
+  return lookup.status===0?lookup.stdout.trim():null;
+ }).find(Boolean));
+ if(!candidate)throw Error("No Chrome/Chromium executable found for public-studio browser QA");
+ const version=spawnSync(candidate,["--version"],{encoding:"utf8"});
+ if(version.error||version.status!==0)throw Error("Chromium is not executable: "+candidate);
+ console.log("PUBLIC_STUDIO_BROWSER_BIN "+candidate+" | "+version.stdout.trim());
+ let chromeStartupError=null,chromeStderr="";
+ chrome=spawn(candidate,["--headless=new","--no-sandbox","--disable-gpu","--disable-dev-shm-usage","--no-first-run","--disable-background-networking","--remote-debugging-address=127.0.0.1","--remote-debugging-port=0","--user-data-dir="+profile,"about:blank"],{stdio:["ignore","ignore","pipe"]});
+ chrome.on("error",error=>{chromeStartupError=error;});
+ chrome.stderr?.on("data",chunk=>{chromeStderr=(chromeStderr+String(chunk)).slice(-3000);});
  const devtools=await waitFor(async()=>{
-  if(chrome.exitCode!==null)throw Error("Chrome exited: "+chrome.exitCode);
+  if(chromeStartupError)throw Error("Chrome startup error: "+chromeStartupError.message);
+  if(chrome.exitCode!==null)throw Error("Chrome exited ("+chrome.exitCode+"): "+chromeStderr);
   const f=path.join(profile,"DevToolsActivePort");
   if(!existsSync(f))return null;
   const n=Number(readFileSync(f,"utf8").split(/\r?\n/)[0]);
   return Number.isInteger(n)&&n>0?n:null;
- },"Chrome DevTools");
+ },"Chrome DevTools",{failFast:true}).catch(error=>{throw Error(error.message+"; stderr: "+chromeStderr);});
  const target=await (await fetch("http://127.0.0.1:"+devtools+"/json/new?about:blank",{method:"PUT"})).json();
  ws=new WebSocket(target.webSocketDebuggerUrl);
  ws.addEventListener("message",ev=>{
