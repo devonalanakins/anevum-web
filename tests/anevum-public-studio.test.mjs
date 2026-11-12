@@ -201,7 +201,7 @@ test("laboratory apex is a truthful independent studio while legacy reader home 
  assert.match(rootHtml,/Created by Devon Akins/);
  assert.match(rootHtml,/<nav class="lab-nav" aria-label="Primary navigation">/);
  assert.match(rootHtml,/<details class="lab-mobile"><summary>Menu<\/summary>/);
- assert.match(rootHtml,/href="\/original-works"/);
+ assert.match(rootHtml,/href="\/original-works\/archive"/);
  assert.match(rootHtml,/href="\/original-works\/experiments"/);
  assert.match(rootHtml,/href="\/original-works\/research"/);
  assert.match(rootHtml,/href="https:\/\/github.com\/devonalanakins\/rhen"/);
@@ -287,7 +287,7 @@ test("public Research directory is evidence-honest, accessible and isolated from
  for(const source of ["https://github.com/devonalanakins/invariant","https://github.com/devonalanakins/rhen","https://github.com/devonalanakins/brandle"]){
   assert.ok(html.includes('href="'+source+'"'),"Missing verified public pointer "+source);
  }
- assert.match(html,/href="\/original-works"/);
+ assert.match(html,/href="\/original-works\/archive"/);
  assert.match(html,/href="\/original-works\/experiments"/);
  assert.match(html,/An available source repository is not a published or validated scientific result/);
  assert.equal((html.match(/<h1\b/g)||[]).length,1);
@@ -302,6 +302,54 @@ test("public Research directory is evidence-honest, accessible and isolated from
  assert.equal((await worker.fetch(new Request("https://anevum.com"+path,{method:"POST",body:"x"}))).status,405);
  for(const unknown of [path+"/draft",path+"/private","/research"]){
   assert.equal((await worker.fetch(new Request("https://anevum.com"+unknown))).status,404,unknown);
+ }
+});
+
+test("Archive index links to all seven preserved Original Works routes without rewriting them",async()=>{
+ const route="/original-works/archive";
+ const res=await worker.fetch(new Request("https://anevum.com"+route));
+ assert.equal(res.status,200);
+ assert.match(res.headers.get("X-Robots-Tag"),/noindex/);
+ assert.match(res.headers.get("Content-Security-Policy"),/default-src 'none'/);
+ assert.equal(res.headers.get("X-Anevum-Surface"),"anevum-original-works-public-v3-root");
+ const html=await res.text();
+ assert.match(html,/<title>Archive \| ANEVUM Living Laboratory<\/title>/);
+ assert.match(html,/<h1 class="lab-arc-heading" id="archive-heading">Archive<\/h1>/);
+ assert.match(html,/Preserved, not republished/);
+ assert.match(html,/7 public sections/);
+ assert.match(html,/Original Works \/ preserved public edition/);
+ assert.match(html,/Imagery on this page is illustrative design artwork/);
+ assert.match(html,/aria-current="page">Archive<\/a>/);
+ assert.equal((html.match(/class="lab-arc-entry"/g)||[]).length,7);
+ assert.equal((html.match(/class="lab-arc-feature"/g)||[]).length,2);
+ assert.equal((html.match(/<h1\b/g)||[]).length,1);
+ const expected=["/original-works","/original-works/works","/original-works/reply","/original-works/transcosmic","/original-works/wiki","/original-works/journal","/original-works/about"];
+ const links=[...html.matchAll(/class="lab-arc-entry" href="([^"]+)"/g)].map(x=>x[1]);
+ assert.deepEqual(links,expected);
+ assert.match(html,/original-worlds-v1\.webp/);
+ assert.match(html,/lab-archive-v1\.webp/);
+ assert.doesNotMatch(html,/<script\b|<iframe\b|<form\b|onload=|onclick=|onerror=/i);
+ for(const path of expected){
+  const legacy=await worker.fetch(new Request("https://anevum.com"+path));
+  assert.equal(legacy.status,200,"Preserved legacy page missing "+path);
+  assert.equal(legacy.headers.get("X-Anevum-Surface"),res.headers.get("X-Anevum-Surface"));
+  const body=await legacy.text();
+  assert.match(body,/data-page="/,"Legacy editorial rendering changed: "+path);
+  assert.doesNotMatch(body,/lab-arc-hero/,"Archive markup leaked into original page "+path);
+ }
+ const oldHome=await (await worker.fetch(new Request("https://anevum.com/original-works"))).text();
+ assert.match(oldHome,/Somewhere,/);
+ assert.notEqual(html,oldHome);
+ const q=await worker.fetch(new Request("https://anevum.com"+route+"?redirect=%3Cscript%3E"));
+ assert.equal(q.status,200);
+ assert.equal(await q.text(),html);
+ const head=await worker.fetch(new Request("https://anevum.com"+route,{method:"HEAD"}));
+ assert.equal(head.status,200);
+ assert.equal((await head.arrayBuffer()).byteLength,0);
+ assert.deepEqual(Object.fromEntries(head.headers),Object.fromEntries(res.headers));
+ assert.equal((await worker.fetch(new Request("https://anevum.com"+route,{method:"POST",body:"x"}))).status,405);
+ for(const bad of [route+"/draft",route+"/private","/archive","/staff/archive","/original-works/archive/../../member"]){
+  assert.equal((await worker.fetch(new Request("https://anevum.com"+bad))).status,404,"Unreviewed route served: "+bad);
  }
 });
 
