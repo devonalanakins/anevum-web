@@ -107,7 +107,7 @@ class ScopeTests(unittest.TestCase):
 
     def test_public_studio_has_separate_mandatory_no_deploy_review(self):
         paths = list(scope.ISOLATED_PUBLIC_STUDIO_PATHS)
-        self.assertEqual(len(paths), 20)
+        self.assertEqual(len(paths), 21)
         self.assertFalse(scope.app_preview_required(paths))
         self.assertTrue(scope.public_studio_required(paths))
         self.assertFalse(scope.isolated_review_required(paths))
