@@ -204,11 +204,11 @@ test("laboratory apex is a truthful independent studio while legacy reader home 
  assert.match(rootHtml,/href="\/original-works"/);
  assert.match(rootHtml,/href="https:\/\/github.com\/devonalanakins\/rhen"/);
  assert.match(rootHtml,/prefers-reduced-motion:reduce/);
- assert.match(rootHtml,/original-works\\/assets\\/lab-hero-v1\\.webp/);
- assert.match(rootHtml,/original-works\\/assets\\/rhen-generative-v1\\.webp/);
- assert.match(rootHtml,/original-works\\/assets\\/brandle-interactive-v1\\.webp/);
- assert.match(rootHtml,/original-works\\/assets\\/original-worlds-v1\\.webp/);
- assert.match(rootHtml,/research-imagination-v1\\.webp/);
+ assert.match(rootHtml,/original-works\/assets\/lab-hero-v1\.webp/);
+ assert.match(rootHtml,/original-works\/assets\/rhen-generative-v1\.webp/);
+ assert.match(rootHtml,/original-works\/assets\/brandle-interactive-v1\.webp/);
+ assert.match(rootHtml,/original-works\/assets\/original-worlds-v1\.webp/);
+ assert.match(rootHtml,/research-imagination-v1\.webp/);
  assert.equal((rootHtml.match(/<h1\b/g)||[]).length,1);
  const links=[...rootHtml.matchAll(/href="#([a-z-]+)"/g)].map(m=>m[1]);
  for(const anchor of links)assert.match(rootHtml,new RegExp('id="'+anchor+'"'),"Missing local anchor "+anchor);
