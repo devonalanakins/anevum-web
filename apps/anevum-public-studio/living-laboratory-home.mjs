@@ -31,7 +31,7 @@ a{color:inherit;text-decoration:none}a:focus-visible,summary:focus-visible{outli
 .lab-hero::after{content:'';position:absolute;z-index:1;bottom:0;left:0;right:0;height:132px;background:linear-gradient(transparent,#09070de8);pointer-events:none}
 .lab-art{position:absolute;z-index:0;pointer-events:none;inset:-10px -5% -40px 30%;opacity:.98}
 .lab-art svg{display:block;width:100%;height:100%;overflow:visible}
-.lab-hero-copy{position:relative;z-index:3;padding:85px 0 92px;width:100%}
+.lab-hero-copy{position:relative;z-index:3;padding:85px 0 92px}
 .lab-hero-copy>*{max-width:610px}
 .lab-micro{font-size:10px;letter-spacing:.25em;text-transform:uppercase;font-weight:650;color:#d3ae9d}
 .lab-heading{font:normal clamp(70px,9.6vw,138px)/.95 var(--display);letter-spacing:.20em;margin:24px 0 10px;margin-right:-.20em;text-shadow:0 2px 28px #12080ea8}
