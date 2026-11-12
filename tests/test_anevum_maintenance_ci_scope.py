@@ -86,7 +86,7 @@ class ScopeTests(unittest.TestCase):
 
     def test_public_studio_has_separate_mandatory_no_deploy_review(self):
         paths = list(scope.ISOLATED_PUBLIC_STUDIO_PATHS)
-        self.assertEqual(len(paths), 8)
+        self.assertEqual(len(paths), 18)
         self.assertFalse(scope.app_preview_required(paths))
         self.assertTrue(scope.public_studio_required(paths))
         self.assertFalse(scope.isolated_review_required(paths))
@@ -105,6 +105,15 @@ class ScopeTests(unittest.TestCase):
         files = ["apps/anevum-public-studio/worker.mjs", "src/App.tsx"]
         self.assertTrue(scope.app_preview_required(files))
         self.assertTrue(scope.public_studio_required(files))
+
+    def test_image_assets_are_isolated_but_unknown_images_fail_closed(self):
+        known = ["apps/anevum-public-studio/art/lab-hero-v1.webp",
+                 "apps/anevum-public-studio/living-laboratory-art.mjs"]
+        self.assertFalse(scope.app_preview_required(known))
+        self.assertTrue(scope.public_studio_required(known))
+        unknown = ["apps/anevum-public-studio/art/unreviewed-v2.webp"]
+        self.assertTrue(scope.app_preview_required(known + unknown))
+        self.assertTrue(scope.public_studio_required(known + unknown))
 
     def test_unknown_new_public_studio_file_cannot_bypass_preview(self):
         files = ["apps/anevum-public-studio/worker.mjs", "apps/anevum-public-studio/auth.mjs"]
