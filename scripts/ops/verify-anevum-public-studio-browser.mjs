@@ -33,6 +33,35 @@ async function waitFor(fn,label){
  throw Error("Timed out waiting for "+label);
 }
 async function view(pathname,width,height,name,saveScreenshot=false){
+ // Exact apex is the independent Living Laboratory. Legacy routes continue
+ // through the established Original Works browser acceptance below.
+ if(pathname==="/"){
+  await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await send("Page.navigate",{url:base+pathname});
+  const state=await waitFor(async()=>{
+   const v=await evalJS(`(()=>{const desktop=document.querySelector('nav.lab-nav'),mobile=document.querySelector('details.lab-mobile'),hero=document.querySelector('#lab-home-title');return {path:location.pathname,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,title:document.title,heading:hero?.textContent,tagline:document.querySelector('.lab-italic')?.textContent,nav:[...(desktop?.querySelectorAll('a')||[])].map(a=>a.getAttribute('href')),main:!!document.querySelector('main#main'),skip:!!document.querySelector('a.lab-skip[href="#main"]'),menu:!!mobile,menuVisible:!!mobile&&getComputedStyle(mobile).display!=='none',scripts:document.scripts.length,sculpture:!!document.querySelector('.lab-art svg'),anchors:[...document.querySelectorAll('a[href^="#"]')].map(a=>a.getAttribute('href').slice(1)).filter(Boolean).every(id=>!!document.getElementById(id))}})()`);
+   return v?.path===pathname&&v?.heading?v:null;
+  },"Living Laboratory "+name);
+  if(!state.main||!state.skip||!state.menu||!state.sculpture||!state.anchors||state.scripts!==0)throw Error("Lab accessibility or link contract failed: "+JSON.stringify(state));
+  if(!state.title.includes("laboratory for the possible")||state.heading!=="ANEVUM"||!state.tagline?.includes("laboratory for the possible"))throw Error("Wrong laboratory identity: "+JSON.stringify(state));
+  if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Lab horizontal overflow: "+JSON.stringify(state));
+  if(state.nav.length!==5||!state.nav.includes("#experiments")||!state.nav.includes("/original-works"))throw Error("Lab navigation broken: "+JSON.stringify(state));
+  if((width<=800)!==state.menuVisible)throw Error("Lab menu breakpoint mismatch: "+JSON.stringify(state));
+  if(state.menuVisible){
+   const menu=await evalJS(`(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();const opened=d.open;const links=[...d.querySelectorAll('nav a')].map(a=>a.getAttribute('href'));d.querySelector('summary').click();return {opened,closed:!d.open,links}})()`);
+   if(!menu.opened||!menu.closed||!menu.links.includes("#experiments"))throw Error("Lab mobile disclosure failed: "+JSON.stringify(menu));
+  }
+  if(saveScreenshot){
+   const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
+   const filepath=path.join(output,"anevum-public-"+name+".png");
+   writeFileSync(filepath,Buffer.from(shot.data,"base64"));
+   if(readFileSync(filepath).length<12000)throw Error("Blank Living Laboratory screenshot: "+filepath);
+  }
+  console.log(JSON.stringify({case:name,path:state.path,width:state.width,heading:state.heading,menuVisible:state.menuVisible}));
+  return;
+ }
+
  await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
  await send("Page.navigate",{url:base+pathname});
