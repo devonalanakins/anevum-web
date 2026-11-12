@@ -49,8 +49,16 @@ async function view(pathname,width,height,name,saveScreenshot=false){
   },"Research "+name);
   if(!state.main||!state.menu||state.heading!=="Research"||!state.title.startsWith("Research")||state.cards!==4||state.disclosures!==4||state.indexLinks!==4||!state.anchors||state.scripts!==0)throw Error("Research content/accessibility failure: "+JSON.stringify(state));
   if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Research horizontal overflow: "+JSON.stringify(state));
-  const images=await waitFor(async()=>{const s=await evalJS("(()=>[...document.querySelectorAll('.lab-res-media img')].map(x=>({loaded:x.complete&&x.naturalWidth>0,width:x.naturalWidth})))()");return s?.length===4&&s.every(x=>x.loaded)?s:null;},"Research images");
-  if(images.some(x=>x.width<400))throw Error("Research image resolution unexpectedly low: "+JSON.stringify(images));
+  // The four source-backed WebPs intentionally use loading=lazy. Scroll each
+  // card into view before expecting it to decode, rather than treating a
+  // correctly deferred offscreen image as a failed fetch.
+  for(let i=0;i<4;i++){
+   await evalJS("(()=>{document.querySelectorAll('.lab-res-media img')["+i+"].scrollIntoView({behavior:'instant',block:'center'});return true})()");
+   await waitFor(async()=>await evalJS("(()=>{const x=document.querySelectorAll('.lab-res-media img')["+i+"];return x?.complete&&x.naturalWidth>0})()"),"research image "+(i+1));
+  }
+  const images=await evalJS("(()=>[...document.querySelectorAll('.lab-res-media img')].map(x=>({loaded:x.complete&&x.naturalWidth>0,width:x.naturalWidth})))()");
+  if(images.length!==4||images.some(x=>!x.loaded||x.width<400))throw Error("Research images missing or unexpectedly low-resolution: "+JSON.stringify(images));
+  await evalJS("(()=>{window.scrollTo({top:0,behavior:'instant'});return true})()");
   const disclosure=await evalJS("(()=>{const d=document.querySelector('.lab-res-details');const summary=d?.querySelector('summary');summary?.focus();const focused=document.activeElement===summary;summary?.click();const opened=d.open;const question=!!d.querySelector('.lab-res-detail-copy strong');const overflow=document.documentElement.scrollWidth>document.documentElement.clientWidth+1;summary?.click();return {focused,opened,question,closed:!d.open,overflow}})()");
   if(!disclosure.focused||!disclosure.opened||!disclosure.question||!disclosure.closed||disclosure.overflow)throw Error("Research native disclosure failure: "+JSON.stringify(disclosure));
   if(width<650){
