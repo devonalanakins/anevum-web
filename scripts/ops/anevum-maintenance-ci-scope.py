@@ -55,6 +55,7 @@ ISOLATED_ORIGINAL_WORKS_REVIEW_PATHS = frozenset([
 # Its own browser/security gate is mandatory for these exact files only.
 ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "apps/anevum-public-studio/worker.mjs",
+    "apps/anevum-public-studio/living-laboratory-home.mjs",
     "tests/anevum-public-studio.test.mjs",
     "scripts/ops/anevum-public-studio-test-server.mjs",
     "scripts/ops/verify-anevum-public-studio-browser.mjs",
