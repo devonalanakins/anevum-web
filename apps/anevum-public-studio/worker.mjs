@@ -1,3 +1,4 @@
+import {renderLivingLaboratoryHome} from "./living-laboratory-home.mjs";
 /**
  * ANEVUM.WEB.OPS.2026-11-03.027.CANONICAL-ORIGINAL-WORKS-LAUNCH
  * Self-contained public creative studio with no client JS or private content.
@@ -51,5 +52,6 @@ export default {async fetch(request){
  const slug=(path==='/'||path===ROOT)?'':path.slice(ROOT.length+1);
  if(!Object.prototype.hasOwnProperty.call(ROUTES,slug))return unavailable(404);
  const page=ROUTES[slug];
- return new Response(request.method==='HEAD'?null:render(page),{status:200,headers:securityHeaders});
+ const html=path==='/'?renderLivingLaboratoryHome():render(page);
+ return new Response(request.method==='HEAD'?null:html,{status:200,headers:securityHeaders});
 }};
