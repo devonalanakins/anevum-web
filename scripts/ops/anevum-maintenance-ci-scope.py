@@ -63,6 +63,7 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "apps/anevum-public-studio/living-laboratory-home.mjs",
     "apps/anevum-public-studio/living-laboratory-experiments.mjs",
     "apps/anevum-public-studio/living-laboratory-research.mjs",
+    "apps/anevum-public-studio/living-laboratory-archive.mjs",
     "apps/anevum-public-studio/living-laboratory-art.mjs",
     "apps/anevum-public-studio/art/lab-hero-v1.webp",
     "apps/anevum-public-studio/art/rhen-generative-v1.webp",
