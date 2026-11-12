@@ -1,3 +1,5 @@
+import {readFileSync} from "node:fs";
+import {LAB_ART} from "../apps/anevum-public-studio/living-laboratory-art.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import worker from "../apps/anevum-public-studio/worker.mjs";
@@ -6,6 +8,33 @@ const root="https://anevum.com/original-works";
 const pages=["","/works","/reply","/transcosmic","/wiki","/journal","/about"];
 const req=(path="",init={})=>worker.fetch(new Request(root+path,init));
 const internalLinks=html=>[...html.matchAll(/href="(\/original-works(?:\/[a-z-]+)?)"/g)].map(m=>m[1]);
+
+test("approved image assets are byte-identical to reviewed source WebP and served by same-origin Worker",async()=>{
+ const names=["lab-hero","rhen-generative","brandle-interactive","original-worlds","research-generation","research-computation","research-worlds","research-imagination","lab-archive"].map(x=>x+"-v1.webp");
+ assert.deepEqual(Object.keys(LAB_ART).sort(),names.slice().sort());
+ for(const name of names){
+  const actual=Buffer.from(LAB_ART[name],"base64");
+  const file=readFileSync(new URL("../apps/anevum-public-studio/art/"+name,import.meta.url));
+  assert.deepEqual(actual,file,"Generated Worker image differs from source "+name);
+  assert.equal(actual.toString("ascii",0,4),"RIFF");
+  assert.equal(actual.toString("ascii",8,12),"WEBP");
+  const url="https://anevum.com/original-works/assets/"+name;
+  const response=await worker.fetch(new Request(url));
+  assert.equal(response.status,200,name);
+  assert.equal(response.headers.get("Content-Type"),"image/webp");
+  assert.match(response.headers.get("Cache-Control"),/immutable/);
+  assert.equal(response.headers.get("X-Content-Type-Options"),"nosniff");
+  assert.deepEqual(Buffer.from(await response.arrayBuffer()),actual);
+  const head=await worker.fetch(new Request(url,{method:"HEAD"}));
+  assert.equal(head.status,200);
+  assert.equal((await head.arrayBuffer()).byteLength,0);
+  assert.deepEqual(Object.fromEntries(head.headers),Object.fromEntries(response.headers));
+ }
+ for(const url of ["https://anevum.com/original-works/assets/missing.webp","https://anevum.com/original-works/assets/../staff","https://example.com/original-works/assets/lab-hero-v1.webp","http://anevum.com/original-works/assets/lab-hero-v1.webp"]){
+  assert.equal((await worker.fetch(new Request(url))).status,404,url);
+ }
+ assert.equal((await worker.fetch(new Request("https://anevum.com/original-works/assets/lab-hero-v1.webp",{method:"POST",body:"x"}))).status,405);
+});
 
 test("all seven V2 routes contain one accessible editorial page, correct links and security headers",async()=>{
  for(const path of pages){
@@ -175,7 +204,11 @@ test("laboratory apex is a truthful independent studio while legacy reader home 
  assert.match(rootHtml,/href="\/original-works"/);
  assert.match(rootHtml,/href="https:\/\/github.com\/devonalanakins\/rhen"/);
  assert.match(rootHtml,/prefers-reduced-motion:reduce/);
- assert.match(rootHtml,/<svg/);
+ assert.match(rootHtml,/original-works\\/assets\\/lab-hero-v1\\.webp/);
+ assert.match(rootHtml,/original-works\\/assets\\/rhen-generative-v1\\.webp/);
+ assert.match(rootHtml,/original-works\\/assets\\/brandle-interactive-v1\\.webp/);
+ assert.match(rootHtml,/original-works\\/assets\\/original-worlds-v1\\.webp/);
+ assert.match(rootHtml,/research-imagination-v1\\.webp/);
  assert.equal((rootHtml.match(/<h1\b/g)||[]).length,1);
  const links=[...rootHtml.matchAll(/href="#([a-z-]+)"/g)].map(m=>m[1]);
  for(const anchor of links)assert.match(rootHtml,new RegExp('id="'+anchor+'"'),"Missing local anchor "+anchor);
