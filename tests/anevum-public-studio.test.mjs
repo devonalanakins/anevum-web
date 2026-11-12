@@ -154,24 +154,33 @@ test("REPLY edition/illustration update leaves all other pages and publication s
 });
 
 
-test("canonical apex homepage matches approved creative-studio identity without releasing private sections",async()=>{
+test("laboratory apex is a truthful independent studio while legacy reader home stays intact",async()=>{
  const rootRes=await worker.fetch(new Request("https://anevum.com/"));
- const aliasRes=await req("");
+ const legacyRes=await req("");
  assert.equal(rootRes.status,200);
- assert.equal(aliasRes.status,200);
+ assert.equal(legacyRes.status,200);
  assert.equal(rootRes.headers.get("X-Anevum-Surface"),"anevum-original-works-public-v3-root");
  assert.match(rootRes.headers.get("X-Robots-Tag"),/noindex/);
- const rootHtml=await rootRes.text(), aliasHtml=await aliasRes.text();
- assert.equal(rootHtml,aliasHtml,"The root and legacy /original-works entry must render the same reviewed home");
- assert.match(rootHtml,/<title>Anevum \| Original Works &amp; The Transcosmic<\/title>/);
- assert.match(rootHtml,/<h1 class="display">Somewhere,<br><em>someone<\/em><br>answered\.<\/h1>/);
- assert.match(rootHtml,/<meta property="og:site_name" content="Anevum">/);
- assert.match(rootHtml,/<a href="\/" class="brand" aria-label="Anevum home">/);
- assert.match(rootHtml,/<a class="footer-logo" href="\/">Anevum<\/a>/);
- assert.match(rootHtml,/href="\/original-works\/reply"/);
- assert.match(rootHtml,/href="\/original-works\/wiki"/);
- assert.doesNotMatch(rootHtml,/<script\b|<iframe\b|<form\b|<input\b|onload=|onclick=/i);
- assert.doesNotMatch(rootHtml,/Independent Games|Software Studio|Nali Solan|Skygate|Merva|Ovara/i);
+ assert.match(rootRes.headers.get("Content-Security-Policy"),/default-src 'none'/);
+ const rootHtml=await rootRes.text(), legacyHtml=await legacyRes.text();
+ assert.notEqual(rootHtml,legacyHtml,"The new apex must not overwrite archived Original Works");
+ assert.match(legacyHtml,/<title>Anevum \\| Original Works &amp; The Transcosmic<\\/title>/);
+ assert.match(legacyHtml,/Somewhere,/);
+ assert.match(rootHtml,/<title>ANEVUM \\| A laboratory for the possible<\\/title>/);
+ assert.match(rootHtml,/<h1 id="lab-home-title" class="lab-heading">ANEVUM<\\/h1>/);
+ assert.match(rootHtml,/A laboratory for the possible/);
+ assert.match(rootHtml,/Created by Devon Akins/);
+ assert.match(rootHtml,/<nav class="lab-nav" aria-label="Primary navigation">/);
+ assert.match(rootHtml,/<details class="lab-mobile"><summary>Menu<\\/summary>/);
+ assert.match(rootHtml,/href="\\/original-works"/);
+ assert.match(rootHtml,/href="https:\\/\\/github.com\\/devonalanakins\\/rhen"/);
+ assert.match(rootHtml,/prefers-reduced-motion:reduce/);
+ assert.match(rootHtml,/<svg/);
+ assert.equal((rootHtml.match(/<h1\\b/g)||[]).length,1);
+ const links=[...rootHtml.matchAll(/href="#([a-z-]+)"/g)].map(m=>m[1]);
+ for(const anchor of links)assert.match(rootHtml,new RegExp('id="'+anchor+'"'),"Missing local anchor "+anchor);
+ assert.doesNotMatch(rootHtml,/<script\\b|<iframe\\b|<form\\b|<input\\b|onload=|onclick=/i);
+ assert.doesNotMatch(rootHtml,/Skygate|Nali Solan|Ovara|manuscript|medical records|fake metrics/i);
 });
 
 test("root launch is method-safe and cannot intercept staff, member or API routes",async()=>{
