@@ -39,6 +39,44 @@ async function view(pathname,width,height,name,saveScreenshot=false){
  // through the established Original Works browser acceptance below.
 
 
+
+ if(pathname==="/original-works/archive"){
+  await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await send("Page.navigate",{url:base+pathname});
+  const state=await waitFor(async()=>{
+   const v=await evalJS("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('main h1')?.textContent,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,links:[...document.querySelectorAll('.lab-arc-entry')].map(a=>a.getAttribute('href')),features:document.querySelectorAll('.lab-arc-feature').length,menu:!!document.querySelector('details.lab-mobile'),scripts:document.scripts.length,main:!!document.querySelector('main#main'),active:document.querySelector('.lab-nav a[aria-current=page]')?.textContent,art:[...document.querySelectorAll('.lab-arc-feature')].map(x=>getComputedStyle(x,':before').backgroundImage)}))()");
+   return v?.path===pathname&&v?.heading?v:null;
+  },"Archive "+name);
+  const expected=["/original-works","/original-works/works","/original-works/reply","/original-works/transcosmic","/original-works/wiki","/original-works/journal","/original-works/about"];
+  if(!state.main||!state.menu||state.heading!=="Archive"||!state.title.startsWith("Archive")||state.features!==2||state.scripts!==0||state.active!=="Archive"||JSON.stringify(state.links)!==JSON.stringify(expected))throw Error("Archive content or route boundary failed: "+JSON.stringify(state));
+  if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Archive horizontal overflow: "+JSON.stringify(state));
+  if(!state.art[0]?.includes("original-worlds-v1.webp")||!state.art[1]?.includes("lab-archive-v1.webp"))throw Error("Archive approved artwork missing: "+JSON.stringify(state.art));
+  const imageSizes=await evalJS("Promise.all(['/original-works/assets/original-worlds-v1.webp','/original-works/assets/lab-archive-v1.webp'].map(async src=>{const img=new Image();img.src=src;try{await img.decode();return img.naturalWidth}catch{return 0}}))");
+  if(imageSizes.length!==2||imageSizes.some(n=>n<400))throw Error("Archive image decoding or resolution failure: "+JSON.stringify(imageSizes));
+  const focused=await evalJS("(()=>{const a=document.querySelector('.lab-arc-entry');a.focus();return document.activeElement===a})()");
+  if(!focused)throw Error("Archive index links cannot receive keyboard focus");
+  if(width<650){
+   const menu=await evalJS("(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();const opened=d.open;const links=[...d.querySelectorAll('nav a')].map(x=>x.getAttribute('href'));d.querySelector('summary').click();return {opened,closed:!d.open,links}})()");
+   if(!menu.opened||!menu.closed||!menu.links.includes("/original-works/archive"))throw Error("Archive mobile navigation failed: "+JSON.stringify(menu));
+  }
+  if(saveScreenshot){
+   const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
+   const file=path.join(output,"anevum-public-"+name+".png");
+   writeFileSync(file,Buffer.from(shot.data,"base64"));
+   if(readFileSync(file).length<12000)throw Error("Blank Archive screenshot");
+   const metrics=await send("Page.getLayoutMetrics");
+   const fullWidth=Math.ceil(metrics.cssContentSize?.width||metrics.contentSize.width);
+   const fullHeight=Math.ceil(metrics.cssContentSize?.height||metrics.contentSize.height);
+   if(fullWidth<width-20||fullHeight<=height||fullHeight>12000)throw Error("Invalid Archive full-page dimensions");
+   const full=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip:{x:0,y:0,width:fullWidth,height:fullHeight,scale:1}});
+   const fullPath=path.join(output,"anevum-public-"+name+"-full.png");
+   writeFileSync(fullPath,Buffer.from(full.data,"base64"));
+   if(readFileSync(fullPath).length<25000)throw Error("Blank Archive full-page screenshot");
+  }
+  console.log(JSON.stringify({case:name,path:state.path,width:state.width,links:state.links.length,features:state.features}));
+  return;
+ }
  if(pathname==="/original-works/research"){
   await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
@@ -128,7 +166,7 @@ async function view(pathname,width,height,name,saveScreenshot=false){
   if(!state.title.includes("laboratory for the possible")||state.heading!=="ANEVUM"||!state.tagline?.includes("laboratory for the possible"))throw Error("Wrong laboratory identity: "+JSON.stringify(state));
   if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Lab horizontal overflow: "+JSON.stringify(state));
   if(state.heroInset<(width<=530?14:width<=1100?24:38))throw Error("Lab desktop/mobile hero gutter missing: "+JSON.stringify(state));
-  if(state.nav.length!==5||!state.nav.includes("/original-works/experiments")||!state.nav.includes("/original-works"))throw Error("Lab navigation broken: "+JSON.stringify(state));
+  if(state.nav.length!==5||!state.nav.includes("/original-works/experiments")||!state.nav.includes("/original-works/archive"))throw Error("Lab navigation broken: "+JSON.stringify(state));
   if((width<=800)!==state.menuVisible)throw Error("Lab menu breakpoint mismatch: "+JSON.stringify(state));
   if(state.menuVisible){
    const menu=await evalJS(`(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();const opened=d.open;const links=[...d.querySelectorAll('nav a')].map(a=>a.getAttribute('href'));d.querySelector('summary').click();return {opened,closed:!d.open,links}})()`);
@@ -261,6 +299,10 @@ try {
 
   }
  }
+ await view("/original-works/archive",320,768,"archive-320",false);
+ await view("/original-works/archive",390,844,"archive-390",true);
+ await view("/original-works/archive",768,1024,"archive-768",false);
+ await view("/original-works/archive",1440,900,"archive-1440",true);
  await view("/original-works/research",320,768,"research-320",false);
  await view("/original-works/research",390,844,"research-390",true);
  await view("/original-works/research",768,1024,"research-768",false);
