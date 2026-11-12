@@ -22,6 +22,11 @@ MAINTENANCE_PATHS = frozenset([
     "tests/v5-preview-encrypted-backup.test.mjs",
     "tests/v5-production-manual-deploy.test.mjs",
     "tests/v5-production-release.test.mjs",
+    # These two files implement and test a read-only, always-on CI contract
+    # checker. They are not application or hosted-preview inputs. The workflow
+    # must still run the verifier unconditionally and fail closed on mismatch.
+    "scripts/verify-v5-cross-repo-schema.mjs",
+    "tests/v5-cross-repo-schema.test.mjs",
     # Reviewed repository-extraction tooling and standalone project metadata.
     # These do not alter the ANEVUM web runtime, build or deployments.
     ".github/workflows/deploy-brandle.yml",

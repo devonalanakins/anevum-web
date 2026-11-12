@@ -29,6 +29,27 @@ class ScopeTests(unittest.TestCase):
         ]
         self.assertFalse(scope.app_preview_required(approved))
 
+    def test_cross_repo_verifier_uses_ci_gate_not_hosted_preview(self):
+        ci_only = [
+            "scripts/verify-v5-cross-repo-schema.mjs",
+            "tests/v5-cross-repo-schema.test.mjs",
+        ]
+        public = ["apps/anevum-public-studio/worker.mjs"]
+        self.assertFalse(scope.app_preview_required(ci_only))
+        self.assertFalse(scope.public_studio_required(ci_only))
+        self.assertFalse(scope.app_preview_required(ci_only + public))
+        self.assertTrue(scope.public_studio_required(ci_only + public))
+        # An unrelated/private runtime change still fails closed through the
+        # existing Cloudflare Access requirement before any hosted preview.
+        for protected in ("src/App.tsx", "worker.mjs", "wrangler.jsonc"):
+            with self.subTest(protected=protected):
+                self.assertTrue(scope.app_preview_required(ci_only + public + [protected]))
+        workflow = (target.parents[2] / ".github/workflows/anevum-verify.yml").read_text()
+        self.assertIn("Enforce pinned WEB/RHEN cross-repository workspace schema parity", workflow)
+        self.assertIn("run: node scripts/verify-v5-cross-repo-schema.mjs", workflow)
+        self.assertIn("steps.scope.outputs.app_preview_required == 'true'", workflow)
+        self.assertIn("Verify owner-only Access before hosted Cloudflare Preview", workflow)
+
     def test_root_readme_only_does_not_require_preview(self):
         self.assertFalse(scope.app_preview_required(["README.md"]))
 
