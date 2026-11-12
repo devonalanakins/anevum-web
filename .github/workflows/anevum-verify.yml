@@ -74,6 +74,26 @@ jobs:
           node scripts/audit-v5-legacy-page-retention.mjs --json > "$RUNNER_TEMP/anevum-v5-legacy-page-retention.json"
           jq -e '(.version == "anevum.v5.legacy-page-retention.v1") and (.deletionAuthorized == false) and ((.runtimeUnresolved | length) == 0)' "$RUNNER_TEMP/anevum-v5-legacy-page-retention.json" > /dev/null
           jq -c '{counts, deletionAuthorized}' "$RUNNER_TEMP/anevum-v5-legacy-page-retention.json"
+      # Public-only Worker QA is independent of legacy RHEN/member contracts.
+      # Run it before unrelated fail-closed gates so its evidence is not skipped.
+      - name: Verify isolated public Original Works shell and real browser (no deploy)
+        if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check apps/anevum-public-studio/worker.mjs
+          node --test tests/anevum-public-studio.test.mjs
+          node scripts/ops/verify-anevum-public-studio-browser.mjs
+
+      - name: Upload public studio screenshot evidence
+        if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: anevum-public-original-works-${{ github.event.pull_request.number }}
+          path: ${{ runner.temp }}/anevum-public-*.png
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Enforce pinned WEB/RHEN cross-repository workspace schema parity
         # Public GitHub REST unauthenticated IP rate limits can return 403 in
         # Actions runners; authenticate this read-only pinned branch check.
@@ -130,24 +150,6 @@ jobs:
           set -euo pipefail
           bash scripts/ops/build-original-works-review.sh
           bash scripts/ops/verify-original-works-review-browser.sh
-
-      - name: Verify isolated public Original Works shell and real browser (no deploy)
-        if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --check apps/anevum-public-studio/worker.mjs
-          node --test tests/anevum-public-studio.test.mjs
-          node scripts/ops/verify-anevum-public-studio-browser.mjs
-
-      - name: Upload public studio screenshot evidence
-        if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: anevum-public-original-works-${{ github.event.pull_request.number }}
-          path: ${{ runner.temp }}/anevum-public-*.png
-          if-no-files-found: error
-          retention-days: 7
 
       - name: Verify owner-only Access before hosted Cloudflare Preview
         if: github.event_name == 'pull_request' && steps.scope.outputs.app_preview_required == 'true'
