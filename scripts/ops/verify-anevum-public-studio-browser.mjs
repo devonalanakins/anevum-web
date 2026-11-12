@@ -42,12 +42,13 @@ async function view(pathname,width,height,name,saveScreenshot=false){
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
   await send("Page.navigate",{url:base+pathname});
   const state=await waitFor(async()=>{
-   const v=await evalJS(`(()=>{const desktop=document.querySelector('nav.lab-nav'),mobile=document.querySelector('details.lab-mobile'),hero=document.querySelector('#lab-home-title');return {path:location.pathname,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,title:document.title,heading:hero?.textContent,tagline:document.querySelector('.lab-italic')?.textContent,nav:[...(desktop?.querySelectorAll('a')||[])].map(a=>a.getAttribute('href')),main:!!document.querySelector('main#main'),skip:!!document.querySelector('a.lab-skip[href="#main"]'),menu:!!mobile,menuVisible:!!mobile&&getComputedStyle(mobile).display!=='none',scripts:document.scripts.length,sculpture:!!document.querySelector('.lab-art svg'),anchors:[...document.querySelectorAll('a[href^="#"]')].map(a=>a.getAttribute('href').slice(1)).filter(Boolean).every(id=>!!document.getElementById(id))}})()`);
+   const v=await evalJS(`(()=>{const desktop=document.querySelector('nav.lab-nav'),mobile=document.querySelector('details.lab-mobile'),hero=document.querySelector('#lab-home-title');return {path:location.pathname,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,title:document.title,heading:hero?.textContent,tagline:document.querySelector('.lab-italic')?.textContent,nav:[...(desktop?.querySelectorAll('a')||[])].map(a=>a.getAttribute('href')),main:!!document.querySelector('main#main'),skip:!!document.querySelector('a.lab-skip[href="#main"]'),menu:!!mobile,menuVisible:!!mobile&&getComputedStyle(mobile).display!=='none',scripts:document.scripts.length,sculpture:!!document.querySelector('.lab-art svg'),heroInset:Math.round(document.querySelector('.lab-hero-copy').getBoundingClientRect().left),anchors:[...document.querySelectorAll('a[href^="#"]')].map(a=>a.getAttribute('href').slice(1)).filter(Boolean).every(id=>!!document.getElementById(id))}})()`);
    return v?.path===pathname&&v?.heading?v:null;
   },"Living Laboratory "+name);
   if(!state.main||!state.skip||!state.menu||!state.sculpture||!state.anchors||state.scripts!==0)throw Error("Lab accessibility or link contract failed: "+JSON.stringify(state));
   if(!state.title.includes("laboratory for the possible")||state.heading!=="ANEVUM"||!state.tagline?.includes("laboratory for the possible"))throw Error("Wrong laboratory identity: "+JSON.stringify(state));
   if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Lab horizontal overflow: "+JSON.stringify(state));
+  if(state.heroInset<(width<=530?14:width<=1100?24:38))throw Error("Lab desktop/mobile hero gutter missing: "+JSON.stringify(state));
   if(state.nav.length!==5||!state.nav.includes("#experiments")||!state.nav.includes("/original-works"))throw Error("Lab navigation broken: "+JSON.stringify(state));
   if((width<=800)!==state.menuVisible)throw Error("Lab menu breakpoint mismatch: "+JSON.stringify(state));
   if(state.menuVisible){
@@ -59,6 +60,15 @@ async function view(pathname,width,height,name,saveScreenshot=false){
    const filepath=path.join(output,"anevum-public-"+name+".png");
    writeFileSync(filepath,Buffer.from(shot.data,"base64"));
    if(readFileSync(filepath).length<12000)throw Error("Blank Living Laboratory screenshot: "+filepath);
+   // Capture the entire laboratory composition for actual visual comparison.
+   const metrics=await send("Page.getLayoutMetrics");
+   const fullWidth=Math.ceil(metrics.cssContentSize?.width||metrics.contentSize.width);
+   const fullHeight=Math.ceil(metrics.cssContentSize?.height||metrics.contentSize.height);
+   if(fullWidth<width-20||fullHeight<=height||fullHeight>12000)throw Error("Invalid full-page dimensions: "+JSON.stringify({width,height,fullWidth,fullHeight}));
+   const fullShot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip:{x:0,y:0,width:fullWidth,height:fullHeight,scale:1}});
+   const fullPath=path.join(output,"anevum-public-"+name+"-full.png");
+   writeFileSync(fullPath,Buffer.from(fullShot.data,"base64"));
+   if(readFileSync(fullPath).length<25000)throw Error("Blank Living Laboratory full-page screenshot: "+fullPath);
   }
   console.log(JSON.stringify({case:name,path:state.path,width:state.width,heading:state.heading,menuVisible:state.menuVisible}));
   return;
