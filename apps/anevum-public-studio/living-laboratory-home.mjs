@@ -97,9 +97,9 @@ const BODY = String.raw`
 <header class="lab-header"><div class="lab-wrap lab-head-inner">
  <a class="lab-brand" href="/" aria-label="ANEVUM home">@BRAND@<span>ANEVUM</span></a>
  <nav class="lab-nav" aria-label="Primary navigation">
-  <a href="/original-works/experiments">Experiments</a><a href="#research">Research</a><a href="#experiences">Experiences</a><a href="/original-works">Archive</a><a href="#contact">Contact</a>
+  <a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="#experiences">Experiences</a><a href="/original-works">Archive</a><a href="#contact">Contact</a>
  </nav>
- <details class="lab-mobile"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="/original-works/experiments">Experiments</a><a href="#research">Research</a><a href="#experiences">Experiences</a><a href="/original-works">Archive</a><a href="#contact">Contact</a></nav></details>
+ <details class="lab-mobile"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="#experiences">Experiences</a><a href="/original-works">Archive</a><a href="#contact">Contact</a></nav></details>
 </div></header>
 <main id="main" tabindex="-1">
  <section class="lab-hero" aria-labelledby="lab-home-title"><div class="lab-art" aria-hidden="true"></div><div class="lab-wrap lab-hero-copy">
@@ -122,7 +122,7 @@ const BODY = String.raw`
  </section>
  <div class="lab-lower">
   <section class="lab-themes lab-section" id="research" aria-labelledby="lab-research-heading">
-   <div class="lab-row-heading"><h2 class="lab-title-label" id="lab-research-heading">Research directions</h2><a href="https://github.com/devonalanakins" class="lab-view-link">Follow the work <span aria-hidden="true">→</span></a></div>
+   <div class="lab-row-heading"><h2 class="lab-title-label" id="lab-research-heading">Research directions</h2><a href="/original-works/research" class="lab-view-link">Explore research <span aria-hidden="true">→</span></a></div>
    <div class="lab-theme-grid">
     <article class="lab-theme"><div class="lab-theme-shape" aria-hidden="true"><img src="/original-works/assets/research-generation-v1.webp" alt="" width="560" height="360" loading="lazy"></div><h3>Generative systems</h3><p>Behavior, emergence and computational form.</p></article>
     <article class="lab-theme"><div class="lab-theme-shape" aria-hidden="true"><img src="/original-works/assets/research-computation-v1.webp" alt="" width="560" height="360" loading="lazy"></div><h3>Computation &amp; creativity</h3><p>Interfaces at the edge of code and art.</p></article>

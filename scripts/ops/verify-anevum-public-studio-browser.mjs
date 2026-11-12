@@ -38,6 +38,43 @@ async function view(pathname,width,height,name,saveScreenshot=false){
  // Exact apex is the independent Living Laboratory. Legacy routes continue
  // through the established Original Works browser acceptance below.
 
+
+ if(pathname==="/original-works/research"){
+  await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await send("Page.navigate",{url:base+pathname});
+  const state=await waitFor(async()=>{
+   const result=await evalJS("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('main h1')?.textContent,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,cards:document.querySelectorAll('.lab-res-card').length,indexLinks:document.querySelectorAll('.lab-res-index a').length,disclosures:document.querySelectorAll('.lab-res-details').length,images:[...document.querySelectorAll('.lab-res-media img')].map(x=>({loaded:x.complete&&x.naturalWidth>0,width:x.naturalWidth})),scripts:document.scripts.length,menu:!!document.querySelector('details.lab-mobile'),main:!!document.querySelector('main#main'),anchors:[...document.querySelectorAll('.lab-res-index a')].every(x=>!!document.querySelector(x.getAttribute('href')))}))()");
+   return result?.path===pathname&&result?.heading?result:null;
+  },"Research "+name);
+  if(!state.main||!state.menu||state.heading!=="Research"||!state.title.startsWith("Research")||state.cards!==4||state.disclosures!==4||state.indexLinks!==4||!state.anchors||state.scripts!==0)throw Error("Research content/accessibility failure: "+JSON.stringify(state));
+  if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Research horizontal overflow: "+JSON.stringify(state));
+  const images=await waitFor(async()=>{const s=await evalJS("(()=>[...document.querySelectorAll('.lab-res-media img')].map(x=>({loaded:x.complete&&x.naturalWidth>0,width:x.naturalWidth})))()");return s?.length===4&&s.every(x=>x.loaded)?s:null;},"Research images");
+  if(images.some(x=>x.width<400))throw Error("Research image resolution unexpectedly low: "+JSON.stringify(images));
+  const disclosure=await evalJS("(()=>{const d=document.querySelector('.lab-res-details');const summary=d?.querySelector('summary');summary?.focus();const focused=document.activeElement===summary;summary?.click();const opened=d.open;const question=!!d.querySelector('.lab-res-detail-copy strong');const overflow=document.documentElement.scrollWidth>document.documentElement.clientWidth+1;summary?.click();return {focused,opened,question,closed:!d.open,overflow}})()");
+  if(!disclosure.focused||!disclosure.opened||!disclosure.question||!disclosure.closed||disclosure.overflow)throw Error("Research native disclosure failure: "+JSON.stringify(disclosure));
+  if(width<650){
+   const menu=await evalJS("(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();const opened=d.open;const links=[...d.querySelectorAll('nav a')].map(x=>x.getAttribute('href'));d.querySelector('summary').click();return {opened,closed:!d.open,links}})()");
+   if(!menu.opened||!menu.closed||!menu.links.includes('/original-works/research'))throw Error("Research mobile menu failure: "+JSON.stringify(menu));
+  }
+  if(saveScreenshot){
+   const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
+   const file=path.join(output,"anevum-public-"+name+".png");
+   writeFileSync(file,Buffer.from(shot.data,"base64"));
+   if(readFileSync(file).length<12000)throw Error("Blank research screenshot");
+   const metrics=await send("Page.getLayoutMetrics");
+   const fullWidth=Math.ceil(metrics.cssContentSize?.width||metrics.contentSize.width);
+   const fullHeight=Math.ceil(metrics.cssContentSize?.height||metrics.contentSize.height);
+   if(fullWidth<width-20||fullHeight<=height||fullHeight>12000)throw Error("Invalid research full-page screenshot dimensions");
+   const full=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip:{x:0,y:0,width:fullWidth,height:fullHeight,scale:1}});
+   const fullPath=path.join(output,"anevum-public-"+name+"-full.png");
+   writeFileSync(fullPath,Buffer.from(full.data,"base64"));
+   if(readFileSync(fullPath).length<25000)throw Error("Blank research full-page screenshot");
+  }
+  console.log(JSON.stringify({case:name,path:state.path,heading:state.heading,width:state.width,cards:state.cards,imagesLoaded:images.length}));
+  return;
+ }
+
  if(pathname.startsWith("/original-works/experiments")){
   const requestedPath=pathname.split("?")[0];
   await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
@@ -216,6 +253,10 @@ try {
 
   }
  }
+ await view("/original-works/research",320,768,"research-320",false);
+ await view("/original-works/research",390,844,"research-390",true);
+ await view("/original-works/research",768,1024,"research-768",false);
+ await view("/original-works/research",1440,900,"research-1440",true);
  await view("/original-works/experiments",390,844,"experiments-390",true);
  await view("/original-works/experiments",1440,900,"experiments-1440",true);
  await view("/original-works/experiments?theme=interactive",390,844,"experiments-interactive-390",false);

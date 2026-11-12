@@ -203,6 +203,7 @@ test("laboratory apex is a truthful independent studio while legacy reader home 
  assert.match(rootHtml,/<details class="lab-mobile"><summary>Menu<\/summary>/);
  assert.match(rootHtml,/href="\/original-works"/);
  assert.match(rootHtml,/href="\/original-works\/experiments"/);
+ assert.match(rootHtml,/href="\/original-works\/research"/);
  assert.match(rootHtml,/href="https:\/\/github.com\/devonalanakins\/rhen"/);
  assert.match(rootHtml,/prefers-reduced-motion:reduce/);
  assert.match(rootHtml,/original-works\/assets\/lab-hero-v1\.webp/);
@@ -254,6 +255,54 @@ test("real Experiments route filters a small verified public catalog with no cli
  const header=await worker.fetch(new Request("https://anevum.com"+experiments,{method:"HEAD"}));
  assert.equal((await header.text()).length,0);
  assert.deepEqual(Object.fromEntries(header.headers),Object.fromEntries(response.headers));
+});
+
+test("public Research directory is evidence-honest, accessible and isolated from legacy routes",async()=>{
+ const path="/original-works/research";
+ const res=await worker.fetch(new Request("https://anevum.com"+path));
+ assert.equal(res.status,200);
+ assert.match(res.headers.get("X-Robots-Tag"),/noindex/);
+ assert.match(res.headers.get("Content-Security-Policy"),/default-src 'none'/);
+ assert.equal(res.headers.get("X-Anevum-Surface"),"anevum-original-works-public-v3-root");
+ const html=await res.text();
+ assert.match(html,/<title>Research \| ANEVUM Living Laboratory<\/title>/);
+ assert.match(html,/<h1 id="research-heading" class="lab-res-heading">Research<\/h1>/);
+ assert.match(html,/Questions before claims/);
+ assert.match(html,/No public study or validated finding is claimed/);
+ assert.match(html,/Evidence status/);
+ assert.match(html,/aria-label="Explore research directions"/);
+ assert.match(html,/aria-label="Primary navigation"/);
+ assert.match(html,/aria-label="Mobile navigation"/);
+ assert.match(html,/aria-current="page">Research<\/a>/);
+ const ids=["generation","representation","interaction","imagination"];
+ assert.equal((html.match(/class="lab-res-card"/g)||[]).length,ids.length);
+ assert.equal((html.match(/class="lab-res-details"/g)||[]).length,ids.length);
+ for(const id of ids){
+  assert.match(html,new RegExp('id="research-'+id+'"'));
+  assert.match(html,new RegExp('href="#research-'+id+'"'));
+ }
+ for(const asset of ["research-generation","research-computation","research-worlds","research-imagination"]){
+  assert.match(html,new RegExp('/original-works/assets/'+asset+'-v1\\.webp'));
+ }
+ for(const source of ["https://github.com/devonalanakins/invariant","https://github.com/devonalanakins/rhen","https://github.com/devonalanakins/brandle"]){
+  assert.ok(html.includes('href="'+source+'"'),"Missing verified public pointer "+source);
+ }
+ assert.match(html,/href="\/original-works"/);
+ assert.match(html,/href="\/original-works\/experiments"/);
+ assert.match(html,/An available source repository is not a published or validated scientific result/);
+ assert.equal((html.match(/<h1\b/g)||[]).length,1);
+ assert.doesNotMatch(html,/<script\b|<iframe\b|<form\b|onload=|onclick=|onerror=/i);
+ assert.doesNotMatch(html,/clinical patient|medical record|research participant data|peer.reviewed publication|proven compression result/i);
+ const getWithQuery=await (await worker.fetch(new Request("https://anevum.com"+path+"?topic=%3Cscript%3E"))).text();
+ assert.equal(getWithQuery,html,"Untrusted query strings must not affect research content");
+ const head=await worker.fetch(new Request("https://anevum.com"+path,{method:"HEAD"}));
+ assert.equal(head.status,200);
+ assert.equal((await head.arrayBuffer()).byteLength,0);
+ assert.deepEqual(Object.fromEntries(head.headers),Object.fromEntries(res.headers));
+ assert.equal((await worker.fetch(new Request("https://anevum.com"+path,{method:"POST",body:"x"}))).status,405);
+ for(const unknown of [path+"/draft",path+"/private","/research"]){
+  assert.equal((await worker.fetch(new Request("https://anevum.com"+unknown))).status,404,unknown);
+ }
 });
 
 test("root launch is method-safe and cannot intercept staff, member or API routes",async()=>{
