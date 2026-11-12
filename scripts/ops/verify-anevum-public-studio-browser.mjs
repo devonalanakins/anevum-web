@@ -178,8 +178,18 @@ try {
 } finally {
  for(const wait of pending.values()){clearTimeout(wait.timer);wait.reject(Error("Browser ending"));}pending.clear();
  if(ws)ws.close();
- if(chrome){chrome.kill("SIGTERM");}
- server.kill("SIGTERM");
- await sleep(200);
- rmSync(profile,{recursive:true,force:true});
+ // Chrome writes profile files while shutting down. Wait for process close
+ // before removing the temporary profile; retry ENOTEMPTY on slow runners.
+ let chromeClosed=null;
+ if(chrome && chrome.exitCode===null && chrome.signalCode===null){
+  chromeClosed=new Promise(resolve=>chrome.once("close",resolve));
+  chrome.kill("SIGTERM");
+ }
+ if(server.exitCode===null && server.signalCode===null)server.kill("SIGTERM");
+ if(chromeClosed)await Promise.race([chromeClosed,sleep(2500)]);
+ if(chrome && chrome.exitCode===null && chrome.signalCode===null){
+  chrome.kill("SIGKILL");
+  await sleep(250);
+ }
+ rmSync(profile,{recursive:true,force:true,maxRetries:20,retryDelay:150});
 }
