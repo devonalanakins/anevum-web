@@ -1,3 +1,4 @@
+import {renderLaboratoryExperiments} from "./living-laboratory-experiments.mjs";
 import {LAB_ART} from "./living-laboratory-art.mjs";
 import {renderLivingLaboratoryHome} from "./living-laboratory-home.mjs";
 /**
@@ -63,6 +64,10 @@ export default {async fetch(request){
    'Cross-Origin-Resource-Policy':'same-origin','X-Anevum-Surface':VERSION
   };
   return new Response(request.method==='HEAD'?null:imageBytes,{status:200,headers});
+ }
+ if(path===ROOT+'/experiments'){
+  const html=renderLaboratoryExperiments(url.searchParams.get('theme')||'all');
+  return new Response(request.method==='HEAD'?null:html,{status:200,headers:securityHeaders});
  }
  const slug=(path==='/'||path===ROOT)?'':path.slice(ROOT.length+1);
  if(!Object.prototype.hasOwnProperty.call(ROUTES,slug))return unavailable(404);

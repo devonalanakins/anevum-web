@@ -3,7 +3,7 @@
  * Review-only: no production deployment, protected routes, or email settings are changed.
  * Content is static, public-safe and has no runtime dependencies or client scripts.
  */
-const STYLES = String.raw`
+export const LAB_STYLES = String.raw`
 :root{color-scheme:dark;--void:#09070d;--deep:#110d17;--surface:#17111e;--line:#53475684;--ivory:#eee7e4;--muted:#b9aebb;--copper:#dda884;--purple:#9d78cb;--display:Georgia,'Times New Roman',serif;--sans:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth;background:var(--void)}
@@ -91,15 +91,15 @@ a{color:inherit;text-decoration:none}a:focus-visible,summary:focus-visible{outli
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
 @media(forced-colors:active){.lab-card,.lab-action,.lab-mobile summary{border:1px solid CanvasText}.lab-card-tag{border:1px solid CanvasText}}
 `;
-const BRAND = String.raw`<svg viewBox="0 0 90 90" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lab-logo-copper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0d9"/><stop offset=".45" stop-color="#e9ad8b"/><stop offset="1" stop-color="#95617c"/></linearGradient></defs><path fill="url(#lab-logo-copper)" d="M45 4 49 39 84 45 49 49 45 86 41 49 6 45 41 41Z"/><circle cx="45" cy="45" r="30" fill="none" stroke="#c79579" stroke-opacity=".45" stroke-width=".7"/></svg>`;
+export const LAB_BRAND = String.raw`<svg viewBox="0 0 90 90" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lab-logo-copper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0d9"/><stop offset=".45" stop-color="#e9ad8b"/><stop offset="1" stop-color="#95617c"/></linearGradient></defs><path fill="url(#lab-logo-copper)" d="M45 4 49 39 84 45 49 49 45 86 41 49 6 45 41 41Z"/><circle cx="45" cy="45" r="30" fill="none" stroke="#c79579" stroke-opacity=".45" stroke-width=".7"/></svg>`;
 const BODY = String.raw`
 <a class="lab-skip" href="#main">Skip to content</a>
 <header class="lab-header"><div class="lab-wrap lab-head-inner">
  <a class="lab-brand" href="/" aria-label="ANEVUM home">@BRAND@<span>ANEVUM</span></a>
  <nav class="lab-nav" aria-label="Primary navigation">
-  <a href="#experiments">Experiments</a><a href="#research">Research</a><a href="#experiences">Experiences</a><a href="/original-works">Archive</a><a href="#contact">Contact</a>
+  <a href="/original-works/experiments">Experiments</a><a href="#research">Research</a><a href="#experiences">Experiences</a><a href="/original-works">Archive</a><a href="#contact">Contact</a>
  </nav>
- <details class="lab-mobile"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="#experiments">Experiments</a><a href="#research">Research</a><a href="#experiences">Experiences</a><a href="/original-works">Archive</a><a href="#contact">Contact</a></nav></details>
+ <details class="lab-mobile"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="/original-works/experiments">Experiments</a><a href="#research">Research</a><a href="#experiences">Experiences</a><a href="/original-works">Archive</a><a href="#contact">Contact</a></nav></details>
 </div></header>
 <main id="main" tabindex="-1">
  <section class="lab-hero" aria-labelledby="lab-home-title"><div class="lab-art" aria-hidden="true"></div><div class="lab-wrap lab-hero-copy">
@@ -109,11 +109,11 @@ const BODY = String.raw`
   <div class="lab-line" aria-hidden="true"></div>
   <p class="lab-intro">Experiments in software, computation, perception and imagined worlds. A place for ideas to be made tangible—and occasionally surprising.</p>
   <p class="lab-topics">Experimental software <span>/</span> Computational research <span>/</span> Imagined worlds</p>
-  <div class="lab-actions"><a class="lab-action" href="#experiments">Explore experiments <span class="arr" aria-hidden="true">→</span></a><a class="lab-secondary" href="#about">About ANEVUM</a></div>
+  <div class="lab-actions"><a class="lab-action" href="/original-works/experiments">Explore experiments <span class="arr" aria-hidden="true">→</span></a><a class="lab-secondary" href="#about">About ANEVUM</a></div>
  </div><span class="lab-edge-label" aria-hidden="true">The Living Laboratory / 2026</span></section>
  <div class="lab-wrap lab-content">
  <section id="experiments" class="lab-section" aria-labelledby="lab-experiments-heading">
-  <div class="lab-row-heading"><h2 class="lab-title-label" id="lab-experiments-heading">Selected experiments</h2><a class="lab-view-link" href="https://github.com/devonalanakins?tab=repositories">Public source collection <span aria-hidden="true">→</span></a></div>
+  <div class="lab-row-heading"><h2 class="lab-title-label" id="lab-experiments-heading">Selected experiments</h2><a class="lab-view-link" href="/original-works/experiments">Browse all experiments <span aria-hidden="true">→</span></a></div>
   <div class="lab-grid">
    <a class="lab-card" href="https://github.com/devonalanakins/rhen"><span class="lab-card-number">01 / Computational systems</span><h3>Rhen language</h3><p>An experimental programming language and a study of how software can be expressed.</p><div class="lab-card-bottom"><span class="lab-card-tag">Source repository</span><span class="lab-card-arrow" aria-hidden="true">→</span></div></a>
    <a class="lab-card" href="https://github.com/devonalanakins/brandle"><span class="lab-card-number">02 / Interactive systems</span><h3>Brandle</h3><p>A five-letter browser word game, explored through interaction and design.</p><div class="lab-card-bottom"><span class="lab-card-tag">Source repository</span><span class="lab-card-arrow" aria-hidden="true">→</span></div></a>
@@ -144,6 +144,6 @@ const BODY = String.raw`
 <footer class="lab-footer" id="contact"><div class="lab-wrap lab-footer-inner"><p>ANEVUM — A laboratory for the possible. · An independent studio</p><p>Created by <a href="https://devonakins.com">Devon Akins</a> · <a href="https://github.com/devonalanakins">Source &amp; contact</a></p></div></footer>`;
 
 export function renderLivingLaboratoryHome(){
- const body=BODY.replace('@BRAND@',BRAND);
- return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="theme-color" content="#09070d"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="description" content="ANEVUM is an independent experimental studio exploring software, computation, creative technology and imagined worlds."><meta property="og:type" content="website"><meta property="og:site_name" content="ANEVUM"><meta property="og:description" content="A laboratory for the possible. Experimental software, computational research and imagined worlds."><title>ANEVUM | A laboratory for the possible</title><style>'+STYLES+'</style></head><body>'+body+'</body></html>';
+ const body=BODY.replace('@BRAND@',LAB_BRAND);
+ return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="theme-color" content="#09070d"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="description" content="ANEVUM is an independent experimental studio exploring software, computation, creative technology and imagined worlds."><meta property="og:type" content="website"><meta property="og:site_name" content="ANEVUM"><meta property="og:description" content="A laboratory for the possible. Experimental software, computational research and imagined worlds."><title>ANEVUM | A laboratory for the possible</title><style>'+LAB_STYLES+'</style></head><body>'+body+'</body></html>';
 }

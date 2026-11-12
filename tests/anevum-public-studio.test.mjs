@@ -202,6 +202,7 @@ test("laboratory apex is a truthful independent studio while legacy reader home 
  assert.match(rootHtml,/<nav class="lab-nav" aria-label="Primary navigation">/);
  assert.match(rootHtml,/<details class="lab-mobile"><summary>Menu<\/summary>/);
  assert.match(rootHtml,/href="\/original-works"/);
+ assert.match(rootHtml,/href="\/original-works\/experiments"/);
  assert.match(rootHtml,/href="https:\/\/github.com\/devonalanakins\/rhen"/);
  assert.match(rootHtml,/prefers-reduced-motion:reduce/);
  assert.match(rootHtml,/original-works\/assets\/lab-hero-v1\.webp/);
@@ -214,6 +215,45 @@ test("laboratory apex is a truthful independent studio while legacy reader home 
  for(const anchor of links)assert.match(rootHtml,new RegExp('id="'+anchor+'"'),"Missing local anchor "+anchor);
  assert.doesNotMatch(rootHtml,/<script\b|<iframe\b|<form\b|<input\b|onload=|onclick=/i);
  assert.doesNotMatch(rootHtml,/Skygate|Nali Solan|Ovara|manuscript|medical records|fake metrics/i);
+});
+
+
+test("real Experiments route filters a small verified public catalog with no client scripts",async()=>{
+ const experiments="/original-works/experiments";
+ const response=await worker.fetch(new Request("https://anevum.com"+experiments));
+ assert.equal(response.status,200);
+ assert.match(response.headers.get("X-Robots-Tag"),/noindex/);
+ assert.match(response.headers.get("Content-Security-Policy"),/default-src 'none'/);
+ const body=await response.text();
+ assert.match(body,/<h1 id="experiments-title">Experiments<\/h1>/);
+ assert.match(body,/3 entries · All work/);
+ assert.equal((body.match(/class="lab-exp-card"/g)||[]).length,3);
+ for(const name of ["Rhen language","Brandle","Original Works"])assert.match(body,new RegExp(name));
+ assert.match(body,/aria-label="Filter experiments"/);
+ assert.match(body,/aria-current="page">All work<\/a>/);
+ assert.match(body,/Artwork is illustrative and is not a product screenshot/);
+ assert.doesNotMatch(body,/<script\b|<iframe\b|<form\b|onload=|onclick=/i);
+ const groups={software:"Rhen language",interactive:"Brandle",archive:"Original Works"};
+ for(const [key,title] of Object.entries(groups)){
+  const res=await worker.fetch(new Request("https://anevum.com"+experiments+"?theme="+key));
+  assert.equal(res.status,200);
+  const html=await res.text();
+  assert.match(html,new RegExp(title));
+  assert.equal((html.match(/class="lab-exp-card"/g)||[]).length,1);
+  assert.match(html,/1 entry ·/);
+  assert.match(html,new RegExp('href="'+experiments+'\\?theme='+key+'" aria-current="page"'));
+  for(const other of Object.values(groups).filter(n=>n!==title))assert.doesNotMatch(html,new RegExp('<h2>'+other+'</h2>'));
+  assert.equal((await worker.fetch(new Request("https://anevum.com"+experiments+"?theme="+key,{method:"HEAD"}))).status,200);
+ }
+ const malicious=await (await worker.fetch(new Request("https://anevum.com"+experiments+"?theme=%3Cscript%3E"))).text();
+ assert.match(malicious,/3 entries · All work/);
+ assert.doesNotMatch(malicious,/<script>|%3Cscript%3E/);
+ const extra=await worker.fetch(new Request("https://anevum.com"+experiments+"/private"));
+ assert.equal(extra.status,404);
+ assert.equal((await worker.fetch(new Request("https://anevum.com"+experiments,{method:"POST",body:"x"}))).status,405);
+ const header=await worker.fetch(new Request("https://anevum.com"+experiments,{method:"HEAD"}));
+ assert.equal((await header.text()).length,0);
+ assert.deepEqual(Object.fromEntries(header.headers),Object.fromEntries(response.headers));
 });
 
 test("root launch is method-safe and cannot intercept staff, member or API routes",async()=>{

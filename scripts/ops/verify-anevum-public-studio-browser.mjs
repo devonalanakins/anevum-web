@@ -37,6 +37,40 @@ async function waitFor(fn,label,{failFast=false}={}){
 async function view(pathname,width,height,name,saveScreenshot=false){
  // Exact apex is the independent Living Laboratory. Legacy routes continue
  // through the established Original Works browser acceptance below.
+
+ if(pathname.startsWith("/original-works/experiments")){
+  const requestedPath=pathname.split("?")[0];
+  await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await send("Page.navigate",{url:base+pathname});
+  const state=await waitFor(async()=>{
+   const v=await evalJS("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('h1')?.textContent,count:document.querySelectorAll('.lab-exp-card').length,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,menu:!!document.querySelector('details.lab-mobile'),scripts:document.scripts.length,filterCount:document.querySelectorAll('.lab-exp-filter').length,active:document.querySelector('.lab-exp-filter[aria-current=page]')?.textContent,art:document.querySelector('.lab-exp-card')?.style.getPropertyValue('--art'),main:!!document.querySelector('main#main')}))()");
+   return v?.path===requestedPath&&v?.heading?v:null;
+  },"Experiments "+name);
+  const expectedCount=pathname.includes("?theme=interactive")?1:3;
+  if(!state.main||!state.menu||state.count!==expectedCount||state.filterCount!==4||state.scripts!==0||!state.art||!state.title.startsWith("Experiments")||state.heading!=="Experiments")throw Error("Experiments content invalid: "+JSON.stringify(state));
+  if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1)throw Error("Experiments horizontal overflow: "+JSON.stringify(state));
+  if(expectedCount===1&&state.active!=="Interactive")throw Error("Experiments filter is not active: "+JSON.stringify(state));
+  if(width<650){
+   const menu=await evalJS("(()=>{const x=document.querySelector('details.lab-mobile');x.querySelector('summary').click();const isOpen=x.open;const links=[...x.querySelectorAll('nav a')].map(a=>a.getAttribute('href'));x.querySelector('summary').click();return {isOpen,closed:!x.open,links}})()");
+   if(!menu.isOpen||!menu.closed||!menu.links.includes("/original-works/experiments"))throw Error("Experiments mobile navigation failed: "+JSON.stringify(menu));
+  }
+  if(saveScreenshot){
+   const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
+   const file=path.join(output,"anevum-public-"+name+".png");writeFileSync(file,Buffer.from(shot.data,"base64"));
+   if(readFileSync(file).length<12000)throw Error("Experiments blank screenshot");
+   const metrics=await send("Page.getLayoutMetrics");
+   const fullWidth=Math.ceil(metrics.cssContentSize?.width||metrics.contentSize.width);
+   const fullHeight=Math.ceil(metrics.cssContentSize?.height||metrics.contentSize.height);
+   if(fullWidth<width-20||fullHeight<=height||fullHeight>12000)throw Error("Experiments full-page screenshot dimensions invalid");
+   const full=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip:{x:0,y:0,width:fullWidth,height:fullHeight,scale:1}});
+   const fullPath=path.join(output,"anevum-public-"+name+"-full.png");
+   writeFileSync(fullPath,Buffer.from(full.data,"base64"));
+   if(readFileSync(fullPath).length<20000)throw Error("Experiments blank full screenshot");
+  }
+  console.log(JSON.stringify({case:name,path:state.path,count:state.count,width:state.width,active:state.active}));
+  return;
+ }
  if(pathname==="/"){
   await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
@@ -49,11 +83,11 @@ async function view(pathname,width,height,name,saveScreenshot=false){
   if(!state.title.includes("laboratory for the possible")||state.heading!=="ANEVUM"||!state.tagline?.includes("laboratory for the possible"))throw Error("Wrong laboratory identity: "+JSON.stringify(state));
   if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Lab horizontal overflow: "+JSON.stringify(state));
   if(state.heroInset<(width<=530?14:width<=1100?24:38))throw Error("Lab desktop/mobile hero gutter missing: "+JSON.stringify(state));
-  if(state.nav.length!==5||!state.nav.includes("#experiments")||!state.nav.includes("/original-works"))throw Error("Lab navigation broken: "+JSON.stringify(state));
+  if(state.nav.length!==5||!state.nav.includes("/original-works/experiments")||!state.nav.includes("/original-works"))throw Error("Lab navigation broken: "+JSON.stringify(state));
   if((width<=800)!==state.menuVisible)throw Error("Lab menu breakpoint mismatch: "+JSON.stringify(state));
   if(state.menuVisible){
    const menu=await evalJS(`(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();const opened=d.open;const links=[...d.querySelectorAll('nav a')].map(a=>a.getAttribute('href'));d.querySelector('summary').click();return {opened,closed:!d.open,links}})()`);
-   if(!menu.opened||!menu.closed||!menu.links.includes("#experiments"))throw Error("Lab mobile disclosure failed: "+JSON.stringify(menu));
+   if(!menu.opened||!menu.closed||!menu.links.includes("/original-works/experiments"))throw Error("Lab mobile disclosure failed: "+JSON.stringify(menu));
   }
   if(saveScreenshot){
    const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
@@ -182,6 +216,9 @@ try {
 
   }
  }
+ await view("/original-works/experiments",390,844,"experiments-390",true);
+ await view("/original-works/experiments",1440,900,"experiments-1440",true);
+ await view("/original-works/experiments?theme=interactive",390,844,"experiments-interactive-390",false);
  await view("/",390,844,"canonical-root-390",true);
  await view("/",1440,900,"canonical-root-1440",true);
  console.log("ANEVUM_PUBLIC_STUDIO_BROWSER_QA_PASS");
