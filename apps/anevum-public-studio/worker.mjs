@@ -1,5 +1,6 @@
 import {renderLaboratoryExperiments} from "./living-laboratory-experiments.mjs";
 import {renderLaboratoryResearch} from "./living-laboratory-research.mjs";
+import {renderLivingLaboratoryArchive} from "./living-laboratory-archive.mjs";
 import {LAB_ART} from "./living-laboratory-art.mjs";
 import {renderLivingLaboratoryHome} from "./living-laboratory-home.mjs";
 /**
@@ -65,6 +66,10 @@ export default {async fetch(request){
    'Cross-Origin-Resource-Policy':'same-origin','X-Anevum-Surface':VERSION
   };
   return new Response(request.method==='HEAD'?null:imageBytes,{status:200,headers});
+ }
+ if(path===ROOT+'/archive'){
+  const html=renderLivingLaboratoryArchive();
+  return new Response(request.method==='HEAD'?null:html,{status:200,headers:securityHeaders});
  }
  if(path===ROOT+'/research'){
   const html=renderLaboratoryResearch();
