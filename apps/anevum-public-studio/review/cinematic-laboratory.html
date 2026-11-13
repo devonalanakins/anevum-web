@@ -613,7 +613,8 @@ function renderExperimentsFrame(timestamp){
       c.strokeStyle=arm===1?'#FFCFB2':arm===2?'#B7C8FE':'#F6A5C4';
       c.lineWidth=arm===1?1.05:.8;
       c.globalAlpha=.16;
-      c.shadowColor=arm===2?'#9F88FF':'#FFE1BA';c.shadowBlur=5;
+      // The backdrop and core gradient supply bloom. Per-frame path shadowBlur stalls software Chromium.
+      c.shadowBlur=0;
       c.stroke(spine);
     }
     c.shadowBlur=0;
