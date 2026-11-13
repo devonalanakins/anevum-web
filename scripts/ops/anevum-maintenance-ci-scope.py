@@ -62,6 +62,11 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "apps/anevum-public-studio/worker.mjs",
     # Exact review-only cinematic source and its mandatory review checks.
     "apps/anevum-public-studio/review/cinematic-laboratory.html",
+    "apps/anevum-public-studio/review/assets/hero.webp",
+    "apps/anevum-public-studio/review/assets/experiments.webp",
+    "apps/anevum-public-studio/review/assets/research.webp",
+    "apps/anevum-public-studio/review/assets/experiences.webp",
+    "apps/anevum-public-studio/review/assets/archive.webp",
     "docs/design/ANEVUM.WEB.DESIGN.2026-11-13.002.CINEMATIC-LABORATORY-PRODUCTION.md",
     "tests/anevum-cinematic-review.test.mjs",
     "apps/anevum-public-studio/living-laboratory-home.mjs",
