@@ -60,6 +60,10 @@ ISOLATED_ORIGINAL_WORKS_REVIEW_PATHS = frozenset([
 # Its own browser/security gate is mandatory for these exact files only.
 ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "apps/anevum-public-studio/worker.mjs",
+    # Exact review-only cinematic source and its mandatory review checks.
+    "apps/anevum-public-studio/review/cinematic-laboratory.html",
+    "docs/design/ANEVUM.WEB.DESIGN.2026-11-13.002.CINEMATIC-LABORATORY-PRODUCTION.md",
+    "tests/anevum-cinematic-review.test.mjs",
     "apps/anevum-public-studio/living-laboratory-home.mjs",
     "apps/anevum-public-studio/living-laboratory-experiments.mjs",
     "apps/anevum-public-studio/living-laboratory-research.mjs",
