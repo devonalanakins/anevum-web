@@ -282,3 +282,18 @@ test('Experiments spiral avoids expensive software-rendered stroke shadows',()=>
  assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
+
+
+test('image-led specular accents never redraw baked metal and mobile review stays unobtrusive',()=>{
+ const segment=script.split('function drawOrbitalRing(ctx, ring, phase, center) {')[1]?.split('function renderOrbitalFrame(timestamp)')[0];
+ assert.ok(segment,'glint helper is present');
+ assert.match(segment,/ctx\.createRadialGradient\(/);
+ assert.match(segment,/ctx\.fillStyle=glow/);
+ assert.doesNotMatch(segment,/Path2D|\.stroke\(|\.strokeStyle|ctx\.shadowBlur/);
+ assert.match(script,/const reflectedY=Math\.min\(h\*\.84,center\.y\+center\.radius\*1\.55\)/);
+ assert.match(script,/const reflectedAlpha=\.025\+\.008\*Math\.sin\(phase\)/);
+ assert.match(styles,/@media\(max-width:720px\)\{\.review-media-tools\{position:relative;right:auto;bottom:auto/);
+ assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
+ assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
