@@ -68,6 +68,13 @@ html[data-motion=still] .scene-video,html[data-motion=still] .atmosphere{display
 
 .hero-orbit-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;mix-blend-mode:screen;opacity:.91;contain:strict}
 html[data-orbital-motion=still] .hero-orbit-canvas{display:none!important}
+/* ANEVUM Research | integrated computational terrain illumination.
+   The transparent canvas shares the poster's perspective; the card remains a native anchor. */
+.destination-research .research-flow-canvas{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;opacity:.82;mix-blend-mode:screen;contain:strict;transition:opacity .45s ease}
+.destination-research.is-playing .research-flow-canvas{opacity:0}
+html[data-motion=still] .research-flow-canvas{display:none!important}
+@media(prefers-reduced-motion:reduce){.research-flow-canvas{display:none!important}}
+
 </style>
   <script type="module">
 // ANEVUM cinematic preview: no external runtime, no speculative footage, no account/data access.
@@ -107,8 +114,8 @@ function setupVideo(scene) {
   video.muted = true; video.loop = true; video.playsInline = true;
   video.preload = scene.dataset.scene === 'hero' ? 'metadata' : 'none';
   if (!state.listenersBound) {
-    video.addEventListener('playing',()=>scene.classList.add('is-playing'));
-    video.addEventListener('pause',()=>scene.classList.remove('is-playing'));
+    video.addEventListener('playing',()=>{scene.classList.add('is-playing');syncResearchFlow();});
+    video.addEventListener('pause',()=>{scene.classList.remove('is-playing');syncResearchFlow();});
     video.addEventListener('error',()=>scene.classList.remove('is-playing'));
     state.listenersBound = true;
   }
@@ -122,6 +129,7 @@ function stopVideo(scene) {
 function syncPlayback() {
   document.documentElement.dataset.motion = isStill() ? 'still' : 'dynamic';
   syncOrbitalMotion();
+  syncResearchFlow();
   if (!isActive()) { scenes.forEach(stopVideo); return; }
   // Budget two simultaneously decoded videos, prioritizing the hero scene.
   let remaining=2;
@@ -370,6 +378,102 @@ if(orbitalContext){
   window.addEventListener('pagehide',stopOrbitalMotion);
 }
 
+// ANEVUM WEB — independently illuminated, original mathematical Research terrain.
+// Review-only canvas; genuine cinematic masters are still required for release.
+// All pixels are decorative. Native anchor/content remain fully operable without JS.
+const researchScene = document.querySelector('.destination-research');
+const researchCanvas = researchScene?.querySelector('.research-flow-canvas');
+const researchContext = researchCanvas?.getContext('2d', {alpha:true});
+let researchHandle = 0;
+let researchLastFrame = 0;
+let researchWidth = 0;
+let researchHeight = 0;
+let researchScale = 1;
+const researchPeriodMs = 8800;
+const terrainHeight = (u, row, phase) => {
+  const ridge = .36*Math.exp(-Math.pow((u-.59)/.21, 2)) + .18*Math.exp(-Math.pow((u-.19)/.18,2));
+  const wave = .012*Math.sin(17*u + 1.5*Math.sin(phase) + row*.51) + .009*Math.cos(21*u + 1.2*Math.sin(phase-.7) + row*.34);
+  return .48 + row*.046 - ridge*(.65-row*.047) + wave * Math.sin(Math.PI*u);
+};
+function sizeResearchCanvas(){
+  if(!researchCanvas || !researchContext || !researchScene)return;
+  const box=researchScene.getBoundingClientRect();
+  if(box.width<1 || box.height<1)return;
+  researchWidth=box.width;researchHeight=box.height;
+  researchScale=Math.min(window.devicePixelRatio||1,1.5,Math.sqrt(250000/(box.width*box.height)));
+  researchCanvas.width=Math.max(1,Math.round(box.width*researchScale));
+  researchCanvas.height=Math.max(1,Math.round(box.height*researchScale));
+  researchContext.setTransform(researchScale,0,0,researchScale,0,0);
+}
+function renderResearchFrame(timestamp){
+  researchHandle=0;
+  if(!researchContext || !isActive() || !visible.has(researchScene) || researchScene.classList.contains('is-playing')){
+    stopResearchFlow();return;
+  }
+  // Visual quality above the requested throughput: 20 Hz capped, on-screen only.
+  if(timestamp-researchLastFrame>=48){
+    researchLastFrame=timestamp;
+    const ctx=researchContext, w=researchWidth,h=researchHeight;
+    ctx.clearRect(0,0,w,h);
+    const phase=(timestamp%researchPeriodMs)*Math.PI*2/researchPeriodMs;
+    ctx.save();ctx.globalCompositeOperation='screen';ctx.lineJoin='round';ctx.lineCap='round';
+    // Nine connected original contours, gently breathing with the background's mountain geometry.
+    for(let row=0;row<9;row++){
+      const curve=new Path2D();
+      for(let col=0;col<=66;col++){
+        const u=col/66,x=u*w,y=terrainHeight(u,row,phase)*h;
+        if(!col)curve.moveTo(x,y);else curve.lineTo(x,y);
+      }
+      ctx.strokeStyle=row%3===0?'#9FD8FF':'#62B6EB';
+      ctx.lineWidth=row%3===0?1.2:.75;
+      ctx.globalAlpha=.11+.075*(1-row/9);
+      ctx.shadowColor='#71C8FA';ctx.shadowBlur=row%3===0?7:2;
+      ctx.stroke(curve);
+    }
+    // Coherent travelling impulses follow actual warped contours rather than moving over a still image.
+    for(let k=0;k<6;k++){
+      const u=(phase/(Math.PI*2)*(.85+.02*k)+k*.179)%1;
+      const row=(k*3)%8;
+      const x=u*w,y=terrainHeight(u,row,phase)*h;
+      const rr=Math.max(5,Math.min(13,w*.027));
+      const bloom=ctx.createRadialGradient(x,y,0,x,y,rr);
+      bloom.addColorStop(0,'rgba(231,247,255,.72)');
+      bloom.addColorStop(.18,'rgba(138,219,255,.35)');
+      bloom.addColorStop(1,'rgba(54,149,249,0)');
+      ctx.globalAlpha=.42+.2*Math.cos(phase+k);
+      ctx.fillStyle=bloom;ctx.shadowBlur=0;
+      ctx.beginPath();ctx.arc(x,y,rr,0,2*Math.PI);ctx.fill();
+    }
+    // Fade into the native title and description; the text does not move with the artwork.
+    ctx.globalCompositeOperation='destination-in';ctx.globalAlpha=1;ctx.shadowBlur=0;
+    const mask=ctx.createLinearGradient(0,h*.24,0,h*.80);
+    mask.addColorStop(0,'rgba(255,255,255,.95)');
+    mask.addColorStop(.62,'rgba(255,255,255,.50)');
+    mask.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=mask;ctx.fillRect(0,0,w,h);
+    ctx.restore();
+  }
+  researchHandle=requestAnimationFrame(renderResearchFrame);
+}
+function stopResearchFlow(){
+  if(researchHandle){cancelAnimationFrame(researchHandle);researchHandle=0;}
+  researchContext?.clearRect(0,0,researchWidth,researchHeight);
+  if(researchScene)researchScene.dataset.researchMotion='still';
+}
+function syncResearchFlow(){
+  if(!researchContext || !isActive() || !visible.has(researchScene) || researchScene.classList.contains('is-playing')){
+    stopResearchFlow();return;
+  }
+  researchScene.dataset.researchMotion='dynamic';
+  if(!researchHandle)researchHandle=requestAnimationFrame(renderResearchFrame);
+}
+if(researchContext){
+  sizeResearchCanvas();
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{sizeResearchCanvas();syncResearchFlow();}).observe(researchScene);
+  else window.addEventListener('resize',()=>{sizeResearchCanvas();syncResearchFlow();});
+  window.addEventListener('pagehide',stopResearchFlow);
+}
+
 // Measured, bounded depth response; no event-to-layout synchronous reads.
 const hero=document.querySelector('.hero-scene');
 function scrollMotion(){ ticking=false;if(!hero || !isActive())return;const y=Math.min(window.scrollY,600);hero.style.setProperty('--scroll-depth',`${Math.round(y*.027)}px`); }
@@ -425,7 +529,7 @@ syncPlayback();
         <span class="destination-content"><span class="destination-icon" aria-hidden="true">◈</span><strong>Experiments</strong><small>Projects, prototypes, and creative systems</small></span><span class="destination-arrow" aria-hidden="true">↗</span>
       </a>
       <a class="scene destination destination-research" data-scene="research" data-video-ready="false" data-video-webm="/original-works/assets/motion/research.webm" data-video-mp4="/original-works/assets/motion/research.mp4" href="/original-works/research">
-        <img class="scene-poster" src="./assets/research.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video>
+        <img class="scene-poster" src="./assets/research.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video><canvas class="research-flow-canvas" aria-hidden="true" tabindex="-1"></canvas>
         <span class="destination-content"><span class="destination-icon" aria-hidden="true">⌁</span><strong>Research</strong><small>Investigations, ideas, and technical notes</small></span><span class="destination-arrow" aria-hidden="true">↗</span>
       </a>
       <a class="scene destination destination-experiences" data-scene="experiences" data-video-ready="false" data-video-webm="/original-works/assets/motion/experiences.webm" data-video-mp4="/original-works/assets/motion/experiences.mp4" href="#experiences">
