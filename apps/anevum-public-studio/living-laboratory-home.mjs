@@ -10,7 +10,7 @@ html{scroll-behavior:smooth;background:var(--void)}
 body{margin:0;background:radial-gradient(ellipse at 75% 8%,#33203d55,transparent 40%),linear-gradient(#0a080f,#0b0910 73%,#120d17);color:var(--ivory);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}a:focus-visible,summary:focus-visible{outline:2px solid #f1bf9b;outline-offset:5px}
 ::selection{background:#9168ae;color:white}
-.lab-skip{position:absolute;top:-100px;left:20px;z-index:200;padding:12px 18px;background:#f2c3a2;color:#130b14}.lab-skip:focus{top:14px}
+.lab-skip{position:fixed;top:-100px;left:20px;z-index:200;padding:12px 18px;background:#f2c3a2;color:#130b14}.lab-skip:focus{top:14px}
 .lab-wrap{width:min(1440px,calc(100% - 88px));margin-inline:auto}
 .lab-header{position:relative;z-index:20;border-bottom:1px solid #e5c7d21a;background:#0c0912d9}
 .lab-head-inner{min-height:83px;display:flex;align-items:center;justify-content:space-between;gap:32px}
