@@ -242,7 +242,7 @@ test('cinematic orbital accents are bounded and preserve the image-led scene',()
  assert.match(script,/const yaw = ring\.yaw \+ \.09 \* Math\.cos\(phase \+ ring\.phase\)/);
  assert.doesNotMatch(script,/ring\.yaw \+ phase \* ring\.speed/);
  assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
- const part=script.match(/function ringCoordinate\([\s\S]*?\n\}\n(?=function drawOrbitalRing)/)?.[0];
+ const part=script.match(/function ringCoordinate\([\s\S]*?\n\}/)?.[0];
  assert.ok(part,'image-led orbital overlay remains independent');
  const coordinate=new Script('('+part.trim()+')',{filename:'ringCoordinate.js'}).runInNewContext({Math});
  const ring={radius:1,tilt:.73,spin:.24,yaw:.34,phase:.1};
