@@ -71,6 +71,11 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "tests/anevum-cinematic-review.test.mjs",
     # Offline original animation renderer; never deployed or bundled by the public Worker.
     "scripts/ops/render-anevum-research-motion.py",
+    # Original, offline-only V12 material/3D footage pipeline and tests.
+    # No output media, deploy operation, Worker route, or token access.
+    "scripts/ops/anevum_metal_shader.py",
+    "scripts/ops/render_anevum_armillary_v12.py",
+    "tests/test_anevum_metal_shader.py",
     "apps/anevum-public-studio/living-laboratory-home.mjs",
     "apps/anevum-public-studio/living-laboratory-experiments.mjs",
     "apps/anevum-public-studio/living-laboratory-research.mjs",
