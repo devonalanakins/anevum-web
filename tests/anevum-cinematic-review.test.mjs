@@ -66,3 +66,23 @@ test('runtime has bounded playback, session visibility, and accessible still-mod
  assert.match(html,/aria-label="Mobile navigation"/);
  assert.match(html,/loading="lazy"/);
 });
+
+
+test('review-only clip inspector is operable but cannot activate unapproved network media',()=>{
+ assert.match(html,/id="review-media-tools"/);
+ assert.match(html,/id="review-scene"/);
+ assert.match(html,/id="review-file" type="file" accept="video\/mp4,video\/webm"/);
+ assert.match(html,/id="review-clear"/);
+ assert.match(html,/id="review-pause" aria-pressed="false"/);
+ assert.match(html,/role="status" aria-live="polite"/);
+ assert.match(script,/URL\.createObjectURL\(file\)/);
+ assert.match(script,/URL\.revokeObjectURL/);
+ assert.match(script,/\['video\/mp4','video\/webm'\]\.includes\(file\.type\)/);
+ assert.match(script,/40 \* 1024 \* 1024/);
+ assert.match(script,/state\.localUrl/);
+ assert.match(script,/state\.listenersBound/);
+ assert.match(script,/reviewPaused/);
+ assert.match(script,/scene\.dataset\.videoReady='false'/);
+ assert.doesNotMatch(script,/\bfetch\s*\(|localStorage|sessionStorage|XMLHttpRequest/);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
