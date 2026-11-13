@@ -101,3 +101,26 @@ test('procedural orbital study respects passive motion and accessibility boundar
  assert.doesNotMatch(script,/\bfetch\s*\(|localStorage|sessionStorage|XMLHttpRequest/);
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
+
+test('research terrain canvas adds true moving geometry without changing editorial links or approved-media gates',()=>{
+ assert.match(html,/<a class="scene destination destination-research"[^>]+href="\/original-works\/research"/);
+ assert.match(html,/<canvas class="research-flow-canvas" aria-hidden="true" tabindex="-1"><\/canvas>/);
+ assert.equal((html.match(/class="research-flow-canvas"/g)||[]).length,1);
+ assert.match(styles,/\.destination-research \.research-flow-canvas/);
+ assert.match(styles,/\.destination-research\.is-playing \.research-flow-canvas\{opacity:0\}/);
+ assert.match(styles,/html\[data-motion=still\] \.research-flow-canvas\{display:none!important\}/);
+ assert.match(script,/const researchScene = document\.querySelector\('\.destination-research'\)/);
+ assert.match(script,/const terrainHeight = /);
+ assert.match(script,/function renderResearchFrame\(/);
+ assert.match(script,/function syncResearchFlow\(/);
+ assert.match(script,/function stopResearchFlow\(/);
+ assert.match(script,/!isActive\(\) \|\| !visible\.has\(researchScene\)/);
+ assert.match(script,/Math\.sqrt\(250000\/(box\.width\*box\.height)\)/);
+ assert.match(script,/cancelAnimationFrame\(researchHandle\)/);
+ assert.match(script,/syncResearchFlow\(\);/);
+ assert.match(script,/video\.addEventListener\('playing',[^\n]*syncResearchFlow\(\)/);
+ assert.match(script,/video\.addEventListener\('pause',[^\n]*syncResearchFlow\(\)/);
+ assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
+ assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
