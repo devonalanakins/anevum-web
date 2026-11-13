@@ -29,6 +29,8 @@ jobs:
           python-version: "3.12"
       - name: Test maintenance preview boundary
         run: python -m unittest discover -s tests -p test_anevum_maintenance_ci_scope.py -v
+      - name: Verify review-only ANEVUM metal material source
+        run: python -m unittest discover -s tests -p test_anevum_metal_shader.py -v
       - name: Determine whether application inputs changed
         id: scope
         if: github.event_name == 'pull_request'
