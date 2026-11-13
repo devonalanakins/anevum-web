@@ -47,6 +47,25 @@ footer{display:flex;gap:20px;justify-content:space-between;align-items:center;pa
 html[data-motion=still] .scene-video,html[data-motion=still] .atmosphere{display:none!important}html[data-motion=still] *{animation:none!important}html[data-motion=still] .hero-scene .scene-poster{transform:none!important}
 @media(forced-colors:active){.action,.destination,.featured{border:1px solid CanvasText}.hero-content{text-shadow:none}}
 
+/* Review-only player: real DOM controls, not included in the public Worker. */
+.review-media-tools{position:fixed;right:18px;bottom:18px;z-index:35;width:min(356px,calc(100vw - 36px));background:rgba(6,11,18,.95);border:1px solid rgba(246,190,129,.56);border-radius:12px;box-shadow:0 18px 52px #000c;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:12px;color:#e9e6e4}
+.review-media-tools summary{display:flex;align-items:center;justify-content:space-between;cursor:pointer;list-style:none;min-height:48px;padding:12px 15px;color:#f8ebd9;font-weight:700;font-size:11px;letter-spacing:.13em;text-transform:uppercase}
+.review-media-tools summary::after{content:'+';font-size:20px;font-weight:300;color:#efbc87}
+.review-media-tools[open] summary::after{content:'-'}
+.review-media-tools summary::-webkit-details-marker{display:none}
+.review-media-body{border-top:1px solid #d8a97545;padding:14px 15px 17px;display:grid;gap:11px}
+.review-media-body p{margin:0;line-height:1.55;color:#bec7cc}
+.review-media-body label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#e4c2a0}
+.review-media-body select,.review-media-body input[type=file]{width:100%;min-height:42px;color:#f1eee9;background:#141e29;border:1px solid #7993a06e;border-radius:4px;padding:9px;font:inherit}
+.review-media-body input[type=file]::file-selector-button{padding:6px 10px;margin-right:9px;border:1px solid #cda275;background:#182736;color:#f9eee2;cursor:pointer}
+.review-media-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.review-media-actions button{font:inherit;font-weight:650;letter-spacing:.04em;padding:10px 9px;min-height:44px;color:#f9e9d5;background:#263447;border:1px solid #bf97707e;cursor:pointer;border-radius:4px}
+.review-media-actions button:hover{background:#334b62}
+.review-media-actions button:disabled{opacity:.45;cursor:not-allowed}
+.review-media-body #review-status{min-height:35px;font-size:11px;color:#e5c6a7}
+@media(max-width:720px){.review-media-tools{right:10px;bottom:calc(10px + env(safe-area-inset-bottom));width:min(360px,calc(100vw - 20px))}.review-media-body{max-height:min(75svh,600px);overflow:auto}}
+@media(forced-colors:active){.review-media-tools,.review-media-actions button{border:1px solid CanvasText}}
+
 </style>
   <script type="module">
 // ANEVUM cinematic preview: no external runtime, no speculative footage, no account/data access.
@@ -58,7 +77,8 @@ const scenes = [...document.querySelectorAll('[data-scene]')];
 const sceneStates = new Map();
 let visible = new Set();
 let ticking = false;
-const isStill = () => motionQuery.matches || connection?.saveData === true;
+let reviewPaused = false;
+const isStill = () => motionQuery.matches || connection?.saveData === true || reviewPaused;
 const isActive = () => document.visibilityState === 'visible' && !isStill();
 
 function setupVideo(scene) {
@@ -71,17 +91,25 @@ function setupVideo(scene) {
   const mobile = mobileQuery.matches;
   const webm = mobile ? (scene.dataset.mobileWebm || scene.dataset.videoWebm) : scene.dataset.videoWebm;
   const mp4 = mobile ? (scene.dataset.mobileMp4 || scene.dataset.videoMp4) : scene.dataset.videoMp4;
-  for (const [src,type] of [[webm,'video/webm'],[mp4,'video/mp4']]) {
-    if (!src || !/^\/original-works\/assets\/motion\/[a-z0-9-]+\.(webm|mp4)$/.test(src)) continue;
-    const source = document.createElement('source');
-    source.src = src; source.type = type; video.append(source);
+  if (state.localUrl) {
+    // Only a user-selected local File may be previewed; the file never leaves this tab.
+    video.src = state.localUrl;
+  } else {
+    for (const [src,type] of [[webm,'video/webm'],[mp4,'video/mp4']]) {
+      if (!src || !/^\/original-works\/assets\/motion\/[a-z0-9-]+\.(webm|mp4)$/.test(src)) continue;
+      const source = document.createElement('source');
+      source.src = src; source.type = type; video.append(source);
+    }
+    if (!video.querySelector('source')) return;
   }
-  if (!video.querySelector('source')) return;
   video.muted = true; video.loop = true; video.playsInline = true;
   video.preload = scene.dataset.scene === 'hero' ? 'metadata' : 'none';
-  video.addEventListener('playing',()=>scene.classList.add('is-playing'));
-  video.addEventListener('pause',()=>scene.classList.remove('is-playing'));
-  video.addEventListener('error',()=>scene.classList.remove('is-playing'));
+  if (!state.listenersBound) {
+    video.addEventListener('playing',()=>scene.classList.add('is-playing'));
+    video.addEventListener('pause',()=>scene.classList.remove('is-playing'));
+    video.addEventListener('error',()=>scene.classList.remove('is-playing'));
+    state.listenersBound = true;
+  }
   state.initialized = true;
 }
 function stopVideo(scene) {
@@ -104,7 +132,7 @@ function syncPlayback() {
     if (video.paused) video.play().catch(()=>scene.classList.remove('is-playing'));
   }
 }
-for(const scene of scenes) sceneStates.set(scene,{initialized:false});
+for(const scene of scenes) sceneStates.set(scene,{initialized:false,localUrl:null,listenersBound:false});
 const observer = new IntersectionObserver(entries=>{
   for (const entry of entries) {
     if(entry.isIntersecting) visible.add(entry.target); else visible.delete(entry.target);
@@ -115,11 +143,72 @@ scenes.forEach(scene=>observer.observe(scene));
 motionQuery.addEventListener('change',syncPlayback);
 mobileQuery.addEventListener('change',()=>{
   // Switching viewports invalidates media selection, never duplicates source nodes.
-  for(const scene of scenes){const state=sceneStates.get(scene);if(!state.initialized)continue;stopVideo(scene);const video=scene.querySelector('video');video?.querySelectorAll('source').forEach(s=>s.remove());video?.load();state.initialized=false;}
+  for(const scene of scenes){const state=sceneStates.get(scene);if(!state.initialized || state.localUrl)continue;stopVideo(scene);const video=scene.querySelector('video');video?.querySelectorAll('source').forEach(s=>s.remove());video?.load();state.initialized=false;}
   syncPlayback();
 });
 connection?.addEventListener?.('change',syncPlayback);
 document.addEventListener('visibilitychange',syncPlayback);
+// Local-only footage inspection before owner motion sign-off. No upload, storage or network API.
+const inspector = document.querySelector('#review-media-tools');
+if (inspector) {
+  const picker = inspector.querySelector('#review-file');
+  const sceneChoice = inspector.querySelector('#review-scene');
+  const clear = inspector.querySelector('#review-clear');
+  const pause = inspector.querySelector('#review-pause');
+  const status = inspector.querySelector('#review-status');
+  const maxBytes = 40 * 1024 * 1024;
+  function setStatus(message){status.textContent=message;}
+  function releaseScene(scene) {
+    if(!scene) return;
+    stopVideo(scene);
+    const state=sceneStates.get(scene);
+    const video=scene.querySelector('video');
+    if(video){video.removeAttribute('src');video.querySelectorAll('source').forEach(src=>src.remove());video.load();}
+    if(state.localUrl)URL.revokeObjectURL(state.localUrl);
+    state.localUrl=null;state.initialized=false;
+    scene.dataset.videoReady='false';
+    syncPlayback();
+  }
+  function acceptLocalFile(file, id=sceneChoice.value) {
+    if(!file || !['video/mp4','video/webm'].includes(file.type) || file.size === 0 || file.size>maxBytes) {
+      setStatus('Choose a nonempty MP4 or WebM no larger than 40 MB. No clip was loaded.');
+      return false;
+    }
+    const scene=scenes.find(s=>s.dataset.scene===id);
+    if(!scene){setStatus('Unknown scene.');return false;}
+    releaseScene(scene);
+    const state=sceneStates.get(scene);
+    state.localUrl=URL.createObjectURL(file);
+    scene.dataset.videoReady='true';
+    setStatus('Local ' + id + ' clip loaded. It will play when visible and motion is allowed.');
+    scene.scrollIntoView({behavior:isStill()?'auto':'smooth',block:'center'});
+    syncPlayback();
+    return true;
+  }
+  picker.addEventListener('change',()=>{acceptLocalFile(picker.files?.[0]);});
+  clear.addEventListener('click',()=>{
+    const scene=scenes.find(s=>s.dataset.scene===sceneChoice.value);
+    releaseScene(scene);
+    picker.value='';
+    setStatus('Scene reset to its static poster. Local video URL released.');
+  });
+  pause.addEventListener('click',()=>{
+    reviewPaused=!reviewPaused;
+    pause.setAttribute('aria-pressed',String(reviewPaused));
+    pause.textContent=reviewPaused?'Resume motion':'Pause motion';
+    syncPlayback();
+    setStatus(reviewPaused?'Motion paused by reviewer.':'Motion resumed where system settings allow.');
+  });
+  window.addEventListener('pagehide',()=>scenes.forEach(scene=>{
+    const state=sceneStates.get(scene);
+    if(state?.localUrl)URL.revokeObjectURL(state.localUrl);
+  }),{once:true});
+  // Explicit test seam for offline browser QA; no data is sent anywhere.
+  if (document.documentElement.hasAttribute('data-local-review-test')) {
+    window.__anevumMediaReview = Object.freeze({acceptLocalFile,releaseScene});
+  }
+}
+
 window.addEventListener('pagehide',()=>scenes.forEach(stopVideo));
 // Measured, bounded depth response; no event-to-layout synchronous reads.
 const hero=document.querySelector('.hero-scene');
@@ -203,5 +292,19 @@ syncPlayback();
   </section>
 </main>
 <footer><span>ANEVUM · A laboratory for the possible</span><span>Created by <a href="https://devonakins.com">Devon Akins</a></span></footer>
+<!-- Isolated design-review control; this file is NOT imported by the public Worker. -->
+<details class="review-media-tools" id="review-media-tools">
+  <summary>Preview a moving scene</summary>
+  <div class="review-media-body">
+    <p>Load your own MP4/WebM to inspect an animated module in place. Files stay on this device and are never uploaded.</p>
+    <label for="review-scene">Environment</label>
+    <select id="review-scene"><option value="research">Research</option><option value="hero">Observatory hero</option><option value="experiments">Experiments</option><option value="experiences">Experiences</option><option value="archive">Archive</option></select>
+    <label for="review-file">Choose clip (up to 40 MB)</label>
+    <input id="review-file" type="file" accept="video/mp4,video/webm" aria-describedby="review-status">
+    <div class="review-media-actions"><button type="button" id="review-clear">Clear clip</button><button type="button" id="review-pause" aria-pressed="false">Pause motion</button></div>
+    <p id="review-status" role="status" aria-live="polite">Static posters are shown until you choose a video.</p>
+  </div>
+</details>
+
 </body>
 </html>
