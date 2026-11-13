@@ -9,6 +9,18 @@ const pages=["","/works","/reply","/transcosmic","/wiki","/journal","/about"];
 const req=(path="",init={})=>worker.fetch(new Request(root+path,init));
 const internalLinks=html=>[...html.matchAll(/href="(\/original-works(?:\/[a-z-]+)?)"/g)].map(m=>m[1]);
 
+test("public Worker deployment config stays route-free, binding-free and pinned",()=>{
+ const config=JSON.parse(readFileSync(new URL("../wrangler.anevum-public-studio.jsonc",import.meta.url),"utf8"));
+ assert.deepEqual(config,{
+  name:"anevum-original-works-public",
+  main:"./apps/anevum-public-studio/worker.mjs",
+  compatibility_date:"2026-10-28",
+  workers_dev:false,
+  preview_urls:false
+ });
+ // Any new Cloudflare routes, secrets, bindings, cron or assets require review.
+});
+
 test("approved image assets are byte-identical to reviewed source WebP and served by same-origin Worker",async()=>{
  const names=["lab-hero","rhen-generative","brandle-interactive","original-worlds","research-generation","research-computation","research-worlds","research-imagination","lab-archive"].map(x=>x+"-v1.webp");
  assert.deepEqual(Object.keys(LAB_ART).sort(),names.slice().sort());
