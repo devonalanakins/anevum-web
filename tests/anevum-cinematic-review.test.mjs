@@ -216,3 +216,21 @@ test('motion governor limits concurrent procedural rendering and prioritizes int
  assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
+
+
+test('procedural orbit yields to approved local film playback without changing media gates',()=>{
+ assert.match(styles,/\.hero-scene\.is-playing \.hero-orbit-canvas\{display:none!important\}/);
+ assert.match(script,/video\.addEventListener\('playing',[^\n]*syncOrbitalMotion\(\)/);
+ assert.match(script,/video\.addEventListener\('pause',[^\n]*syncOrbitalMotion\(\)/);
+ assert.match(script,/video\.addEventListener\('error',[^\n]*syncOrbitalMotion\(\)/);
+ assert.match(script,/orbitalScene\.classList\.contains\('is-playing'\)/);
+ for(const attribute of ['orbit-x','orbit-y','orbit-radius','orbit-cutoff']){
+   assert.match(html,new RegExp('data-'+attribute+'="[0-9.]+"'));
+ }
+ assert.match(script,/function orbitalCenter\(\)/);
+ assert.match(script,/Number\.isFinite\(parsed\)/);
+ assert.match(script,/Math\.max\(orbitalCanvasWidth \/ naturalWidth, orbitalCanvasHeight \/ naturalHeight\)/);
+ assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
+ assert.equal((html.match(/data-video-ready="true"/g)||[]).length,0);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
