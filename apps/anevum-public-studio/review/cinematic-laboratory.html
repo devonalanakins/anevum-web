@@ -81,6 +81,13 @@ html[data-motion=still] .research-flow-canvas{display:none!important}
 html[data-motion=still] .experiments-vortex-canvas{display:none!important}
 @media(prefers-reduced-motion:reduce){.experiments-vortex-canvas{display:none!important}}
 
+/* ANEVUM.WEB.BUILD.2026-11-13.008.EXPERIENCES-LIVING-PORTAL
+   Original review-only environmental animation, independent of cinematic media. */
+.destination-experiences .experiences-atmosphere-canvas{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;opacity:.82;transition:opacity .45s ease}
+.destination-experiences.is-playing .experiences-atmosphere-canvas{opacity:0}
+html[data-motion=still] .experiences-atmosphere-canvas{display:none!important}
+@media(prefers-reduced-motion:reduce){.experiences-atmosphere-canvas{display:none!important;transition:none!important}}
+
 </style>
   <script type="module">
 // ANEVUM cinematic preview: no external runtime, no speculative footage, no account/data access.
@@ -120,8 +127,8 @@ function setupVideo(scene) {
   video.muted = true; video.loop = true; video.playsInline = true;
   video.preload = scene.dataset.scene === 'hero' ? 'metadata' : 'none';
   if (!state.listenersBound) {
-    video.addEventListener('playing',()=>{scene.classList.add('is-playing');syncResearchFlow();syncExperimentsFlow();});
-    video.addEventListener('pause',()=>{scene.classList.remove('is-playing');syncResearchFlow();syncExperimentsFlow();});
+    video.addEventListener('playing',()=>{scene.classList.add('is-playing');syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();});
+    video.addEventListener('pause',()=>{scene.classList.remove('is-playing');syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();});
     video.addEventListener('error',()=>scene.classList.remove('is-playing'));
     state.listenersBound = true;
   }
@@ -137,6 +144,7 @@ function syncPlayback() {
   syncOrbitalMotion();
   syncResearchFlow();
   syncExperimentsFlow();
+  syncExperiencesAtmosphere();
   if (!isActive()) { scenes.forEach(stopVideo); return; }
   // Budget two simultaneously decoded videos, prioritizing the hero scene.
   let remaining=2;
@@ -590,6 +598,116 @@ if(experimentsContext){
   window.addEventListener('pagehide',stopExperimentsFlow);
 }
 
+// ANEVUM.WEB.BUILD.2026-11-13.008.EXPERIENCES-LIVING-PORTAL
+// Independent atmospheric study: stable stone geometry, drifting mist and foliage light.
+// This is not approved cinematic footage; poster, DOM content and destination link remain usable.
+const experiencesScene = document.querySelector('.destination-experiences');
+const experiencesCanvas = experiencesScene?.querySelector('.experiences-atmosphere-canvas');
+const experiencesContext = experiencesCanvas?.getContext('2d', {alpha:true});
+let experiencesHandle=0, experiencesLastFrame=0, experiencesWidth=0, experiencesHeight=0;
+const experiencesDust=Array.from({length:56},(_,i)=>({
+  x:(i*0.61803398875+.17)%1,
+  y:.045+((i*0.75487766625)%1)*.55,
+  size:.45+(i%5)*.21,
+  phase:(i*.38196601125%1)*Math.PI*2,
+  speed:.25+(i%7)*.10,
+  gold:i%4===0
+}));
+function sizeExperiencesCanvas(){
+  if(!experiencesCanvas || !experiencesContext || !experiencesScene)return;
+  const rect=experiencesScene.getBoundingClientRect();
+  if(rect.width<1 || rect.height<1)return;
+  experiencesWidth=rect.width;experiencesHeight=rect.height;
+  const dpr=Math.min(window.devicePixelRatio||1,1.5,Math.sqrt(210000/(rect.width*rect.height)));
+  experiencesCanvas.width=Math.max(1,Math.round(rect.width*dpr));
+  experiencesCanvas.height=Math.max(1,Math.round(rect.height*dpr));
+  experiencesContext.setTransform(dpr,0,0,dpr,0,0);
+}
+function stopExperiencesAtmosphere(){
+  if(experiencesHandle){cancelAnimationFrame(experiencesHandle);experiencesHandle=0;}
+  experiencesContext?.clearRect(0,0,experiencesWidth,experiencesHeight);
+  if(experiencesScene)experiencesScene.dataset.experiencesMotion='still';
+}
+function renderExperiencesFrame(timestamp){
+  experiencesHandle=0;
+  if(!experiencesContext || !isActive() || !visible.has(experiencesScene) || experiencesScene.classList.contains('is-playing')){
+    stopExperiencesAtmosphere();return;
+  }
+  if(timestamp-experiencesLastFrame>=46){
+    experiencesLastFrame=timestamp;
+    const c=experiencesContext,w=experiencesWidth,h=experiencesHeight;
+    const phase=timestamp*Math.PI*2/17000;
+    c.clearRect(0,0,w,h);
+    c.save();c.globalCompositeOperation='screen';
+    // Stationary arch remains the subject. Only warm volumetric daylight behind it changes.
+    const bright=w*.68,high=h*.34,reach=Math.max(36,w*.27);
+    const portal=c.createRadialGradient(bright,high,0,bright,high,reach);
+    portal.addColorStop(0,`rgba(241,255,214,${(.14+.03*Math.sin(phase)).toFixed(3)})`);
+    portal.addColorStop(.38,'rgba(203,243,205,.070)');portal.addColorStop(1,'rgba(183,226,195,0)');
+    c.fillStyle=portal;c.fillRect(0,0,w,h*.76);
+    // Sunlight travelling through the arch and canopy: coherent beams, not vibrating architecture.
+    for(let i=0;i<4;i++){
+      const startX=w*(.59+i*.053);
+      const sway=Math.sin(phase*.68+i*.8)*w*.018;
+      const shaft=new Path2D();
+      shaft.moveTo(startX,h*.04);
+      shaft.lineTo(startX+w*.045,h*.04);
+      shaft.lineTo(startX+w*(.12+i*.012)+sway,h*.68);
+      shaft.lineTo(startX+w*(.025+i*.01)+sway,h*.68);
+      shaft.closePath();
+      const beam=c.createLinearGradient(startX,h*.08,startX,h*.73);
+      beam.addColorStop(0,'rgba(247,244,195,.03)');beam.addColorStop(.65,'rgba(238,255,214,.035)');beam.addColorStop(1,'rgba(219,244,211,0)');
+      c.globalAlpha=.6+.22*Math.sin(phase*.78+i*.74);
+      c.fillStyle=beam;c.fill(shaft);
+    }
+    c.globalAlpha=1;
+    // Two horizontal mist banks travel at different speeds, giving depth without moving stone/trees.
+    for(let band=0;band<3;band++){
+      const offset=Math.sin(phase*(.48+.06*band)+band*1.5)*w*.045;
+      const y=h*(.49+band*.053);
+      const alpha=.075-band*.016;
+      const mist=c.createRadialGradient(w*(.60+.06*band)+offset,y,0,w*(.60+.06*band)+offset,y,w*(.43+.045*band));
+      mist.addColorStop(0,`rgba(217,247,217,${alpha.toFixed(3)})`);
+      mist.addColorStop(.5,`rgba(207,235,224,${(alpha*.52).toFixed(3)})`);
+      mist.addColorStop(1,'rgba(203,234,225,0)');
+      c.fillStyle=mist;c.beginPath();c.ellipse(w*(.60+.06*band)+offset,y,w*(.43+.045*band),h*(.15+.035*band),0,0,Math.PI*2);c.fill();
+    }
+    // Deterministic fireflies drift subtly in 3D-like layers; no frame-to-frame random jumps.
+    const count=w<280?35:experiencesDust.length;
+    for(let i=0;i<count;i++){
+      const mote=experiencesDust[i];
+      const x=w*(mote.x+.018*Math.sin(phase*mote.speed+mote.phase));
+      const y=h*(mote.y+.024*Math.cos(phase*(mote.speed*.74)+mote.phase));
+      const pulse=(.5+.5*Math.sin(phase*(.9+mote.speed)+mote.phase));
+      c.globalAlpha=.13+.45*pulse;
+      c.fillStyle=mote.gold?'#FFE8AE':'#D6F6DA';
+      c.beginPath();c.arc(x,y,mote.size*(.63+.43*pulse),0,Math.PI*2);c.fill();
+    }
+    // Keep UI text and its contrast unaltered; light falls away before the caption.
+    c.globalAlpha=1;c.globalCompositeOperation='destination-in';
+    const mask=c.createLinearGradient(0,h*.28,0,h*.82);
+    mask.addColorStop(0,'rgba(255,255,255,.92)');
+    mask.addColorStop(.48,'rgba(255,255,255,.62)');
+    mask.addColorStop(1,'rgba(255,255,255,0)');
+    c.fillStyle=mask;c.fillRect(0,0,w,h);
+    c.restore();
+  }
+  experiencesHandle=requestAnimationFrame(renderExperiencesFrame);
+}
+function syncExperiencesAtmosphere(){
+  if(!experiencesContext || !isActive() || !visible.has(experiencesScene) || experiencesScene.classList.contains('is-playing')){
+    stopExperiencesAtmosphere();return;
+  }
+  experiencesScene.dataset.experiencesMotion='dynamic';
+  if(!experiencesHandle)experiencesHandle=requestAnimationFrame(renderExperiencesFrame);
+}
+if(experiencesContext){
+  sizeExperiencesCanvas();
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{sizeExperiencesCanvas();syncExperiencesAtmosphere();}).observe(experiencesScene);
+  else window.addEventListener('resize',()=>{sizeExperiencesCanvas();syncExperiencesAtmosphere();});
+  window.addEventListener('pagehide',stopExperiencesAtmosphere);
+}
+
 // Measured, bounded depth response; no event-to-layout synchronous reads.
 const hero=document.querySelector('.hero-scene');
 function scrollMotion(){ ticking=false;if(!hero || !isActive())return;const y=Math.min(window.scrollY,600);hero.style.setProperty('--scroll-depth',`${Math.round(y*.027)}px`); }
@@ -649,7 +767,7 @@ syncPlayback();
         <span class="destination-content"><span class="destination-icon" aria-hidden="true">⌁</span><strong>Research</strong><small>Investigations, ideas, and technical notes</small></span><span class="destination-arrow" aria-hidden="true">↗</span>
       </a>
       <a class="scene destination destination-experiences" data-scene="experiences" data-video-ready="false" data-video-webm="/original-works/assets/motion/experiences.webm" data-video-mp4="/original-works/assets/motion/experiences.mp4" href="#experiences">
-        <img class="scene-poster" src="./assets/experiences.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video>
+        <img class="scene-poster" src="./assets/experiences.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video><canvas class="experiences-atmosphere-canvas" aria-hidden="true" tabindex="-1"></canvas>
         <span class="destination-content"><span class="destination-icon" aria-hidden="true">◇</span><strong>Experiences</strong><small>Interactive worlds and immersive creations</small></span><span class="destination-arrow" aria-hidden="true">↗</span>
       </a>
       <a class="scene destination destination-archive" data-scene="archive" data-video-ready="false" data-video-webm="/original-works/assets/motion/archive.webm" data-video-mp4="/original-works/assets/motion/archive.mp4" href="/original-works/archive">
