@@ -270,3 +270,18 @@ test('cinematic preview handles invalid or unsupported video without repeated re
  assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
+
+
+test('Experiments spiral avoids expensive software-rendered stroke shadows',()=>{
+ const segment=script.split('function renderExperimentsFrame(timestamp)')[1]?.split('function syncExperimentsFlow()')[0];
+ assert.ok(segment,'renderExperimentsFrame is available');
+ // Software Chromium spent multiple seconds on blurred stroked Paths. Keep
+ // native path movement, particles, gradient bloom and text fade instead.
+ assert.match(segment,/const spine=new Path2D\(\)/);
+ assert.match(segment,/c\.shadowBlur=0;\s*c\.stroke\(spine\);/);
+ assert.doesNotMatch(segment,/c\.shadowBlur\s*=\s*[1-9]/);
+ assert.match(segment,/c\.createRadialGradient\(/);
+ assert.match(segment,/c\.fillRect\(0,0,w,h\)/);
+ assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
