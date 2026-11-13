@@ -107,7 +107,7 @@ class ScopeTests(unittest.TestCase):
 
     def test_public_studio_has_separate_mandatory_no_deploy_review(self):
         paths = list(scope.ISOLATED_PUBLIC_STUDIO_PATHS)
-        self.assertEqual(len(paths), 30)
+        self.assertEqual(len(paths), 33)
         self.assertFalse(scope.app_preview_required(paths))
         self.assertTrue(scope.public_studio_required(paths))
         self.assertFalse(scope.isolated_review_required(paths))
@@ -159,6 +159,25 @@ class ScopeTests(unittest.TestCase):
                         "src/App.tsx", "worker.mjs"):
             with self.subTest(unknown=unknown):
                 self.assertTrue(scope.app_preview_required(reviewed + [unknown]))
+
+    def test_review_only_v12_renderer_cannot_create_media_preview_exception(self):
+        approved = [
+            "scripts/ops/anevum_metal_shader.py",
+            "scripts/ops/render_anevum_armillary_v12.py",
+            "tests/test_anevum_metal_shader.py",
+        ]
+        self.assertTrue(all(path in scope.ISOLATED_PUBLIC_STUDIO_PATHS for path in approved))
+        self.assertFalse(scope.app_preview_required(approved))
+        self.assertTrue(scope.public_studio_required(approved))
+        # Never generalize the exception to arbitrary media, scripts or private apps.
+        for forbidden in [
+            "apps/anevum-public-studio/review/assets/hero-v12.mp4",
+            "apps/anevum-public-studio/review/assets/hero-v12.webm",
+            "scripts/ops/publish-anevum-media.py",
+            "src/App.tsx",
+        ]:
+            with self.subTest(path=forbidden):
+                self.assertTrue(scope.app_preview_required(approved + [forbidden]))
 
     def test_original_research_motion_renderer_is_isolated_but_unknown_media_fails_closed(self):
         approved = "scripts/ops/render-anevum-research-motion.py"
