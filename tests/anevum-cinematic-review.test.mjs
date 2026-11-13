@@ -35,6 +35,20 @@ test('all five independent media zones fail closed without approved video',()=>{
  assert.equal((html.match(/class="scene-poster/g)||[]).length,5);
 });
 
+test('review uses five exact same-branch visual references (never live assets)',()=>{
+ const matches=[...html.matchAll(/<img class="scene-poster[^"]*" src="\.\/assets\/([a-z-]+\.webp)"/g)];
+ const actual=matches.map(x=>x[1]).sort();
+ const expected=['hero.webp','experiments.webp','research.webp','experiences.webp','archive.webp'].sort();
+ assert.deepEqual(actual,expected);
+ assert.match(html,/href="\.\/assets\/hero\.webp"/);
+ for(const name of expected){
+   const bytes=readFileSync(new URL('../apps/anevum-public-studio/review/assets/'+name,import.meta.url));
+   assert.ok(bytes.byteLength>8000,'review image is not meaningful: '+name);
+   assert.equal(bytes.toString('ascii',0,4),'RIFF');
+   assert.equal(bytes.toString('ascii',8,12),'WEBP');
+ }
+});
+
 test('runtime has bounded playback, session visibility, and accessible still-mode fallbacks',()=>{
  assert.ok(script && styles,'inline resources must exist for independent review');
  new Script(script,{filename:'cinematic-laboratory.js'});
