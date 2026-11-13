@@ -146,3 +146,28 @@ test('experiments galaxy canvas preserves review-only motion gates',()=>{
  assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
+
+
+test('Experiences portal motion remains passive and fail-closed',()=>{
+ assert.match(html,/<a class="scene destination destination-experiences"[^>]+href="#experiences"/);
+ assert.match(html,/<canvas class="experiences-atmosphere-canvas" aria-hidden="true" tabindex="-1"><\/canvas>/);
+ assert.equal((html.match(/class="experiences-atmosphere-canvas"/g)||[]).length,1);
+ assert.match(styles,/\.destination-experiences\.is-playing \.experiences-atmosphere-canvas\{opacity:0\}/);
+ assert.match(styles,/html\[data-motion=still\] \.experiences-atmosphere-canvas\{display:none!important\}/);
+ for(const token of [
+  "const experiencesScene = document.querySelector('.destination-experiences')",
+  "function sizeExperiencesCanvas()",
+  "function renderExperiencesFrame(timestamp)",
+  "function stopExperiencesAtmosphere()",
+  "function syncExperiencesAtmosphere()",
+  "Math.sqrt(210000/(rect.width*rect.height))",
+  "!visible.has(experiencesScene)",
+  "experiencesScene.classList.contains('is-playing')",
+  "cancelAnimationFrame(experiencesHandle)",
+  "window.addEventListener('pagehide',stopExperiencesAtmosphere)",
+  "syncExperiencesAtmosphere();"
+ ]) assert.ok(script.includes(token),'missing Experiences motion contract: '+token);
+ assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
+ assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
