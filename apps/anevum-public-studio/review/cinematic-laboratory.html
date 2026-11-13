@@ -68,6 +68,7 @@ html[data-motion=still] .scene-video,html[data-motion=still] .atmosphere{display
 
 .hero-orbit-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;mix-blend-mode:screen;opacity:.91;contain:strict}
 html[data-orbital-motion=still] .hero-orbit-canvas{display:none!important}
+.hero-scene.is-playing .hero-orbit-canvas{display:none!important}
 /* ANEVUM Research | integrated computational terrain illumination.
    The transparent canvas shares the poster's perspective; the card remains a native anchor. */
 .destination-research .research-flow-canvas{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;opacity:.82;mix-blend-mode:screen;contain:strict;transition:opacity .45s ease}
@@ -134,9 +135,9 @@ function setupVideo(scene) {
   video.muted = true; video.loop = true; video.playsInline = true;
   video.preload = scene.dataset.scene === 'hero' ? 'metadata' : 'none';
   if (!state.listenersBound) {
-    video.addEventListener('playing',()=>{scene.classList.add('is-playing');syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
-    video.addEventListener('pause',()=>{scene.classList.remove('is-playing');syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
-    video.addEventListener('error',()=>scene.classList.remove('is-playing'));
+    video.addEventListener('playing',()=>{scene.classList.add('is-playing');syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
+    video.addEventListener('pause',()=>{scene.classList.remove('is-playing');syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
+    video.addEventListener('error',()=>{scene.classList.remove('is-playing');syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
     state.listenersBound = true;
   }
   state.initialized = true;
@@ -319,10 +320,16 @@ function orbitalCenter() {
   // Match object-position: 50% 43% on desktop, 50% top on phone.
   const positionY = mobileQuery.matches ? 0 : .43;
   const shiftY = (orbitalCanvasHeight - naturalHeight * scale) * positionY;
-  return {x:shiftX + naturalWidth * .50 * scale,
-          y:shiftY + naturalHeight * .252 * scale,
-          radius:171 * scale,
-          cutoff:shiftY + naturalHeight * .39 * scale};
+  // Scene-calibrated source geometry is descriptive, never derived from video
+  // frames or painted into the interactive UI. Defaults match the old poster.
+  const coordinate=(key,fallback,min,max)=>{
+    const parsed=Number(orbitalScene?.dataset[key] ?? fallback);
+    return Number.isFinite(parsed) && parsed >= min && parsed <= max ? parsed : fallback;
+  };
+  return {x:shiftX + naturalWidth * coordinate('orbitX',.50,.25,.75) * scale,
+          y:shiftY + naturalHeight * coordinate('orbitY',.252,.08,.55) * scale,
+          radius:naturalWidth * coordinate('orbitRadius',171/1536,.04,.28) * scale,
+          cutoff:shiftY + naturalHeight * coordinate('orbitCutoff',.39,.15,.8) * scale};
 }
 function ringCoordinate(angle, phase, ring, cx, cy, radius) {
   const tilt = ring.tilt + .13 * Math.sin(phase + ring.phase);
@@ -374,7 +381,7 @@ function drawOrbitalRing(ctx, ring, phase, center) {
 }
 function renderOrbitalFrame(timestamp) {
   orbitalHandle = 0;
-  if (!orbitalContext || !orbitalScene || !isActive() || !visible.has(orbitalScene) || !proceduralAllowed(orbitalScene)) {
+  if (!orbitalContext || !orbitalScene || !isActive() || !visible.has(orbitalScene) || orbitalScene.classList.contains('is-playing') || !proceduralAllowed(orbitalScene)) {
     stopOrbitalMotion();return;
   }
   if(timestamp - orbitalLastFrame >= 42) {
@@ -423,7 +430,7 @@ function stopOrbitalMotion(){
   document.documentElement.dataset.orbitalMotion='still';
 }
 function syncOrbitalMotion(){
-  if(!orbitalContext || !isActive() || !visible.has(orbitalScene) || !proceduralAllowed(orbitalScene)){
+  if(!orbitalContext || !isActive() || !visible.has(orbitalScene) || orbitalScene.classList.contains('is-playing') || !proceduralAllowed(orbitalScene)){
     stopOrbitalMotion();return;
   }
   document.documentElement.dataset.orbitalMotion='dynamic';
@@ -884,7 +891,7 @@ syncPlayback();
 </header>
 <main id="main" tabindex="-1">
   <section class="laboratory" aria-labelledby="lab-title">
-    <div class="scene hero-scene" data-scene="hero" data-video-ready="false"
+    <div class="scene hero-scene" data-scene="hero" data-video-ready="false" data-orbit-x="0.50" data-orbit-y="0.252" data-orbit-radius="0.111328125" data-orbit-cutoff="0.39"
       data-video-webm="/original-works/assets/motion/hero-desktop.webm"
       data-video-mp4="/original-works/assets/motion/hero-desktop.mp4"
       data-mobile-webm="/original-works/assets/motion/hero-mobile.webm"
