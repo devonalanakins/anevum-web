@@ -255,3 +255,18 @@ test('armillary ring motion is periodic rigid 3D geometry and remains preview-on
  assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
+
+
+test('cinematic preview handles invalid or unsupported video without repeated retries',()=>{
+ assert.match(script,/if \(state\.initialized \|\| state\.failed\) return;/);
+ assert.match(script,/sceneStates\.set\(scene,\{initialized:false,localUrl:null,listenersBound:false,failed:false\}\)/);
+ assert.match(script,/const eligible = visible\.has\(scene\) && remaining > 0 && scene\.dataset\.videoReady === 'true' && !sceneStates\.get\(scene\)\.failed/);
+ assert.match(script,/video\.addEventListener\('error',\(\)=>\{state\.failed=true;scene\.classList\.remove\('is-playing'\)/);
+ assert.match(script,/video\.play\(\)\.catch\(\(\)=>\{/);
+ assert.match(script,/if\(state\)state\.failed=true;/);
+ assert.match(script,/state\.initialized=false;state\.failed=false/);
+ assert.match(script,/state\.localUrl=null;state\.initialized=false;state\.failed=false/);
+ assert.match(script,/video\.addEventListener\('playing',\(\)=>\{state\.failed=false;/);
+ assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
