@@ -115,7 +115,7 @@ test('research terrain canvas adds true moving geometry without changing editori
  assert.match(script,/function syncResearchFlow\(/);
  assert.match(script,/function stopResearchFlow\(/);
  assert.match(script,/!isActive\(\) \|\| !visible\.has\(researchScene\)/);
- assert.match(script,/Math\.sqrt\(250000\/(box\.width\*box\.height)\)/);
+ assert.match(script,/Math\.sqrt\(250000\/\(box\.width\*box\.height\)\)/);
  assert.match(script,/cancelAnimationFrame\(researchHandle\)/);
  assert.match(script,/syncResearchFlow\(\);/);
  assert.match(script,/video\.addEventListener\('playing',[^\n]*syncResearchFlow\(\)/);
