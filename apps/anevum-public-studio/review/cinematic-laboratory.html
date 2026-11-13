@@ -88,6 +88,13 @@ html[data-motion=still] .experiments-vortex-canvas{display:none!important}
 html[data-motion=still] .experiences-atmosphere-canvas{display:none!important}
 @media(prefers-reduced-motion:reduce){.experiences-atmosphere-canvas{display:none!important;transition:none!important}}
 
+/* ANEVUM.WEB.BUILD.2026-11-13.009.ARCHIVE-LIVING-ILLUMINATION
+   Original review-only light and archival dust, layered over a stable book image. */
+.destination-archive .archive-illumination-canvas{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;opacity:.80;contain:strict;transition:opacity .45s ease}
+.destination-archive.is-playing .archive-illumination-canvas{opacity:0}
+html[data-motion=still] .archive-illumination-canvas{display:none!important}
+@media(prefers-reduced-motion:reduce){.archive-illumination-canvas{display:none!important;transition:none!important}}
+
 </style>
   <script type="module">
 // ANEVUM cinematic preview: no external runtime, no speculative footage, no account/data access.
@@ -127,8 +134,8 @@ function setupVideo(scene) {
   video.muted = true; video.loop = true; video.playsInline = true;
   video.preload = scene.dataset.scene === 'hero' ? 'metadata' : 'none';
   if (!state.listenersBound) {
-    video.addEventListener('playing',()=>{scene.classList.add('is-playing');syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();});
-    video.addEventListener('pause',()=>{scene.classList.remove('is-playing');syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();});
+    video.addEventListener('playing',()=>{scene.classList.add('is-playing');syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
+    video.addEventListener('pause',()=>{scene.classList.remove('is-playing');syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
     video.addEventListener('error',()=>scene.classList.remove('is-playing'));
     state.listenersBound = true;
   }
@@ -145,6 +152,7 @@ function syncPlayback() {
   syncResearchFlow();
   syncExperimentsFlow();
   syncExperiencesAtmosphere();
+  syncArchiveIllumination();
   if (!isActive()) { scenes.forEach(stopVideo); return; }
   // Budget two simultaneously decoded videos, prioritizing the hero scene.
   let remaining=2;
@@ -708,6 +716,108 @@ if(experiencesContext){
   window.addEventListener('pagehide',stopExperiencesAtmosphere);
 }
 
+// ANEVUM.WEB.BUILD.2026-11-13.009.ARCHIVE-LIVING-ILLUMINATION
+// Keep leather volumes physically stationary: only light, shelf haze and dust shift.
+const archiveScene = document.querySelector('.destination-archive');
+const archiveCanvas = archiveScene?.querySelector('.archive-illumination-canvas');
+const archiveContext = archiveCanvas?.getContext('2d', {alpha:true});
+let archiveHandle=0, archiveLastFrame=0, archiveWidth=0, archiveHeight=0;
+const archiveSpines=[.18,.29,.40,.50,.60,.68,.76,.84,.91];
+const archiveDust=Array.from({length:58},(_,i)=>({
+  x:(i*.618033988749895+.25)%1,
+  y:.04+((i*.75487766625)%1)*.58,
+  radius:.42+(i%6)*.17,
+  phase:((i*.3819660112501)%1)*Math.PI*2,
+  speed:.18+(i%8)*.07
+}));
+function sizeArchiveCanvas(){
+  if(!archiveCanvas||!archiveContext||!archiveScene)return;
+  const rect=archiveScene.getBoundingClientRect();
+  if(rect.width<1||rect.height<1)return;
+  archiveWidth=rect.width;archiveHeight=rect.height;
+  const ratio=Math.min(window.devicePixelRatio||1,1.5,Math.sqrt(215000/(rect.width*rect.height)));
+  archiveCanvas.width=Math.max(1,Math.round(rect.width*ratio));
+  archiveCanvas.height=Math.max(1,Math.round(rect.height*ratio));
+  archiveContext.setTransform(ratio,0,0,ratio,0,0);
+}
+function stopArchiveIllumination(){
+  if(archiveHandle){cancelAnimationFrame(archiveHandle);archiveHandle=0;}
+  archiveContext?.clearRect(0,0,archiveWidth,archiveHeight);
+  if(archiveScene)archiveScene.dataset.archiveMotion='still';
+}
+function renderArchiveFrame(timestamp){
+  archiveHandle=0;
+  if(!archiveContext||!isActive()||!visible.has(archiveScene)||archiveScene.classList.contains('is-playing')){
+    stopArchiveIllumination();return;
+  }
+  if(timestamp-archiveLastFrame>=45){
+    archiveLastFrame=timestamp;
+    const c=archiveContext,w=archiveWidth,h=archiveHeight;
+    const phase=timestamp*Math.PI*2/19000;
+    c.clearRect(0,0,w,h);
+    c.save();c.globalCompositeOperation='screen';
+    // Light advances slowly across the fixed leather book spines, never moving geometry.
+    const focusX=w*(.60+.14*Math.sin(phase*.62));
+    const shelfGlow=c.createRadialGradient(focusX,h*.25,0,focusX,h*.25,w*.48);
+    shelfGlow.addColorStop(0,`rgba(255,193,111,${(.145+.038*Math.sin(phase)).toFixed(3)})`);
+    shelfGlow.addColorStop(.46,'rgba(219,135,59,.052)');
+    shelfGlow.addColorStop(1,'rgba(175,83,27,0)');
+    c.fillStyle=shelfGlow;c.fillRect(0,0,w,h*.82);
+    // Narrow bevel highlights correspond to actual vertical book spines in the poster.
+    for(let i=0;i<archiveSpines.length;i++){
+      const x=archiveSpines[i]*w;
+      const light=.30+.36*(.5+.5*Math.sin(phase*.78-i*.68));
+      const ribbon=c.createLinearGradient(x-w*.020,0,x+w*.033,0);
+      ribbon.addColorStop(0,'rgba(255,171,83,0)');
+      ribbon.addColorStop(.42,`rgba(255,204,133,${(.075*light).toFixed(3)})`);
+      ribbon.addColorStop(.55,`rgba(255,229,164,${(.135*light).toFixed(3)})`);
+      ribbon.addColorStop(1,'rgba(252,143,61,0)');
+      c.fillStyle=ribbon;c.fillRect(x-w*.020,h*.04,w*.053,h*.53);
+    }
+    // Long soft reflected band. Its motion is coherent, not a repetitive full-image zoom.
+    const sweep=w*(.19+.56*(.5+.5*Math.sin(phase*.43-.25)));
+    const reflected=c.createLinearGradient(sweep-w*.26,0,sweep+w*.20,0);
+    reflected.addColorStop(0,'rgba(255,193,123,0)');
+    reflected.addColorStop(.45,'rgba(255,205,144,.037)');
+    reflected.addColorStop(1,'rgba(255,192,122,0)');
+    c.fillStyle=reflected;c.fillRect(0,0,w,h*.68);
+    // Deterministic drifting motes with near/far depth: no frame-to-frame random positions.
+    const dustCount=w<300?34:archiveDust.length;
+    for(let i=0;i<dustCount;i++){
+      const mote=archiveDust[i];
+      const x=w*(mote.x+.023*Math.sin(phase*mote.speed+mote.phase));
+      const y=h*(mote.y+.028*Math.cos(phase*mote.speed*.77+mote.phase));
+      const sparkle=.5+.5*Math.cos(phase*(.45+mote.speed)+mote.phase);
+      c.globalAlpha=.13+.44*sparkle;
+      c.fillStyle=i%5===0?'#F9DEA4':'#F6BD80';
+      c.beginPath();c.arc(x,y,mote.radius*(.75+.35*sparkle),0,Math.PI*2);c.fill();
+    }
+    c.globalAlpha=1;
+    // Fade to zero before the real DOM caption: don't sacrifice readability for effects.
+    c.globalCompositeOperation='destination-in';
+    const mask=c.createLinearGradient(0,h*.20,0,h*.84);
+    mask.addColorStop(0,'rgba(255,255,255,.90)');
+    mask.addColorStop(.48,'rgba(255,255,255,.66)');
+    mask.addColorStop(1,'rgba(255,255,255,0)');
+    c.fillStyle=mask;c.fillRect(0,0,w,h);
+    c.restore();
+  }
+  archiveHandle=requestAnimationFrame(renderArchiveFrame);
+}
+function syncArchiveIllumination(){
+  if(!archiveContext||!isActive()||!visible.has(archiveScene)||archiveScene.classList.contains('is-playing')){
+    stopArchiveIllumination();return;
+  }
+  archiveScene.dataset.archiveMotion='dynamic';
+  if(!archiveHandle)archiveHandle=requestAnimationFrame(renderArchiveFrame);
+}
+if(archiveContext){
+  sizeArchiveCanvas();
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{sizeArchiveCanvas();syncArchiveIllumination();}).observe(archiveScene);
+  else window.addEventListener('resize',()=>{sizeArchiveCanvas();syncArchiveIllumination();});
+  window.addEventListener('pagehide',stopArchiveIllumination);
+}
+
 // Measured, bounded depth response; no event-to-layout synchronous reads.
 const hero=document.querySelector('.hero-scene');
 function scrollMotion(){ ticking=false;if(!hero || !isActive())return;const y=Math.min(window.scrollY,600);hero.style.setProperty('--scroll-depth',`${Math.round(y*.027)}px`); }
@@ -771,7 +881,7 @@ syncPlayback();
         <span class="destination-content"><span class="destination-icon" aria-hidden="true">◇</span><strong>Experiences</strong><small>Interactive worlds and immersive creations</small></span><span class="destination-arrow" aria-hidden="true">↗</span>
       </a>
       <a class="scene destination destination-archive" data-scene="archive" data-video-ready="false" data-video-webm="/original-works/assets/motion/archive.webm" data-video-mp4="/original-works/assets/motion/archive.mp4" href="/original-works/archive">
-        <img class="scene-poster" src="./assets/archive.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video>
+        <img class="scene-poster" src="./assets/archive.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video><canvas class="archive-illumination-canvas" aria-hidden="true" tabindex="-1"></canvas>
         <span class="destination-content"><span class="destination-icon" aria-hidden="true">▤</span><strong>Archive</strong><small>A curated record of work and exploration</small></span><span class="destination-arrow" aria-hidden="true">↗</span>
       </a>
     </div>
