@@ -51,7 +51,7 @@ All media must be textless, muted, self-hosted, reviewed at multiple temporal fr
 
 - Isolated review HTML with living interface, desktop/mobile layout, five poster placeholders and optional source manifest; source intentionally ships with `data-video-ready="false"`.
 - Local source injected into Chromium through `set_content`; four viewport captures (320, 390, 1440, 1920) had no horizontal overflow, no page errors, and all poster fixtures decoded. Reduced-motion state was observed as `still`. This did not test actual video playback or production Worker integration.
-- Local screenshot fixtures were temporary darkened/cropped derivatives of the owner's 1536×864 concept for art-direction comparison. They do not establish approved 4K masters and are not the pre-existing live site images.
+- Five review-only compressed WebP poster fixtures are now versioned under `apps/anevum-public-studio/review/assets/`, derived by temporary darkening/cropping of the owner's 1536×864 concept. The exact branch HTML references these relative assets for reproducible review. The visible concept screenshot contains baked interface elements; masking is imperfect. These posters **must not be promoted as textless production art**, do not establish approved 4K masters and are not the pre-existing live site images.
 - No authenticated application changes, real media master approvals, Cloudflare deployment, release or live QA are claimed.
 
 Next build slice: author production-quality, textless hero motion and poster, register it behind a preview-only gate, independently inspect moving desktop/mobile behavior, then repeat for the four destinations.
