@@ -365,7 +365,7 @@ function drawOrbitalRing(ctx, ring, phase, center) {
   for(let j=0;j<2;j++){
     // Slow and seamless; coordinates are only light-placement guides, not
     // geometry to be rendered over the finished artwork.
-    const angle=2*Math.PI*((progress*.32+ring.phase+j*.51)%1);
+    const angle=2*Math.PI*((progress+ring.phase+j*.51)%1);
     const p=ringCoordinate(angle,0,ring,center.x,center.y,center.radius);
     const radius=Math.max(10,center.radius*(j===0?.09:.052));
     const glow=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,radius);
