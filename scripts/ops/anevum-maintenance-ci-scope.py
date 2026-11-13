@@ -63,6 +63,7 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     # Exact review-only cinematic source and its mandatory review checks.
     "apps/anevum-public-studio/review/cinematic-laboratory.html",
     "apps/anevum-public-studio/review/assets/hero.webp",
+    "apps/anevum-public-studio/review/assets/hero-mobile.webp",
     "apps/anevum-public-studio/review/assets/experiments.webp",
     "apps/anevum-public-studio/review/assets/research.webp",
     "apps/anevum-public-studio/review/assets/experiences.webp",

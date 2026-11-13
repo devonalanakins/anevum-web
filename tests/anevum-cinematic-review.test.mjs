@@ -41,6 +41,9 @@ test('review uses five exact same-branch visual references (never live assets)',
  const expected=['hero.webp','experiments.webp','research.webp','experiences.webp','archive.webp'].sort();
  assert.deepEqual(actual,expected);
  assert.match(html,/href="\.\/assets\/hero\.webp"/);
+ assert.match(html,/<source media="\(max-width: 720px\)" srcset="\.\/assets\/hero-mobile\.webp" type="image\/webp">/);
+ const portrait=readFileSync(new URL('../apps/anevum-public-studio/review/assets/hero-mobile.webp',import.meta.url));
+ assert.ok(portrait.byteLength>8000,'portrait art must be a substantive image');
  for(const name of expected){
    const bytes=readFileSync(new URL('../apps/anevum-public-studio/review/assets/'+name,import.meta.url));
    assert.ok(bytes.byteLength>8000,'review image is not meaningful: '+name);

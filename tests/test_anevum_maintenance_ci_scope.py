@@ -107,7 +107,7 @@ class ScopeTests(unittest.TestCase):
 
     def test_public_studio_has_separate_mandatory_no_deploy_review(self):
         paths = list(scope.ISOLATED_PUBLIC_STUDIO_PATHS)
-        self.assertEqual(len(paths), 33)
+        self.assertEqual(len(paths), 34)
         self.assertFalse(scope.app_preview_required(paths))
         self.assertTrue(scope.public_studio_required(paths))
         self.assertFalse(scope.isolated_review_required(paths))
@@ -140,6 +140,7 @@ class ScopeTests(unittest.TestCase):
         reviewed = [
             "apps/anevum-public-studio/review/cinematic-laboratory.html",
             "apps/anevum-public-studio/review/assets/hero.webp",
+            "apps/anevum-public-studio/review/assets/hero-mobile.webp",
             "apps/anevum-public-studio/review/assets/experiments.webp",
             "apps/anevum-public-studio/review/assets/research.webp",
             "apps/anevum-public-studio/review/assets/experiences.webp",
