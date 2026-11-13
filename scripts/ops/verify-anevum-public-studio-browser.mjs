@@ -62,10 +62,12 @@ async function verifyClickThroughJourney(){
   const clicked=await evalJS("(()=>{const a=document.querySelector("+JSON.stringify(selector)+");if(!a||!a.getClientRects().length)return false;a.click();return true})()");
   if(!clicked)throw Error("Missing or invisible navigation "+selector);
   const expected=new URL(url,base);
+  let lastState;
   const state=await waitFor(async()=>{
-   const x=await evalJS("(()=>({path:location.pathname,query:location.search,heading:document.querySelector('main h1')?.textContent.trim(),selected:document.querySelector('nav.lab-nav a[aria-current=page]')?.textContent.trim(),ready:document.readyState}))()");
+   const x=await evalJS("(()=>({path:location.pathname,query:location.search,heading:document.querySelector('main h1')?.textContent.trim(),title:document.title,selected:document.querySelector('nav.lab-nav a[aria-current=page]')?.textContent.trim(),ready:document.readyState}))()");
+   lastState=x;
    return x?.path===expected.pathname&&x.query===expected.search&&x.heading?.includes(heading)&&x.ready==="complete"?x:null;
-  },"link "+selector);
+  },"link "+selector).catch(error=>{throw Error(error.message+"; observed: "+JSON.stringify(lastState));});
   if(selected&&state.selected!==selected)throw Error("Incorrect selected navigation after "+url+": "+JSON.stringify(state));
  }
  await go('nav.lab-nav a[href="/original-works/experiments"]',"/original-works/experiments","Experiments","Experiments");
@@ -77,7 +79,7 @@ async function verifyClickThroughJourney(){
  if(all.count!==3||all.active!=="All work")throw Error("All-work filter click failed: "+JSON.stringify(all));
  await go('nav.lab-nav a[href="/original-works/research"]',"/original-works/research","Research","Research");
  await go('nav.lab-nav a[href="/original-works/archive"]',"/original-works/archive","Archive","Archive");
- await go('a.lab-arc-feature[href="/original-works/reply"]',"/original-works/reply","REPLY");
+ await go('a.lab-arc-feature[href="/original-works/reply"]',"/original-works/reply","A signal.");
  await go('header.site-header a.brand[href="/"]',"/","ANEVUM");
  for(const hash of ["#experiences","#contact"]){
   const clicked=await evalJS("(()=>{const a=document.querySelector('nav.lab-nav a[href="+JSON.stringify(hash)+"]');if(!a)return false;a.click();return true})()");
