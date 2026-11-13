@@ -196,3 +196,23 @@ test('Archive illumination remains passive and fail-closed',()=>{
  assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
+
+test('motion governor limits concurrent procedural rendering and prioritizes interaction',()=>{
+ assert.match(script,/ANEVUM\.WEB\.BUILD\.2026-11-13\.010\.PROCEDURAL-MOTION-GOVERNOR/);
+ assert.match(script,/const proceduralActive = new Set\(\)/);
+ assert.match(script,/function refreshProceduralBudget\(\)/);
+ assert.match(script,/const limit = innerWidth < 720 \? 1 : innerWidth < 1100 \? 2 : 3/);
+ assert.match(script,/Math\.min\(rect\.right,vw\)-Math\.max\(rect\.left,0\)/);
+ assert.match(script,/scene\.contains\(document\.activeElement\)/);
+ assert.match(script,/scene\.matches\(':hover'\)/);
+ assert.match(script,/candidates\.slice\(0,limit\)/);
+ for(const scene of ['orbitalScene','researchScene','experimentsScene','experiencesScene','archiveScene']){
+   assert.equal(script.split('!proceduralAllowed('+scene+')').length-1,2,'frame and start guards required: '+scene);
+ }
+ assert.match(script,/scene\.addEventListener\('pointerenter',syncPlayback/);
+ assert.match(script,/scene\.addEventListener\('focusin',syncPlayback/);
+ assert.match(script,/function scrollMotion\(\)[^\n]*syncPlayback\(\)/);
+ assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
+ assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
