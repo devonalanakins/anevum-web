@@ -66,6 +66,8 @@ html[data-motion=still] .scene-video,html[data-motion=still] .atmosphere{display
 @media(max-width:720px){.review-media-tools{right:10px;bottom:calc(10px + env(safe-area-inset-bottom));width:min(360px,calc(100vw - 20px))}.review-media-body{max-height:min(75svh,600px);overflow:auto}}
 @media(forced-colors:active){.review-media-tools,.review-media-actions button{border:1px solid CanvasText}}
 
+.hero-orbit-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;mix-blend-mode:screen;opacity:.91;contain:strict}
+html[data-orbital-motion=still] .hero-orbit-canvas{display:none!important}
 </style>
   <script type="module">
 // ANEVUM cinematic preview: no external runtime, no speculative footage, no account/data access.
@@ -119,6 +121,7 @@ function stopVideo(scene) {
 }
 function syncPlayback() {
   document.documentElement.dataset.motion = isStill() ? 'still' : 'dynamic';
+  syncOrbitalMotion();
   if (!isActive()) { scenes.forEach(stopVideo); return; }
   // Budget two simultaneously decoded videos, prioritizing the hero scene.
   let remaining=2;
@@ -210,6 +213,163 @@ if (inspector) {
 }
 
 window.addEventListener('pagehide',()=>scenes.forEach(stopVideo));
+// ANEVUM WEB — original, preview-only orbital motion study.
+// This is a canvas effect, not a claim of approved photoreal cinematic footage.
+const orbitalCanvas = document.querySelector('.hero-orbit-canvas');
+const orbitalScene = document.querySelector('.hero-scene');
+const orbitalPoster = orbitalScene?.querySelector('.scene-poster');
+const orbitalContext = orbitalCanvas?.getContext('2d', {alpha: true});
+let orbitalHandle = 0;
+let orbitalLastFrame = 0;
+let orbitalCanvasWidth = 0;
+let orbitalCanvasHeight = 0;
+let orbitalScale = 1;
+const orbitalPeriodMs = 9600;
+const orbitalMotes = Array.from({length: 76}, (_, i) => ({
+  azimuth: ((i * 0.61803398875) % 1) * Math.PI * 2,
+  radius: 0.41 + 0.62 * (((i * 73) % 79) / 79),
+  phase: ((i * 0.754877666) % 1) * Math.PI * 2,
+  size: 0.6 + (i % 4) * 0.28,
+}));
+function sizeOrbitalCanvas() {
+  if (!orbitalCanvas || !orbitalContext || !orbitalScene) return;
+  const rect = orbitalScene.getBoundingClientRect();
+  if (rect.width < 1 || rect.height < 1) return;
+  const maxRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+  // Upper bound on pixels prevents a high-DPR phone from spending its whole GPU budget here.
+  orbitalScale = Math.min(maxRatio, Math.sqrt(1800000 / (rect.width * rect.height)));
+  orbitalCanvasWidth = rect.width;
+  orbitalCanvasHeight = rect.height;
+  orbitalCanvas.width = Math.max(1, Math.round(rect.width * orbitalScale));
+  orbitalCanvas.height = Math.max(1, Math.round(rect.height * orbitalScale));
+  orbitalContext.setTransform(orbitalScale, 0, 0, orbitalScale, 0, 0);
+}
+function orbitalCenter() {
+  const naturalWidth = orbitalPoster?.naturalWidth || 1536;
+  const naturalHeight = orbitalPoster?.naturalHeight || 864;
+  const scale = Math.max(orbitalCanvasWidth / naturalWidth, orbitalCanvasHeight / naturalHeight);
+  const shiftX = (orbitalCanvasWidth - naturalWidth * scale) / 2;
+  // Match object-position: 50% 43% on desktop, 50% top on phone.
+  const positionY = mobileQuery.matches ? 0 : .43;
+  const shiftY = (orbitalCanvasHeight - naturalHeight * scale) * positionY;
+  return {x:shiftX + naturalWidth * .50 * scale,
+          y:shiftY + naturalHeight * .252 * scale,
+          radius:171 * scale,
+          cutoff:shiftY + naturalHeight * .39 * scale};
+}
+function ringCoordinate(angle, phase, ring, cx, cy, radius) {
+  const tilt = ring.tilt + .13 * Math.sin(phase + ring.phase);
+  const spin = ring.spin + .18 * Math.sin(phase - ring.phase);
+  const yaw = ring.yaw + .09 * Math.cos(phase + ring.phase);
+  const x0 = Math.cos(angle) * radius * ring.radius;
+  const y0 = Math.sin(angle) * radius * ring.radius;
+  const y1 = y0 * Math.cos(tilt);
+  const z1 = y0 * Math.sin(tilt);
+  const x2 = x0 * Math.cos(yaw) + z1 * Math.sin(yaw);
+  const z2 = z1 * Math.cos(yaw) - x0 * Math.sin(yaw);
+  const x3 = x2 * Math.cos(spin) - y1 * Math.sin(spin);
+  const y3 = x2 * Math.sin(spin) + y1 * Math.cos(spin);
+  const perspective = 1 / (1 + z2 / (radius * 5));
+  return {x:cx + x3 * perspective, y:cy + y3 * perspective, z:z2 / radius};
+}
+function drawOrbitalRing(ctx, ring, phase, center) {
+  const samples = 150;
+  const pts = Array.from({length:samples + 1}, (_,i)=>ringCoordinate(i * Math.PI * 2 / samples, phase,ring,center.x,center.y,center.radius));
+  // Coalesce 150 segments into four strokes: GPU/Skia shadowBlur per segment
+  // was expensive enough to stall screenshots on software-rendered Chromium.
+  const paths={front:new Path2D(),back:new Path2D()};
+  for(let i=0;i<samples;i++) {
+    const a=pts[i],b=pts[i+1];
+    const path=paths[a.z+b.z>0?'front':'back'];
+    path.moveTo(a.x,a.y);path.lineTo(b.x,b.y);
+  }
+  ctx.lineCap = 'round';
+  for(let pass=0;pass<2;pass++) {
+    ctx.lineWidth=pass?Math.max(.7,1.15*center.radius/171):Math.max(2,3.4*center.radius/171);
+    ctx.shadowColor=pass?ring.bright:ring.color;
+    ctx.shadowBlur=pass?4:10;
+    ctx.strokeStyle=pass?ring.bright:ring.color;
+    ctx.globalAlpha=pass?.11:.055;ctx.stroke(paths.back);
+    ctx.globalAlpha=pass?.25:.105;ctx.stroke(paths.front);
+  }
+  // Physically travelling specular impulses rather than scaling a still image.
+  ctx.lineWidth = Math.max(1.3, 2.2 * center.radius / 171);
+  ctx.shadowColor = ring.bright;
+  ctx.shadowBlur = 22;
+  for(let j=0;j<2;j++) {
+    const at = ((phase / (Math.PI * 2)) + ring.phase + j*.52) % 1;
+    const p = ringCoordinate(at * Math.PI * 2, phase,ring,center.x,center.y,center.radius);
+    ctx.globalAlpha = .48 + .22*Math.max(0,p.z);
+    ctx.fillStyle = ring.bright;
+    ctx.beginPath();ctx.arc(p.x,p.y, Math.max(1.2,1.9 * center.radius / 171),0,2*Math.PI);ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+}
+function renderOrbitalFrame(timestamp) {
+  orbitalHandle = 0;
+  if (!orbitalContext || !orbitalScene || !isActive() || !visible.has(orbitalScene)) {
+    stopOrbitalMotion();return;
+  }
+  if(timestamp - orbitalLastFrame >= 42) {
+    orbitalLastFrame = timestamp;
+    const ctx = orbitalContext;
+    const {width:w,height:h} = {width:orbitalCanvasWidth,height:orbitalCanvasHeight};
+    ctx.clearRect(0,0,w,h);
+    const center = orbitalCenter();
+    const phase = (timestamp % orbitalPeriodMs) * Math.PI * 2 / orbitalPeriodMs;
+    ctx.save();
+    ctx.globalCompositeOperation='screen';
+    const ambient = ctx.createRadialGradient(center.x,center.y,center.radius*.05,center.x,center.y,center.radius*.91);
+    ambient.addColorStop(0, `rgba(255,202,123,${.047+.021*Math.cos(phase)})`);
+    ambient.addColorStop(.46,`rgba(116,181,227,${.039+.013*Math.sin(phase)})`);
+    ambient.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=ambient; ctx.beginPath();ctx.arc(center.x,center.y,center.radius,0,2*Math.PI);ctx.fill();
+    const rings=[
+      {radius:.99,tilt:1.05,spin:-.48,yaw:.56,phase:.13,color:'#EBA065',bright:'#FFD6A5'},
+      {radius:.83,tilt:.71,spin:.72,yaw:-.52,phase:.58,color:'#92C6F4',bright:'#E1EEFF'},
+      {radius:1.12,tilt:1.26,spin:.15,yaw:.22,phase:.88,color:'#DDA571',bright:'#FFE4BD'}
+    ];
+    for(const ring of rings)drawOrbitalRing(ctx,ring,phase,center);
+    ctx.shadowBlur = 5;
+    for(const mote of orbitalMotes) {
+      const t = mote.azimuth + phase*(.24+.12*mote.radius);
+      const distance = mote.radius * center.radius * (1+.018*Math.sin(phase+mote.phase));
+      const x=center.x + Math.cos(t)*distance;
+      const y=center.y + Math.sin(t)*distance*.7;
+      ctx.globalAlpha=.10+.21*(.5+.5*Math.sin(t*2 + mote.phase));
+      ctx.fillStyle=mote.size>1.15?'#F4C99A':'#A8D0EF';
+      ctx.beginPath();ctx.arc(x,y,mote.size*center.radius/171,0,2*Math.PI);ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+    // Softly fade the VFX before the live DOM title and primary controls.
+    const clip=ctx.createLinearGradient(0,center.cutoff-75*center.radius/171,0,center.cutoff+20*center.radius/171);
+    clip.addColorStop(0,'rgba(255,255,255,1)');
+    clip.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.globalCompositeOperation='destination-in';ctx.globalAlpha=1;ctx.fillStyle=clip;ctx.fillRect(0,0,w,h);
+    ctx.restore();
+  }
+  orbitalHandle = requestAnimationFrame(renderOrbitalFrame);
+}
+function stopOrbitalMotion(){
+  if(orbitalHandle){cancelAnimationFrame(orbitalHandle);orbitalHandle=0;}
+  orbitalContext?.clearRect(0,0,orbitalCanvasWidth,orbitalCanvasHeight);
+  document.documentElement.dataset.orbitalMotion='still';
+}
+function syncOrbitalMotion(){
+  if(!orbitalContext || !isActive() || !visible.has(orbitalScene)){
+    stopOrbitalMotion();return;
+  }
+  document.documentElement.dataset.orbitalMotion='dynamic';
+  if(!orbitalHandle)orbitalHandle=requestAnimationFrame(renderOrbitalFrame);
+}
+if(orbitalContext){
+  sizeOrbitalCanvas();
+  orbitalPoster?.addEventListener('load',()=>{sizeOrbitalCanvas();syncOrbitalMotion();},{once:true});
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{sizeOrbitalCanvas();syncOrbitalMotion();}).observe(orbitalScene);
+  else window.addEventListener('resize',()=>{sizeOrbitalCanvas();syncOrbitalMotion();});
+  window.addEventListener('pagehide',stopOrbitalMotion);
+}
+
 // Measured, bounded depth response; no event-to-layout synchronous reads.
 const hero=document.querySelector('.hero-scene');
 function scrollMotion(){ ticking=false;if(!hero || !isActive())return;const y=Math.min(window.scrollY,600);hero.style.setProperty('--scroll-depth',`${Math.round(y*.027)}px`); }
@@ -248,6 +408,7 @@ syncPlayback();
       <img class="scene-poster hero-poster" src="./assets/hero.webp" width="1536" height="864" alt="" fetchpriority="high">
       <video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video>
       <div class="atmosphere" aria-hidden="true"><span class="glint glint-one"></span><span class="glint glint-two"></span><span class="orbital-radiance"></span></div>
+      <canvas class="hero-orbit-canvas" aria-hidden="true" tabindex="-1"></canvas>
       <div class="hero-vignette" aria-hidden="true"></div>
     </div>
     <div class="hero-content">
