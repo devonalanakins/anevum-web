@@ -53,6 +53,46 @@ async function verifyModernNavigationA11y(){
  }
 }
 
+
+async function verifyClickThroughJourney(){
+ await send("Emulation.setDeviceMetricsOverride",{width:1440,height:900,deviceScaleFactor:1,mobile:false});
+ await send("Page.navigate",{url:base+"/"});
+ await waitFor(async()=>await evalJS("location.pathname==='/'&&document.querySelector('main h1')?.textContent.trim()==='ANEVUM'"),"journey home");
+ async function go(selector,url,heading,selected){
+  const clicked=await evalJS("(()=>{const a=document.querySelector("+JSON.stringify(selector)+");if(!a||!a.getClientRects().length)return false;a.click();return true})()");
+  if(!clicked)throw Error("Missing or invisible navigation "+selector);
+  const expected=new URL(url,base);
+  const state=await waitFor(async()=>{
+   const x=await evalJS("(()=>({path:location.pathname,query:location.search,heading:document.querySelector('main h1')?.textContent.trim(),selected:document.querySelector('nav.lab-nav a[aria-current=page]')?.textContent.trim(),ready:document.readyState}))()");
+   return x?.path===expected.pathname&&x.query===expected.search&&x.heading?.includes(heading)&&x.ready==="complete"?x:null;
+  },"link "+selector);
+  if(selected&&state.selected!==selected)throw Error("Incorrect selected navigation after "+url+": "+JSON.stringify(state));
+ }
+ await go('nav.lab-nav a[href="/original-works/experiments"]',"/original-works/experiments","Experiments","Experiments");
+ await go('.lab-exp-filters a[href="/original-works/experiments?theme=interactive"]',"/original-works/experiments?theme=interactive","Experiments","Experiments");
+ const filtered=await evalJS("(()=>({count:document.querySelectorAll('.lab-exp-card').length,active:document.querySelector('.lab-exp-filter[aria-current=page]')?.textContent.trim()}))()");
+ if(filtered.count!==1||filtered.active!=="Interactive")throw Error("Interactive filter click failed: "+JSON.stringify(filtered));
+ await go('.lab-exp-filters a[href="/original-works/experiments"]',"/original-works/experiments","Experiments","Experiments");
+ const all=await evalJS("(()=>({count:document.querySelectorAll('.lab-exp-card').length,active:document.querySelector('.lab-exp-filter[aria-current=page]')?.textContent.trim()}))()");
+ if(all.count!==3||all.active!=="All work")throw Error("All-work filter click failed: "+JSON.stringify(all));
+ await go('nav.lab-nav a[href="/original-works/research"]',"/original-works/research","Research","Research");
+ await go('nav.lab-nav a[href="/original-works/archive"]',"/original-works/archive","Archive","Archive");
+ await go('a.lab-arc-feature[href="/original-works/reply"]',"/original-works/reply","REPLY");
+ await go('header.site-header a.brand[href="/"]',"/","ANEVUM");
+ for(const hash of ["#experiences","#contact"]){
+  const clicked=await evalJS("(()=>{const a=document.querySelector('nav.lab-nav a[href="+JSON.stringify(hash)+"]');if(!a)return false;a.click();return true})()");
+  if(!clicked)throw Error("Missing public anchor "+hash);
+  await waitFor(async()=>await evalJS("location.pathname==='/'&&location.hash==="+JSON.stringify(hash)+"&&!!document.getElementById("+JSON.stringify(hash.slice(1))+")"),"public anchor "+hash);
+ }
+ await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+ await send("Page.navigate",{url:base+"/"});
+ await waitFor(async()=>await evalJS("location.pathname==='/'&&!!document.querySelector('details.lab-mobile summary')"),"mobile journey");
+ const opened=await evalJS("(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();return d.open})()");
+ if(!opened)throw Error("Mobile navigation did not open");
+ await go('details.lab-mobile nav a[href="/original-works/archive"]',"/original-works/archive","Archive","Archive");
+ console.log("ANEVUM_CLICK_JOURNEY_PASS");
+}
+
 async function view(pathname,width,height,name,saveScreenshot=false){
  // Exact apex is the independent Living Laboratory. Legacy routes continue
  // through the established Original Works browser acceptance below.
@@ -332,6 +372,7 @@ try {
  await view("/",390,844,"canonical-root-390",true);
  await view("/",1440,900,"canonical-root-1440",true);
  await verifyModernNavigationA11y();
+  await verifyClickThroughJourney();
  console.log("ANEVUM_PUBLIC_STUDIO_BROWSER_QA_PASS");
 } finally {
  for(const wait of pending.values()){clearTimeout(wait.timer);wait.reject(Error("Browser ending"));}pending.clear();

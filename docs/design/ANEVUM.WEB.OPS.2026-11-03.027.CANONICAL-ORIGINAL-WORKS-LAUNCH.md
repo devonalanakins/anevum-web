@@ -79,4 +79,17 @@ Clean paths (`/experiments`, `/research`, `/archive`) are **not** part of the pr
 6. Verify the *live* homepage, Experiments (including filter links), Research, Archive, all seven historical editorial routes, public asset content types, unsupported-method rejection, and unaffected member/staff/API owners. Check actual browser behavior and logs before marking LIVE.
 7. If a regression is observed, restore the previous verified Worker version using the established rollback procedure; confirm restored live behavior. Never roll back private Workers to fix a public-page bug.
 
+### Read-only routing and rollback preflight — November 12, 2026
+
+Observed through the live Cloudflare API; this is a dated snapshot, not permission to change routing. The anevum.com zone is active with 47 Worker route patterns. The exact root pattern `anevum.com/` and `anevum.com/original-works*` both point to `anevum-original-works-public`. The catch-all `anevum.com/*` remains assigned to `anevum-native-frame-policy-v001`.
+
+No separate route currently owns `/experiments`, `/research`, or `/archive` for the public studio. Those clean paths must not be advertised as working. Do not widen or replace the catch-all as a shortcut. The existing `/original-works/experiments`, `/original-works/research`, and `/original-works/archive` routes remain the reviewed public URLs.
+
+Cloudflare reports the latest deployment of `anevum-original-works-public` as deployment `2aa3aee2-436c-4339-bc66-f75ab39951b8` (November 4, 2026), serving **100% Worker version 5** (`e041ca80-646f-4f39-b3a3-5145b508ed72`). Version 4 (`dec5586e-ab40-42a8-8ad6-8911dec8e925`) is a historical rollback **candidate**, not a tested restoration. Re-read routes and deployments immediately before any authorized release; stop on route-owner or deployed-version drift.
+
+Clean aliases require a separate exact-route ownership proposal, associated Worker handler behavior, negative path tests, owner approval, and post-change verification. No Cloudflare mutation is part of PR #812.
+
+### Click-through journey acceptance
+
+The isolated Chromium suite must follow real anchor clicks from Home to Experiments (including Interactive and All filters), then Research, Archive, preserved REPLY, and back to the Living Laboratory. It must also verify Experiences/Contact fragments and a mobile Archive menu link. This complements static URL checks and does not require external browser services.
 Current status: **DRAFT / UNMERGED / UNDEPLOYED / RELEASE_NO_GO**. Passing CI is a source-level acceptance checkpoint, not permission to publish.
