@@ -124,3 +124,25 @@ test('research terrain canvas adds true moving geometry without changing editori
  assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
+
+test('experiments galaxy canvas preserves review-only motion gates',()=>{
+ assert.match(html,/<a class="scene destination destination-experiments"[^>]*href="\/original-works\/experiments"/);
+ assert.match(html,/<canvas class="experiments-vortex-canvas" aria-hidden="true" tabindex="-1"><\/canvas>/);
+ assert.equal((html.match(/class="experiments-vortex-canvas"/g)||[]).length,1);
+ assert.match(styles,/\.destination-experiments \.experiments-vortex-canvas/);
+ assert.match(styles,/\.destination-experiments\.is-playing \.experiments-vortex-canvas\{opacity:0\}/);
+ assert.match(styles,/html\[data-motion=still\] \.experiments-vortex-canvas\{display:none!important\}/);
+ assert.match(script,/const experimentsScene = document\.querySelector\('\.destination-experiments'\)/);
+ assert.match(script,/function spiralPoint\(/);
+ assert.match(script,/function renderExperimentsFrame\(/);
+ assert.match(script,/function syncExperimentsFlow\(/);
+ assert.match(script,/function stopExperimentsFlow\(/);
+ assert.match(script,/!isActive\(\) \|\| !visible\.has\(experimentsScene\)/);
+ assert.match(script,/cancelAnimationFrame\(experimentsHandle\)/);
+ assert.match(script,/syncExperimentsFlow\(\);/);
+ assert.match(script,/video\.addEventListener\('playing',[^\n]*syncExperimentsFlow\(\)/);
+ assert.match(script,/video\.addEventListener\('pause',[^\n]*syncExperimentsFlow\(\)/);
+ assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
+ assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
