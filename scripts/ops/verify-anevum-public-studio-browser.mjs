@@ -34,6 +34,21 @@ async function waitFor(fn,label,{failFast=false}={}){
  }
  throw Error("Timed out waiting for "+label+(lastError?": "+lastError.message:""));
 }
+
+async function verifyModernNavigationA11y(){
+ const pages=[["/",""],["/original-works/experiments","Experiments"],["/original-works/research","Research"],["/original-works/archive","Archive"]];
+ for(const [pathname,label] of pages){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await send("Page.navigate",{url:base+pathname});
+  await waitFor(async()=>await evalJS("location.pathname==="+JSON.stringify(pathname)+"&&!!document.querySelector('main h1')"),"navigable "+pathname);
+  const state=await evalJS("(()=>{const skip=document.querySelector('a.lab-skip[href=\"#main\"]'),main=document.querySelector('main#main'),header=document.querySelector('.lab-header'),desk=document.querySelector('nav.lab-nav'),mobile=document.querySelector('details.lab-mobile'),summary=mobile?.querySelector('summary'),all=[...document.querySelectorAll('a[href]')];if(skip)skip.focus();const top=skip?.getBoundingClientRect().top,skipFocused=document.activeElement===skip;skip?.blur();return {skipFocused,top,hasMain:!!main&&main.tabIndex===-1,header:!!header,desktop:!!desk&&desk.getAttribute('aria-label')==='Primary navigation',mobile:!!mobile&&!!summary&&summary.textContent.trim()==='Menu'&&mobile.querySelector('nav')?.getAttribute('aria-label')==='Mobile navigation',mobileVisible:!!mobile&&getComputedStyle(mobile).display!=='none',mainCount:document.querySelectorAll('main').length,headingCount:document.querySelectorAll('h1').length,focusableLinks:all.every(a=>!!(a.textContent.trim()||a.getAttribute('aria-label'))),selected:[...desk?.querySelectorAll('a[aria-current=\"page\"]')||[]].map(a=>a.textContent.trim()),selectedMobile:[...mobile?.querySelectorAll('nav a[aria-current=\"page\"]')||[]].map(a=>a.textContent.trim()),width:document.documentElement.clientWidth,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1}})()");
+  if(!state.skipFocused||state.top<0||state.top>90||!state.hasMain||!state.header||!state.desktop||!state.mobile||!state.mobileVisible||state.mainCount!==1||state.headingCount!==1||!state.focusableLinks||state.overflow||state.width!==390)throw Error("Public keyboard/landmark accessibility failed for "+pathname+": "+JSON.stringify(state));
+  const selected=label?[label]:[];
+  if(JSON.stringify(state.selected)!==JSON.stringify(selected)||JSON.stringify(state.selectedMobile)!==JSON.stringify(selected))throw Error("Incorrect current-page navigation for "+pathname+": "+JSON.stringify(state));
+  console.log("ANEVUM_NAV_A11Y_PASS "+pathname);
+ }
+}
+
 async function view(pathname,width,height,name,saveScreenshot=false){
  // Exact apex is the independent Living Laboratory. Legacy routes continue
  // through the established Original Works browser acceptance below.
@@ -312,6 +327,7 @@ try {
  await view("/original-works/experiments?theme=interactive",390,844,"experiments-interactive-390",false);
  await view("/",390,844,"canonical-root-390",true);
  await view("/",1440,900,"canonical-root-1440",true);
+ await verifyModernNavigationA11y();
  console.log("ANEVUM_PUBLIC_STUDIO_BROWSER_QA_PASS");
 } finally {
  for(const wait of pending.values()){clearTimeout(wait.timer);wait.reject(Error("Browser ending"));}pending.clear();

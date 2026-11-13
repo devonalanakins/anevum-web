@@ -353,6 +353,47 @@ test("Archive index links to all seven preserved Original Works routes without r
  }
 });
 
+test("Living Laboratory links resolve to public routes and real fragment targets",async()=>{
+ const routes=["/","/original-works/experiments","/original-works/research","/original-works/archive"];
+ const cached=new Map();
+ async function read(url,referrer){
+  const key=url.origin+url.pathname+url.search;
+  if(!cached.has(key)){
+   const response=await worker.fetch(new Request(key));
+   assert.equal(response.status,200,"Broken public navigation from "+referrer+" to "+key);
+   assert.equal(response.headers.get("Content-Type"),"text/html; charset=utf-8","Wrong link target content type: "+key);
+   assert.equal(response.headers.get("X-Anevum-Surface"),"anevum-original-works-public-v3-root");
+   cached.set(key,await response.text());
+  }
+  return cached.get(key);
+ }
+ for(const route of routes){
+  const base=new URL("https://anevum.com"+route),html=await read(base,route);
+  assert.equal((html.match(/<main\b/g)||[]).length,1,"One main landmark expected: "+route);
+  assert.equal((html.match(/<h1\b/g)||[]).length,1,"One main heading expected: "+route);
+  assert.match(html,/<a\b[^>]*class="lab-skip"[^>]*href="#main"|<a\b[^>]*href="#main"[^>]*class="lab-skip"/,"Missing skip link: "+route);
+  assert.match(html,/<main id="main" tabindex="-1">/,"Missing focusable main: "+route);
+  assert.match(html,/aria-label="Primary navigation"/,"Missing desktop nav label: "+route);
+  assert.match(html,/aria-label="Mobile navigation"/,"Missing mobile nav label: "+route);
+  const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+  assert.equal(ids.length,new Set(ids).size,"Duplicate HTML IDs: "+route);
+  const links=[...html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map(m=>m[1]);
+  assert.ok(links.length>=12,"Unexpectedly incomplete navigation: "+route);
+  for(const dest of routes)assert.ok(links.includes(dest),"Missing main navigation route "+dest+" from "+route);
+  for(const href of links){
+   const target=new URL(href,base);
+   if(target.origin!==base.origin)continue;
+   assert.ok(target.pathname==="/"||target.pathname==="/original-works"||target.pathname.startsWith("/original-works/"),
+    "Internal link crosses unapproved route boundary: "+route+" -> "+href);
+   const targetHTML=await read(target,route);
+   if(target.hash){
+    const id=decodeURIComponent(target.hash.slice(1));
+    assert.ok(id&&targetHTML.includes('id="'+id+'"'),"Broken fragment "+route+" -> "+href);
+   }
+  }
+ }
+});
+
 test("root launch is method-safe and cannot intercept staff, member or API routes",async()=>{
  const head=await worker.fetch(new Request("https://anevum.com/",{method:"HEAD"}));
  assert.equal(head.status,200);
