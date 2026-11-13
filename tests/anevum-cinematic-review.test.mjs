@@ -288,6 +288,7 @@ test('image-led specular accents never redraw baked metal and mobile review stay
  const segment=script.split('function drawOrbitalRing(ctx, ring, phase, center) {')[1]?.split('function renderOrbitalFrame(timestamp)')[0];
  assert.ok(segment,'glint helper is present');
  assert.match(segment,/ctx\.createRadialGradient\(/);
+ assert.match(segment,/const angle=2\*Math\.PI\*\(\(progress\+ring\.phase\+j\*\.51\)%1\)/); // complete-period wrap
  assert.match(segment,/ctx\.fillStyle=glow/);
  assert.doesNotMatch(segment,/Path2D|\.stroke\(|\.strokeStyle|ctx\.shadowBlur/);
  assert.match(script,/const reflectedY=Math\.min\(h\*\.84,center\.y\+center\.radius\*1\.55\)/);
