@@ -75,6 +75,12 @@ html[data-orbital-motion=still] .hero-orbit-canvas{display:none!important}
 html[data-motion=still] .research-flow-canvas{display:none!important}
 @media(prefers-reduced-motion:reduce){.research-flow-canvas{display:none!important}}
 
+/* ANEVUM Experiments | original luminous spiral flow. Review-only artwork enhancement. */
+.destination-experiments .experiments-vortex-canvas{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;opacity:.78;mix-blend-mode:screen;contain:strict;transition:opacity .45s ease}
+.destination-experiments.is-playing .experiments-vortex-canvas{opacity:0}
+html[data-motion=still] .experiments-vortex-canvas{display:none!important}
+@media(prefers-reduced-motion:reduce){.experiments-vortex-canvas{display:none!important}}
+
 </style>
   <script type="module">
 // ANEVUM cinematic preview: no external runtime, no speculative footage, no account/data access.
@@ -114,8 +120,8 @@ function setupVideo(scene) {
   video.muted = true; video.loop = true; video.playsInline = true;
   video.preload = scene.dataset.scene === 'hero' ? 'metadata' : 'none';
   if (!state.listenersBound) {
-    video.addEventListener('playing',()=>{scene.classList.add('is-playing');syncResearchFlow();});
-    video.addEventListener('pause',()=>{scene.classList.remove('is-playing');syncResearchFlow();});
+    video.addEventListener('playing',()=>{scene.classList.add('is-playing');syncResearchFlow();syncExperimentsFlow();});
+    video.addEventListener('pause',()=>{scene.classList.remove('is-playing');syncResearchFlow();syncExperimentsFlow();});
     video.addEventListener('error',()=>scene.classList.remove('is-playing'));
     state.listenersBound = true;
   }
@@ -130,6 +136,7 @@ function syncPlayback() {
   document.documentElement.dataset.motion = isStill() ? 'still' : 'dynamic';
   syncOrbitalMotion();
   syncResearchFlow();
+  syncExperimentsFlow();
   if (!isActive()) { scenes.forEach(stopVideo); return; }
   // Budget two simultaneously decoded videos, prioritizing the hero scene.
   let remaining=2;
@@ -474,6 +481,115 @@ if(researchContext){
   window.addEventListener('pagehide',stopResearchFlow);
 }
 
+// ANEVUM.WEB.BUILD.2026-11-13.007.EXPERIMENTS-SPIRAL-MOTION
+// Review-only original spiral geometry: not an approved 4K cinematic master.
+// Real user navigation/content stay in HTML and the poster remains the fallback.
+const experimentsScene = document.querySelector('.destination-experiments');
+const experimentsCanvas = experimentsScene?.querySelector('.experiments-vortex-canvas');
+const experimentsContext = experimentsCanvas?.getContext('2d', {alpha:true});
+let experimentsHandle=0, experimentsLastFrame=0;
+let experimentsWidth=0, experimentsHeight=0, experimentsScale=1;
+// Deterministic particles ensure that frames have continuous identities, not flickering random stars.
+const experimentsDust = Array.from({length:200},(_,i)=>({
+  arm:i%3,
+  t:.10+.88*((i*0.618033988749895)%1),
+  jitter:((i*0.7548776662466927)%1-.5)*.072,
+  phase:(i*0.414213562373095)%1*Math.PI*2,
+  radius:.36+(i%5)*.155,
+  cold:i%6===0
+}));
+function sizeExperimentsCanvas(){
+  if(!experimentsCanvas || !experimentsContext || !experimentsScene)return;
+  const box=experimentsScene.getBoundingClientRect();
+  if(box.width<1 || box.height<1)return;
+  experimentsWidth=box.width;experimentsHeight=box.height;
+  experimentsScale=Math.min(window.devicePixelRatio||1,1.5,Math.sqrt(240000/(box.width*box.height)));
+  experimentsCanvas.width=Math.max(1,Math.round(box.width*experimentsScale));
+  experimentsCanvas.height=Math.max(1,Math.round(box.height*experimentsScale));
+  experimentsContext.setTransform(experimentsScale,0,0,experimentsScale,0,0);
+}
+function spiralPoint(t,arm,phase,jitter=0){
+  // Bright nuclear core in the source poster lives at roughly (66%, 33%).
+  const w=experimentsWidth,h=experimentsHeight;
+  const turns=t*5.9 + arm*Math.PI*2/3 + phase*.23 + jitter;
+  const radial=(.06+.93*Math.pow(t,1.38));
+  const rX=w*.425*radial,rY=h*.40*radial;
+  const x=w*.66 + rX*Math.cos(turns);
+  const y=h*.33 + rY*Math.sin(turns);
+  return {x,y};
+}
+function stopExperimentsFlow(){
+  if(experimentsHandle){cancelAnimationFrame(experimentsHandle);experimentsHandle=0;}
+  experimentsContext?.clearRect(0,0,experimentsWidth,experimentsHeight);
+  if(experimentsScene)experimentsScene.dataset.experimentsMotion='still';
+}
+function renderExperimentsFrame(timestamp){
+  experimentsHandle=0;
+  if(!experimentsContext || !isActive() || !visible.has(experimentsScene) || experimentsScene.classList.contains('is-playing')){
+    stopExperimentsFlow();return;
+  }
+  // ~24 Hz maximum. Uses a bounded device-resolution canvas rather than full-resolution GPU effects.
+  if(timestamp-experimentsLastFrame>=40){
+    experimentsLastFrame=timestamp;
+    const c=experimentsContext,w=experimentsWidth,h=experimentsHeight;
+    const phase=(timestamp%14000)*Math.PI*2/14000;
+    c.clearRect(0,0,w,h);
+    c.save();c.globalCompositeOperation='screen';c.lineCap='round';
+    // Three discrete arms rotate at a small physical angular rate, tied to a stable source image.
+    for(let arm=0;arm<3;arm++){
+      const spine=new Path2D();
+      for(let sample=0;sample<=80;sample++){
+        const p=spiralPoint(.035+sample/80*.94,arm,phase);
+        if(sample===0)spine.moveTo(p.x,p.y);else spine.lineTo(p.x,p.y);
+      }
+      c.strokeStyle=arm===1?'#FFCFB2':arm===2?'#B7C8FE':'#F6A5C4';
+      c.lineWidth=arm===1?1.05:.8;
+      c.globalAlpha=.16;
+      c.shadowColor=arm===2?'#9F88FF':'#FFE1BA';c.shadowBlur=5;
+      c.stroke(spine);
+    }
+    c.shadowBlur=0;
+    // Luminous dust travels with the arms, rather than remaining a random flashing particle field.
+    const count=experimentsWidth<250?120:experimentsDust.length;
+    for(let i=0;i<count;i++){
+      const mote=experimentsDust[i],p=spiralPoint(mote.t,mote.arm,phase,mote.jitter);
+      const pulse=.56+.44*Math.sin(phase*2+mote.phase);
+      c.globalAlpha=(.22+.33*pulse)*(1-mote.t*.17);
+      c.fillStyle=mote.cold?'#B4C7FF':(i%3===0?'#F7C2DC':'#FFD9B6');
+      c.beginPath();c.arc(p.x,p.y,mote.radius*(.8+.22*pulse),0,Math.PI*2);c.fill();
+    }
+    const cx=w*.66,cy=h*.33;
+    const core=c.createRadialGradient(cx,cy,0,cx,cy,Math.max(17,w*.11));
+    core.addColorStop(0,'rgba(255,249,236,.36)');
+    core.addColorStop(.3,'rgba(255,200,150,.14)');
+    core.addColorStop(1,'rgba(248,130,171,0)');
+    c.globalAlpha=.7;c.fillStyle=core;
+    c.beginPath();c.arc(cx,cy,Math.max(17,w*.11),0,2*Math.PI);c.fill();
+    // Protect the caption area: galaxy light belongs to the upper image, not the real UI layer.
+    c.globalAlpha=1;c.globalCompositeOperation='destination-in';
+    const mask=c.createLinearGradient(0,h*.36,0,h*.90);
+    mask.addColorStop(0,'rgba(255,255,255,.94)');
+    mask.addColorStop(.52,'rgba(255,255,255,.42)');
+    mask.addColorStop(1,'rgba(255,255,255,0)');
+    c.fillStyle=mask;c.fillRect(0,0,w,h);
+    c.restore();
+  }
+  experimentsHandle=requestAnimationFrame(renderExperimentsFrame);
+}
+function syncExperimentsFlow(){
+  if(!experimentsContext || !isActive() || !visible.has(experimentsScene) || experimentsScene.classList.contains('is-playing')){
+    stopExperimentsFlow();return;
+  }
+  experimentsScene.dataset.experimentsMotion='dynamic';
+  if(!experimentsHandle)experimentsHandle=requestAnimationFrame(renderExperimentsFrame);
+}
+if(experimentsContext){
+  sizeExperimentsCanvas();
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{sizeExperimentsCanvas();syncExperimentsFlow();}).observe(experimentsScene);
+  else window.addEventListener('resize',()=>{sizeExperimentsCanvas();syncExperimentsFlow();});
+  window.addEventListener('pagehide',stopExperimentsFlow);
+}
+
 // Measured, bounded depth response; no event-to-layout synchronous reads.
 const hero=document.querySelector('.hero-scene');
 function scrollMotion(){ ticking=false;if(!hero || !isActive())return;const y=Math.min(window.scrollY,600);hero.style.setProperty('--scroll-depth',`${Math.round(y*.027)}px`); }
@@ -525,7 +641,7 @@ syncPlayback();
     </div>
     <div class="destinations" aria-label="Explore ANEVUM">
       <a class="scene destination destination-experiments" data-scene="experiments" data-video-ready="false" data-video-webm="/original-works/assets/motion/experiments.webm" data-video-mp4="/original-works/assets/motion/experiments.mp4" href="/original-works/experiments">
-        <img class="scene-poster" src="./assets/experiments.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video>
+        <img class="scene-poster" src="./assets/experiments.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video><canvas class="experiments-vortex-canvas" aria-hidden="true" tabindex="-1"></canvas>
         <span class="destination-content"><span class="destination-icon" aria-hidden="true">◈</span><strong>Experiments</strong><small>Projects, prototypes, and creative systems</small></span><span class="destination-arrow" aria-hidden="true">↗</span>
       </a>
       <a class="scene destination destination-research" data-scene="research" data-video-ready="false" data-video-webm="/original-works/assets/motion/research.webm" data-video-mp4="/original-works/assets/motion/research.mp4" href="/original-works/research">
