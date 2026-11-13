@@ -25,14 +25,245 @@ async function evalJS(expression){
  if(r.exceptionDetails)throw Error(r.exceptionDetails.text||"runtime exception");
  return r.result?.value;
 }
-async function waitFor(fn,label){
+async function waitFor(fn,label,{failFast=false}={}){
+ let lastError;
  for(let i=0;i<110;i++){
-  try{const v=await fn();if(v)return v;}catch{}
+  try{const v=await fn();if(v)return v;}
+  catch(error){lastError=error;if(failFast)throw error;}
   await sleep(110);
  }
- throw Error("Timed out waiting for "+label);
+ throw Error("Timed out waiting for "+label+(lastError?": "+lastError.message:""));
 }
+
+async function verifyModernNavigationA11y(){
+ const pages=[["/",""],["/original-works/experiments","Experiments"],["/original-works/research","Research"],["/original-works/archive","Archive"]];
+ for(const [pathname,label] of pages){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await send("Page.navigate",{url:base+pathname});
+  // The headless CDP target may not own window focus even if .focus() sets
+  // activeElement. Emulate the focused tab before testing :focus styling.
+  await send("Page.bringToFront");
+  await send("Emulation.setFocusEmulationEnabled",{enabled:true});
+  await waitFor(async()=>await evalJS("location.pathname==="+JSON.stringify(pathname)+"&&!!document.querySelector('main h1')"),"navigable "+pathname);
+  const state=await evalJS("(async()=>{const skip=document.querySelector('a.lab-skip[href=\"#main\"]'),main=document.querySelector('main#main'),header=document.querySelector('.lab-header'),desk=document.querySelector('nav.lab-nav'),mobile=document.querySelector('details.lab-mobile'),summary=mobile?.querySelector('summary'),all=[...document.querySelectorAll('a[href]')];if(skip)skip.focus();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const top=skip?.getBoundingClientRect().top,skipFocused=document.activeElement===skip,computedTop=skip?getComputedStyle(skip).top:null,pseudoFocus=!!skip?.matches(':focus'),docFocused=document.hasFocus(),scrollY=window.scrollY,position=skip?getComputedStyle(skip).position:null;skip?.blur();return {skipFocused,top,computedTop,pseudoFocus,docFocused,scrollY,position,hasMain:!!main&&main.tabIndex===-1,header:!!header,desktop:!!desk&&desk.getAttribute('aria-label')==='Primary navigation',mobile:!!mobile&&!!summary&&summary.textContent.trim()==='Menu'&&mobile.querySelector('nav')?.getAttribute('aria-label')==='Mobile navigation',mobileVisible:!!mobile&&getComputedStyle(mobile).display!=='none',mainCount:document.querySelectorAll('main').length,headingCount:document.querySelectorAll('h1').length,focusableLinks:all.every(a=>!!(a.textContent.trim()||a.getAttribute('aria-label'))),selected:[...desk?.querySelectorAll('a[aria-current=\"page\"]')||[]].map(a=>a.textContent.trim()),selectedMobile:[...mobile?.querySelectorAll('nav a[aria-current=\"page\"]')||[]].map(a=>a.textContent.trim()),width:document.documentElement.clientWidth,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1}})()");
+  if(!state.skipFocused||!state.pseudoFocus||!state.docFocused||state.top<0||state.top>90||!state.hasMain||!state.header||!state.desktop||!state.mobile||!state.mobileVisible||state.mainCount!==1||state.headingCount!==1||!state.focusableLinks||state.overflow||state.width!==390)throw Error("Public keyboard/landmark accessibility failed for "+pathname+": "+JSON.stringify(state));
+  const selected=label?[label]:[];
+  if(JSON.stringify(state.selected)!==JSON.stringify(selected)||JSON.stringify(state.selectedMobile)!==JSON.stringify(selected))throw Error("Incorrect current-page navigation for "+pathname+": "+JSON.stringify(state));
+  console.log("ANEVUM_NAV_A11Y_PASS "+pathname);
+ }
+}
+
+
+async function verifyClickThroughJourney(){
+ await send("Emulation.setDeviceMetricsOverride",{width:1440,height:900,deviceScaleFactor:1,mobile:false});
+ await send("Page.navigate",{url:base+"/"});
+ await waitFor(async()=>await evalJS("location.pathname==='/'&&document.querySelector('main h1')?.textContent.trim()==='ANEVUM'"),"journey home");
+ async function go(selector,url,heading,selected){
+  const clicked=await evalJS("(()=>{const a=document.querySelector("+JSON.stringify(selector)+");if(!a||!a.getClientRects().length)return false;a.click();return true})()");
+  if(!clicked)throw Error("Missing or invisible navigation "+selector);
+  const expected=new URL(url,base);
+  let lastState;
+  const state=await waitFor(async()=>{
+   const x=await evalJS("(()=>({path:location.pathname,query:location.search,heading:document.querySelector('main h1')?.textContent.trim(),title:document.title,selected:document.querySelector('nav.lab-nav a[aria-current=page]')?.textContent.trim(),ready:document.readyState}))()");
+   lastState=x;
+   return x?.path===expected.pathname&&x.query===expected.search&&x.heading?.includes(heading)&&x.ready==="complete"?x:null;
+  },"link "+selector).catch(error=>{throw Error(error.message+"; observed: "+JSON.stringify(lastState));});
+  if(selected&&state.selected!==selected)throw Error("Incorrect selected navigation after "+url+": "+JSON.stringify(state));
+ }
+ await go('nav.lab-nav a[href="/original-works/experiments"]',"/original-works/experiments","Experiments","Experiments");
+ await go('.lab-exp-filters a[href="/original-works/experiments?theme=interactive"]',"/original-works/experiments?theme=interactive","Experiments","Experiments");
+ const filtered=await evalJS("(()=>({count:document.querySelectorAll('.lab-exp-card').length,active:document.querySelector('.lab-exp-filter[aria-current=page]')?.textContent.trim()}))()");
+ if(filtered.count!==1||filtered.active!=="Interactive")throw Error("Interactive filter click failed: "+JSON.stringify(filtered));
+ await go('.lab-exp-filters a[href="/original-works/experiments"]',"/original-works/experiments","Experiments","Experiments");
+ const all=await evalJS("(()=>({count:document.querySelectorAll('.lab-exp-card').length,active:document.querySelector('.lab-exp-filter[aria-current=page]')?.textContent.trim()}))()");
+ if(all.count!==3||all.active!=="All work")throw Error("All-work filter click failed: "+JSON.stringify(all));
+ await go('nav.lab-nav a[href="/original-works/research"]',"/original-works/research","Research","Research");
+ await go('nav.lab-nav a[href="/original-works/archive"]',"/original-works/archive","Archive","Archive");
+ await go('a.lab-arc-feature[href="/original-works/reply"]',"/original-works/reply","A signal.");
+ await go('header.site-header a.brand[href="/"]',"/","ANEVUM");
+ for(const hash of ["#experiences","#contact"]){
+  const clicked=await evalJS("(()=>{const a=document.querySelector('nav.lab-nav a[href="+JSON.stringify(hash)+"]');if(!a)return false;a.click();return true})()");
+  if(!clicked)throw Error("Missing public anchor "+hash);
+  await waitFor(async()=>await evalJS("location.pathname==='/'&&location.hash==="+JSON.stringify(hash)+"&&!!document.getElementById("+JSON.stringify(hash.slice(1))+")"),"public anchor "+hash);
+ }
+ await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+ await send("Page.navigate",{url:base+"/"});
+ await waitFor(async()=>await evalJS("location.pathname==='/'&&!!document.querySelector('details.lab-mobile summary')"),"mobile journey");
+ const opened=await evalJS("(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();return d.open})()");
+ if(!opened)throw Error("Mobile navigation did not open");
+ await go('details.lab-mobile nav a[href="/original-works/archive"]',"/original-works/archive","Archive","Archive");
+ console.log("ANEVUM_CLICK_JOURNEY_PASS");
+}
+
+// CDP full-page capture can project an offscreen fixed skip link into the
+// screenshot at the scroll offset left by keyboard or lazy-image tests.
+// Capture the reviewed design from its actual initial viewport state instead.
+async function prepareModernScreenshot(){
+ const state=await evalJS("(async()=>{const active=document.activeElement;if(active&&typeof active.blur==='function')active.blur();document.querySelector('details.lab-mobile')?.removeAttribute('open');window.scrollTo({top:0,behavior:'instant'});await new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done)));const skip=document.querySelector('.lab-skip');return {scrollY:window.scrollY,skipFocused:!!skip?.matches(':focus'),skipBottom:skip?.getBoundingClientRect().bottom??null,menuOpen:!!document.querySelector('details.lab-mobile[open]')}})()");
+ if(state.scrollY!==0||state.skipFocused||state.skipBottom===null||state.skipBottom>0||state.menuOpen)throw Error("Full-page visual capture not reset: "+JSON.stringify(state));
+}
+
 async function view(pathname,width,height,name,saveScreenshot=false){
+ // Exact apex is the independent Living Laboratory. Legacy routes continue
+ // through the established Original Works browser acceptance below.
+
+
+
+ if(pathname==="/original-works/archive"){
+  await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await send("Page.navigate",{url:base+pathname});
+  const state=await waitFor(async()=>{
+   const v=await evalJS("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('main h1')?.textContent,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,links:[...document.querySelectorAll('.lab-arc-entry')].map(a=>a.getAttribute('href')),features:document.querySelectorAll('.lab-arc-feature').length,menu:!!document.querySelector('details.lab-mobile'),scripts:document.scripts.length,main:!!document.querySelector('main#main'),active:document.querySelector('.lab-nav a[aria-current=page]')?.textContent,art:[...document.querySelectorAll('.lab-arc-feature')].map(x=>getComputedStyle(x,':before').backgroundImage)}))()");
+   return v?.path===pathname&&v?.heading?v:null;
+  },"Archive "+name);
+  const expected=["/original-works","/original-works/works","/original-works/reply","/original-works/transcosmic","/original-works/wiki","/original-works/journal","/original-works/about"];
+  if(!state.main||!state.menu||state.heading!=="Archive"||!state.title.startsWith("Archive")||state.features!==2||state.scripts!==0||state.active!=="Archive"||JSON.stringify(state.links)!==JSON.stringify(expected))throw Error("Archive content or route boundary failed: "+JSON.stringify(state));
+  if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Archive horizontal overflow: "+JSON.stringify(state));
+  if(!state.art[0]?.includes("original-worlds-v1.webp")||!state.art[1]?.includes("lab-archive-v1.webp"))throw Error("Archive approved artwork missing: "+JSON.stringify(state.art));
+  const imageSizes=await evalJS("Promise.all(['/original-works/assets/original-worlds-v1.webp','/original-works/assets/lab-archive-v1.webp'].map(async src=>{const img=new Image();img.src=src;try{await img.decode();return img.naturalWidth}catch{return 0}}))");
+  if(imageSizes.length!==2||imageSizes.some(n=>n<400))throw Error("Archive image decoding or resolution failure: "+JSON.stringify(imageSizes));
+  const focused=await evalJS("(()=>{const a=document.querySelector('.lab-arc-entry');a.focus();return document.activeElement===a})()");
+  if(!focused)throw Error("Archive index links cannot receive keyboard focus");
+  if(width<650){
+   const menu=await evalJS("(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();const opened=d.open;const links=[...d.querySelectorAll('nav a')].map(x=>x.getAttribute('href'));d.querySelector('summary').click();return {opened,closed:!d.open,links}})()");
+   if(!menu.opened||!menu.closed||!menu.links.includes("/original-works/archive"))throw Error("Archive mobile navigation failed: "+JSON.stringify(menu));
+  }
+  if(saveScreenshot){
+   await prepareModernScreenshot();
+   const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
+   const file=path.join(output,"anevum-public-"+name+".png");
+   writeFileSync(file,Buffer.from(shot.data,"base64"));
+   if(readFileSync(file).length<12000)throw Error("Blank Archive screenshot");
+   const metrics=await send("Page.getLayoutMetrics");
+   const fullWidth=Math.ceil(metrics.cssContentSize?.width||metrics.contentSize.width);
+   const fullHeight=Math.ceil(metrics.cssContentSize?.height||metrics.contentSize.height);
+   if(fullWidth<width-20||fullHeight<=height||fullHeight>12000)throw Error("Invalid Archive full-page dimensions");
+   const full=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip:{x:0,y:0,width:fullWidth,height:fullHeight,scale:1}});
+   const fullPath=path.join(output,"anevum-public-"+name+"-full.png");
+   writeFileSync(fullPath,Buffer.from(full.data,"base64"));
+   if(readFileSync(fullPath).length<25000)throw Error("Blank Archive full-page screenshot");
+  }
+  console.log(JSON.stringify({case:name,path:state.path,width:state.width,links:state.links.length,features:state.features}));
+  return;
+ }
+ if(pathname==="/original-works/research"){
+  await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await send("Page.navigate",{url:base+pathname});
+  const state=await waitFor(async()=>{
+   const result=await evalJS("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('main h1')?.textContent,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,cards:document.querySelectorAll('.lab-res-card').length,indexLinks:document.querySelectorAll('.lab-res-index a').length,disclosures:document.querySelectorAll('.lab-res-details').length,images:[...document.querySelectorAll('.lab-res-media img')].map(x=>({loaded:x.complete&&x.naturalWidth>0,width:x.naturalWidth})),scripts:document.scripts.length,menu:!!document.querySelector('details.lab-mobile'),main:!!document.querySelector('main#main'),anchors:[...document.querySelectorAll('.lab-res-index a')].every(x=>!!document.querySelector(x.getAttribute('href')))}))()");
+   return result?.path===pathname&&result?.heading?result:null;
+  },"Research "+name);
+  if(!state.main||!state.menu||state.heading!=="Research"||!state.title.startsWith("Research")||state.cards!==4||state.disclosures!==4||state.indexLinks!==4||!state.anchors||state.scripts!==0)throw Error("Research content/accessibility failure: "+JSON.stringify(state));
+  if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Research horizontal overflow: "+JSON.stringify(state));
+  // The four source-backed WebPs intentionally use loading=lazy. Scroll each
+  // card into view before expecting it to decode, rather than treating a
+  // correctly deferred offscreen image as a failed fetch.
+  for(let i=0;i<4;i++){
+   await evalJS("(()=>{document.querySelectorAll('.lab-res-media img')["+i+"].scrollIntoView({behavior:'instant',block:'center'});return true})()");
+   await waitFor(async()=>await evalJS("(()=>{const x=document.querySelectorAll('.lab-res-media img')["+i+"];return x?.complete&&x.naturalWidth>0})()"),"research image "+(i+1));
+  }
+  const images=await evalJS("(()=>[...document.querySelectorAll('.lab-res-media img')].map(x=>({loaded:x.complete&&x.naturalWidth>0,width:x.naturalWidth})))()");
+  if(images.length!==4||images.some(x=>!x.loaded||x.width<400))throw Error("Research images missing or unexpectedly low-resolution: "+JSON.stringify(images));
+  await evalJS("(()=>{window.scrollTo({top:0,behavior:'instant'});return true})()");
+  const disclosure=await evalJS("(()=>{const d=document.querySelector('.lab-res-details');const summary=d?.querySelector('summary');summary?.focus();const focused=document.activeElement===summary;summary?.click();const opened=d.open;const question=!!d.querySelector('.lab-res-detail-copy strong');const overflow=document.documentElement.scrollWidth>document.documentElement.clientWidth+1;summary?.click();return {focused,opened,question,closed:!d.open,overflow}})()");
+  if(!disclosure.focused||!disclosure.opened||!disclosure.question||!disclosure.closed||disclosure.overflow)throw Error("Research native disclosure failure: "+JSON.stringify(disclosure));
+  if(width<650){
+   const menu=await evalJS("(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();const opened=d.open;const links=[...d.querySelectorAll('nav a')].map(x=>x.getAttribute('href'));d.querySelector('summary').click();return {opened,closed:!d.open,links}})()");
+   if(!menu.opened||!menu.closed||!menu.links.includes('/original-works/research'))throw Error("Research mobile menu failure: "+JSON.stringify(menu));
+  }
+  if(saveScreenshot){
+   await prepareModernScreenshot();
+   const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
+   const file=path.join(output,"anevum-public-"+name+".png");
+   writeFileSync(file,Buffer.from(shot.data,"base64"));
+   if(readFileSync(file).length<12000)throw Error("Blank research screenshot");
+   const metrics=await send("Page.getLayoutMetrics");
+   const fullWidth=Math.ceil(metrics.cssContentSize?.width||metrics.contentSize.width);
+   const fullHeight=Math.ceil(metrics.cssContentSize?.height||metrics.contentSize.height);
+   if(fullWidth<width-20||fullHeight<=height||fullHeight>12000)throw Error("Invalid research full-page screenshot dimensions");
+   const full=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip:{x:0,y:0,width:fullWidth,height:fullHeight,scale:1}});
+   const fullPath=path.join(output,"anevum-public-"+name+"-full.png");
+   writeFileSync(fullPath,Buffer.from(full.data,"base64"));
+   if(readFileSync(fullPath).length<25000)throw Error("Blank research full-page screenshot");
+  }
+  console.log(JSON.stringify({case:name,path:state.path,heading:state.heading,width:state.width,cards:state.cards,imagesLoaded:images.length}));
+  return;
+ }
+
+ if(pathname.startsWith("/original-works/experiments")){
+  const requestedPath=pathname.split("?")[0];
+  await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await send("Page.navigate",{url:base+pathname});
+  const state=await waitFor(async()=>{
+   const v=await evalJS("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('h1')?.textContent,count:document.querySelectorAll('.lab-exp-card').length,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,menu:!!document.querySelector('details.lab-mobile'),scripts:document.scripts.length,filterCount:document.querySelectorAll('.lab-exp-filter').length,active:document.querySelector('.lab-exp-filter[aria-current=page]')?.textContent,art:document.querySelector('.lab-exp-card')?.style.getPropertyValue('--art'),main:!!document.querySelector('main#main')}))()");
+   return v?.path===requestedPath&&v?.heading?v:null;
+  },"Experiments "+name);
+  const expectedCount=pathname.includes("?theme=interactive")?1:3;
+  if(!state.main||!state.menu||state.count!==expectedCount||state.filterCount!==4||state.scripts!==0||!state.art||!state.title.startsWith("Experiments")||state.heading!=="Experiments")throw Error("Experiments content invalid: "+JSON.stringify(state));
+  if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1)throw Error("Experiments horizontal overflow: "+JSON.stringify(state));
+  if(expectedCount===1&&state.active!=="Interactive")throw Error("Experiments filter is not active: "+JSON.stringify(state));
+  if(width<650){
+   const menu=await evalJS("(()=>{const x=document.querySelector('details.lab-mobile');x.querySelector('summary').click();const isOpen=x.open;const links=[...x.querySelectorAll('nav a')].map(a=>a.getAttribute('href'));x.querySelector('summary').click();return {isOpen,closed:!x.open,links}})()");
+   if(!menu.isOpen||!menu.closed||!menu.links.includes("/original-works/experiments"))throw Error("Experiments mobile navigation failed: "+JSON.stringify(menu));
+  }
+  if(saveScreenshot){
+   await prepareModernScreenshot();
+   const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
+   const file=path.join(output,"anevum-public-"+name+".png");writeFileSync(file,Buffer.from(shot.data,"base64"));
+   if(readFileSync(file).length<12000)throw Error("Experiments blank screenshot");
+   const metrics=await send("Page.getLayoutMetrics");
+   const fullWidth=Math.ceil(metrics.cssContentSize?.width||metrics.contentSize.width);
+   const fullHeight=Math.ceil(metrics.cssContentSize?.height||metrics.contentSize.height);
+   if(fullWidth<width-20||fullHeight<=height||fullHeight>12000)throw Error("Experiments full-page screenshot dimensions invalid");
+   const full=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip:{x:0,y:0,width:fullWidth,height:fullHeight,scale:1}});
+   const fullPath=path.join(output,"anevum-public-"+name+"-full.png");
+   writeFileSync(fullPath,Buffer.from(full.data,"base64"));
+   if(readFileSync(fullPath).length<20000)throw Error("Experiments blank full screenshot");
+  }
+  console.log(JSON.stringify({case:name,path:state.path,count:state.count,width:state.width,active:state.active}));
+  return;
+ }
+ if(pathname==="/"){
+  await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await send("Page.navigate",{url:base+pathname});
+  const state=await waitFor(async()=>{
+   const v=await evalJS(`(()=>{const desktop=document.querySelector('nav.lab-nav'),mobile=document.querySelector('details.lab-mobile'),hero=document.querySelector('#lab-home-title');return {path:location.pathname,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,title:document.title,heading:hero?.textContent,tagline:document.querySelector('.lab-italic')?.textContent,nav:[...(desktop?.querySelectorAll('a')||[])].map(a=>a.getAttribute('href')),main:!!document.querySelector('main#main'),skip:!!document.querySelector('a.lab-skip[href="#main"]'),menu:!!mobile,menuVisible:!!mobile&&getComputedStyle(mobile).display!=='none',scripts:document.scripts.length,artwork:getComputedStyle(document.querySelector('.lab-art')).backgroundImage.includes('lab-hero-v1.webp'),artCount:document.querySelectorAll('.lab-theme-shape img').length,heroInset:Math.round(document.querySelector('.lab-hero-copy').getBoundingClientRect().left),anchors:[...document.querySelectorAll('a[href^="#"]')].map(a=>a.getAttribute('href').slice(1)).filter(Boolean).every(id=>!!document.getElementById(id))}})()`);
+   return v?.path===pathname&&v?.heading?v:null;
+  },"Living Laboratory "+name);
+  if(!state.main||!state.skip||!state.menu||!state.artwork||state.artCount!==4||!state.anchors||state.scripts!==0)throw Error("Lab accessibility or link contract failed: "+JSON.stringify(state));
+  if(!state.title.includes("laboratory for the possible")||state.heading!=="ANEVUM"||!state.tagline?.includes("laboratory for the possible"))throw Error("Wrong laboratory identity: "+JSON.stringify(state));
+  if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Lab horizontal overflow: "+JSON.stringify(state));
+  if(state.heroInset<(width<=530?14:width<=1100?24:38))throw Error("Lab desktop/mobile hero gutter missing: "+JSON.stringify(state));
+  if(state.nav.length!==5||!state.nav.includes("/original-works/experiments")||!state.nav.includes("/original-works/archive"))throw Error("Lab navigation broken: "+JSON.stringify(state));
+  if((width<=800)!==state.menuVisible)throw Error("Lab menu breakpoint mismatch: "+JSON.stringify(state));
+  if(state.menuVisible){
+   const menu=await evalJS(`(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();const opened=d.open;const links=[...d.querySelectorAll('nav a')].map(a=>a.getAttribute('href'));d.querySelector('summary').click();return {opened,closed:!d.open,links}})()`);
+   if(!menu.opened||!menu.closed||!menu.links.includes("/original-works/experiments"))throw Error("Lab mobile disclosure failed: "+JSON.stringify(menu));
+  }
+  if(saveScreenshot){
+   await prepareModernScreenshot();
+   const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
+   const filepath=path.join(output,"anevum-public-"+name+".png");
+   writeFileSync(filepath,Buffer.from(shot.data,"base64"));
+   if(readFileSync(filepath).length<12000)throw Error("Blank Living Laboratory screenshot: "+filepath);
+   // Capture the entire laboratory composition for actual visual comparison.
+   const metrics=await send("Page.getLayoutMetrics");
+   const fullWidth=Math.ceil(metrics.cssContentSize?.width||metrics.contentSize.width);
+   const fullHeight=Math.ceil(metrics.cssContentSize?.height||metrics.contentSize.height);
+   if(fullWidth<width-20||fullHeight<=height||fullHeight>12000)throw Error("Invalid full-page dimensions: "+JSON.stringify({width,height,fullWidth,fullHeight}));
+   const fullShot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip:{x:0,y:0,width:fullWidth,height:fullHeight,scale:1}});
+   const fullPath=path.join(output,"anevum-public-"+name+"-full.png");
+   writeFileSync(fullPath,Buffer.from(fullShot.data,"base64"));
+   if(readFileSync(fullPath).length<25000)throw Error("Blank Living Laboratory full-page screenshot: "+fullPath);
+  }
+  console.log(JSON.stringify({case:name,path:state.path,width:state.width,heading:state.heading,menuVisible:state.menuVisible}));
+  return;
+ }
+
  await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
  await send("Page.navigate",{url:base+pathname});
@@ -90,16 +321,26 @@ async function view(pathname,width,height,name,saveScreenshot=false){
 }
 try {
  await waitFor(async()=>{if(server.exitCode!==null)throw Error("local server exited");return (await fetch(base+"/original-works")).status===200; },"loopback server");
- const lookup=spawnSync("which",["google-chrome"],{encoding:"utf8"});
- const chromeBin=lookup.status===0?lookup.stdout.trim():process.env.CHROME_BIN||"chromium";
- chrome=spawn(chromeBin,["--headless=new","--no-sandbox","--disable-gpu","--disable-dev-shm-usage","--no-first-run","--disable-background-networking","--remote-debugging-address=127.0.0.1","--remote-debugging-port=0","--user-data-dir="+profile,"about:blank"],{stdio:"ignore"});
+ const candidate=process.env.CHROME_BIN||(["google-chrome","google-chrome-stable","chromium","chromium-browser"].map(binary=>{
+  const lookup=spawnSync("which",[binary],{encoding:"utf8"});
+  return lookup.status===0?lookup.stdout.trim():null;
+ }).find(Boolean));
+ if(!candidate)throw Error("No Chrome/Chromium executable found for public-studio browser QA");
+ const version=spawnSync(candidate,["--version"],{encoding:"utf8"});
+ if(version.error||version.status!==0)throw Error("Chromium is not executable: "+candidate);
+ console.log("PUBLIC_STUDIO_BROWSER_BIN "+candidate+" | "+version.stdout.trim());
+ let chromeStartupError=null,chromeStderr="";
+ chrome=spawn(candidate,["--headless=new","--no-sandbox","--disable-gpu","--disable-dev-shm-usage","--no-first-run","--disable-background-networking","--remote-debugging-address=127.0.0.1","--remote-debugging-port=0","--user-data-dir="+profile,"about:blank"],{stdio:["ignore","ignore","pipe"]});
+ chrome.on("error",error=>{chromeStartupError=error;});
+ chrome.stderr?.on("data",chunk=>{chromeStderr=(chromeStderr+String(chunk)).slice(-3000);});
  const devtools=await waitFor(async()=>{
-  if(chrome.exitCode!==null)throw Error("Chrome exited: "+chrome.exitCode);
+  if(chromeStartupError)throw Error("Chrome startup error: "+chromeStartupError.message);
+  if(chrome.exitCode!==null)throw Error("Chrome exited ("+chrome.exitCode+"): "+chromeStderr);
   const f=path.join(profile,"DevToolsActivePort");
   if(!existsSync(f))return null;
   const n=Number(readFileSync(f,"utf8").split(/\r?\n/)[0]);
   return Number.isInteger(n)&&n>0?n:null;
- },"Chrome DevTools");
+ },"Chrome DevTools",{failFast:true}).catch(error=>{throw Error(error.message+"; stderr: "+chromeStderr);});
  const target=await (await fetch("http://127.0.0.1:"+devtools+"/json/new?about:blank",{method:"PUT"})).json();
  ws=new WebSocket(target.webSocketDebuggerUrl);
  ws.addEventListener("message",ev=>{
@@ -131,14 +372,37 @@ try {
 
   }
  }
+ await view("/original-works/archive",320,768,"archive-320",false);
+ await view("/original-works/archive",390,844,"archive-390",true);
+ await view("/original-works/archive",768,1024,"archive-768",false);
+ await view("/original-works/archive",1440,900,"archive-1440",true);
+ await view("/original-works/research",320,768,"research-320",false);
+ await view("/original-works/research",390,844,"research-390",true);
+ await view("/original-works/research",768,1024,"research-768",false);
+ await view("/original-works/research",1440,900,"research-1440",true);
+ await view("/original-works/experiments",390,844,"experiments-390",true);
+ await view("/original-works/experiments",1440,900,"experiments-1440",true);
+ await view("/original-works/experiments?theme=interactive",390,844,"experiments-interactive-390",false);
  await view("/",390,844,"canonical-root-390",true);
  await view("/",1440,900,"canonical-root-1440",true);
+ await verifyModernNavigationA11y();
+  await verifyClickThroughJourney();
  console.log("ANEVUM_PUBLIC_STUDIO_BROWSER_QA_PASS");
 } finally {
  for(const wait of pending.values()){clearTimeout(wait.timer);wait.reject(Error("Browser ending"));}pending.clear();
  if(ws)ws.close();
- if(chrome){chrome.kill("SIGTERM");}
- server.kill("SIGTERM");
- await sleep(200);
- rmSync(profile,{recursive:true,force:true});
+ // Chrome writes profile files while shutting down. Wait for process close
+ // before removing the temporary profile; retry ENOTEMPTY on slow runners.
+ let chromeClosed=null;
+ if(chrome && chrome.exitCode===null && chrome.signalCode===null){
+  chromeClosed=new Promise(resolve=>chrome.once("close",resolve));
+  chrome.kill("SIGTERM");
+ }
+ if(server.exitCode===null && server.signalCode===null)server.kill("SIGTERM");
+ if(chromeClosed)await Promise.race([chromeClosed,sleep(2500)]);
+ if(chrome && chrome.exitCode===null && chrome.signalCode===null){
+  chrome.kill("SIGKILL");
+  await sleep(250);
+ }
+ rmSync(profile,{recursive:true,force:true,maxRetries:20,retryDelay:150});
 }

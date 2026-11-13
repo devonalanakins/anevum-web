@@ -1,3 +1,8 @@
+import {renderLaboratoryExperiments} from "./living-laboratory-experiments.mjs";
+import {renderLaboratoryResearch} from "./living-laboratory-research.mjs";
+import {renderLivingLaboratoryArchive} from "./living-laboratory-archive.mjs";
+import {LAB_ART} from "./living-laboratory-art.mjs";
+import {renderLivingLaboratoryHome} from "./living-laboratory-home.mjs";
 /**
  * ANEVUM.WEB.OPS.2026-11-03.027.CANONICAL-ORIGINAL-WORKS-LAUNCH
  * Self-contained public creative studio with no client JS or private content.
@@ -48,8 +53,35 @@ export default {async fetch(request){
  // Only exact root and the existing public studio namespace are eligible.
  // Workers routing must still restrict the deployed surface to / and /original-works*.
  if(path!=='/'&&path!==ROOT&&!path.startsWith(ROOT+'/'))return unavailable(404);
+ const mediaPrefix=ROOT+'/assets/';
+ if(path.startsWith(mediaPrefix)){
+  const assetName=path.slice(mediaPrefix.length);
+  if(!Object.prototype.hasOwnProperty.call(LAB_ART,assetName))return unavailable(404);
+  // Content-addressed by an explicit v1 filename. Keep images on same-origin URLs
+  // without adding DNS routes, third-party CDNs, cookies, or client scripts.
+  const imageBytes=Uint8Array.from(atob(LAB_ART[assetName]),c=>c.charCodeAt(0));
+  const headers={
+   'Content-Type':'image/webp','Cache-Control':'public, max-age=31536000, immutable',
+   'X-Content-Type-Options':'nosniff','X-Robots-Tag':'noindex, nofollow, noarchive',
+   'Cross-Origin-Resource-Policy':'same-origin','X-Anevum-Surface':VERSION
+  };
+  return new Response(request.method==='HEAD'?null:imageBytes,{status:200,headers});
+ }
+ if(path===ROOT+'/archive'){
+  const html=renderLivingLaboratoryArchive();
+  return new Response(request.method==='HEAD'?null:html,{status:200,headers:securityHeaders});
+ }
+ if(path===ROOT+'/research'){
+  const html=renderLaboratoryResearch();
+  return new Response(request.method==='HEAD'?null:html,{status:200,headers:securityHeaders});
+ }
+ if(path===ROOT+'/experiments'){
+  const html=renderLaboratoryExperiments(url.searchParams.get('theme')||'all');
+  return new Response(request.method==='HEAD'?null:html,{status:200,headers:securityHeaders});
+ }
  const slug=(path==='/'||path===ROOT)?'':path.slice(ROOT.length+1);
  if(!Object.prototype.hasOwnProperty.call(ROUTES,slug))return unavailable(404);
  const page=ROUTES[slug];
- return new Response(request.method==='HEAD'?null:render(page),{status:200,headers:securityHeaders});
+ const html=path==='/'?renderLivingLaboratoryHome():render(page);
+ return new Response(request.method==='HEAD'?null:html,{status:200,headers:securityHeaders});
 }};

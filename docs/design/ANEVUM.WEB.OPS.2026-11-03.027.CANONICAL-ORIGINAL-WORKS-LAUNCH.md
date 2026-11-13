@@ -40,3 +40,56 @@ This is a **homepage-only routing change**. Preserve all existing member, staff,
 
 Prepared in source as a reversible, gated change. Mark LIVE only after confirmed Worker upload, exact-root route switch and independent live smoke tests.
 
+---
+
+## November 12, 2026 addendum — Living Laboratory release review
+
+This addendum records **draft PR #812**, which supersedes the proposed creative-homepage *content* in the historical runbook above. The prior exact-root cutover has already occurred. Do not repeat its root-route mutation, and do not represent this draft as a deployed release.
+
+### Confirmed Cloudflare routing (read-only check, November 12)
+
+| Route pattern | Existing Worker |
+| --- | --- |
+| `anevum.com/` | `anevum-original-works-public` |
+| `anevum.com/original-works*` | `anevum-original-works-public` |
+| `anevum.com/*` | `anevum-native-frame-policy-v001` |
+
+Numerous specific member, staff, API and other routes also exist and have independent Worker owners. Any future change to the public studio **must retain** their precedence and routing. No DNS, routes, Access or Worker deployments are authorized by this addendum.
+
+### Current draft content and URL contract
+
+The reviewed public studio serves exactly the homepage and the following pages on routes already owned by the public Worker:
+
+- `/` — Living Laboratory homepage.
+- `/original-works/experiments` — documented project links with native categories.
+- `/original-works/research` — research questions with explicit evidence limitations.
+- `/original-works/archive` — navigation to the **seven preserved editorial pages**, without replacing `/original-works` or their content.
+
+The home and new editorial pages use the approved local image-backed style; all reviewed source media is same-origin and allowlisted. The content is deliberately `noindex, nofollow, noarchive` until a **separate editorial/SEO approval**. Do not remove the crawl controls as an accidental consequence of launch.
+
+Clean paths (`/experiments`, `/research`, `/archive`) are **not** part of the present PR or deployment. The catch-all Worker owns them today. They require a separate collision/route-ownership inventory, a carefully reviewed targeted route or redirect proposal, explicit owner authorization, and post-change checks. Do not extend the public Worker to the global `/*` catch-all, and do not silently redirect existing private or legacy application paths.
+
+### Release acceptance gates for PR #812
+
+1. Confirm the exact PR head SHA and **both** repository workflows pass. Specifically require static Worker route/method/host/content-security tests, internal-link and fragment validation, keyboard/landmark focus checks, responsiveness at phone/tablet/desktop widths, original editorial preservation, and asset decoding.
+2. Independently review the current full-page desktop/mobile screenshots and obtain owner acceptance of the visual/copy experience. The artwork is illustrative; it is not a screenshot of a working scientific result or a publication-cover promise.
+3. Reconcile the identical historical `vesper-legacy` pinned schema fix in PR #811 without dropping its branch/commit/blob checks. Keep any protected application preview gates intact.
+4. Inventory the current `anevum-original-works-public` deployed version and route ownership **immediately before** the controlled release. Record a verified previous Worker version/rollback target. Do not change `anevum.com/` route mapping; it already points to the public Worker.
+5. Merge only after appropriate explicit publication authorization. Deploy the exact approved merged source to the existing public Worker **with no added bindings or unreviewed routes**. Stop on changed route owners or unexpected Worker configuration.
+6. Verify the *live* homepage, Experiments (including filter links), Research, Archive, all seven historical editorial routes, public asset content types, unsupported-method rejection, and unaffected member/staff/API owners. Check actual browser behavior and logs before marking LIVE.
+7. If a regression is observed, restore the previous verified Worker version using the established rollback procedure; confirm restored live behavior. Never roll back private Workers to fix a public-page bug.
+
+### Read-only routing and rollback preflight — November 12, 2026
+
+Observed through the live Cloudflare API; this is a dated snapshot, not permission to change routing. The anevum.com zone is active with 47 Worker route patterns. The exact root pattern `anevum.com/` and `anevum.com/original-works*` both point to `anevum-original-works-public`. The catch-all `anevum.com/*` remains assigned to `anevum-native-frame-policy-v001`.
+
+No separate route currently owns `/experiments`, `/research`, or `/archive` for the public studio. Those clean paths must not be advertised as working. Do not widen or replace the catch-all as a shortcut. The existing `/original-works/experiments`, `/original-works/research`, and `/original-works/archive` routes remain the reviewed public URLs.
+
+Cloudflare reports the latest deployment of `anevum-original-works-public` as deployment `2aa3aee2-436c-4339-bc66-f75ab39951b8` (November 4, 2026), serving **100% Worker version 5** (`e041ca80-646f-4f39-b3a3-5145b508ed72`). Version 4 (`dec5586e-ab40-42a8-8ad6-8911dec8e925`) is a historical rollback **candidate**, not a tested restoration. Re-read routes and deployments immediately before any authorized release; stop on route-owner or deployed-version drift.
+
+Clean aliases require a separate exact-route ownership proposal, associated Worker handler behavior, negative path tests, owner approval, and post-change verification. No Cloudflare mutation is part of PR #812.
+
+### Click-through journey acceptance
+
+The isolated Chromium suite must follow real anchor clicks from Home to Experiments (including Interactive and All filters), then Research, Archive, preserved REPLY, and back to the Living Laboratory. It must also verify Experiences/Contact fragments and a mobile Archive menu link. This complements static URL checks and does not require external browser services.
+Current status: **DRAFT / UNMERGED / UNDEPLOYED / RELEASE_NO_GO**. Passing CI is a source-level acceptance checkpoint, not permission to publish.

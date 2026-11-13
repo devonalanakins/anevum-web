@@ -74,6 +74,46 @@ jobs:
           node scripts/audit-v5-legacy-page-retention.mjs --json > "$RUNNER_TEMP/anevum-v5-legacy-page-retention.json"
           jq -e '(.version == "anevum.v5.legacy-page-retention.v1") and (.deletionAuthorized == false) and ((.runtimeUnresolved | length) == 0)' "$RUNNER_TEMP/anevum-v5-legacy-page-retention.json" > /dev/null
           jq -c '{counts, deletionAuthorized}' "$RUNNER_TEMP/anevum-v5-legacy-page-retention.json"
+      # Direct ESM tests cannot prove that Wrangler can package this Worker.
+      # Dry-run compiles without making any Cloudflare API changes.
+      - name: Bundle isolated public Worker with Wrangler (dry-run only)
+        if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle_dir="$RUNNER_TEMP/anevum-public-worker-bundle"
+          npx --no-install wrangler deploy --config wrangler.anevum-public-studio.jsonc --dry-run --outdir "$bundle_dir"
+          bundle_file="$(find "$bundle_dir" -type f \( -name '*.js' -o -name '*.mjs' \) -print -quit)"
+          test -n "$bundle_file"
+          test -s "$bundle_file"
+          BUNDLE_FILE="$bundle_file" node --input-type=module <<'NODE'
+          import {statSync} from "node:fs";
+          const bytes=statSync(process.env.BUNDLE_FILE).size;
+          const max=64*1024*1024;
+          if(bytes<=0||bytes>max)throw new Error("Public Worker exceeds 64 MiB uncompressed bundle limit: "+bytes);
+          console.log("ANEVUM_PUBLIC_WRANGLER_DRY_RUN_PASS",JSON.stringify({bytes,max}));
+          NODE
+
+      # Public-only Worker QA is independent of legacy RHEN/member contracts.
+      # Run it before unrelated fail-closed gates so its evidence is not skipped.
+      - name: Verify isolated public Original Works shell and real browser (no deploy)
+        if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check apps/anevum-public-studio/worker.mjs
+          node --test tests/anevum-public-studio.test.mjs
+          node scripts/ops/verify-anevum-public-studio-browser.mjs
+
+      - name: Upload public studio screenshot evidence
+        if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: anevum-public-original-works-${{ github.event.pull_request.number }}
+          path: ${{ runner.temp }}/anevum-public-*.png
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Enforce pinned WEB/RHEN cross-repository workspace schema parity
         # Public GitHub REST unauthenticated IP rate limits can return 403 in
         # Actions runners; authenticate this read-only pinned branch check.
@@ -130,24 +170,6 @@ jobs:
           set -euo pipefail
           bash scripts/ops/build-original-works-review.sh
           bash scripts/ops/verify-original-works-review-browser.sh
-
-      - name: Verify isolated public Original Works shell and real browser (no deploy)
-        if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --check apps/anevum-public-studio/worker.mjs
-          node --test tests/anevum-public-studio.test.mjs
-          node scripts/ops/verify-anevum-public-studio-browser.mjs
-
-      - name: Upload public studio screenshot evidence
-        if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: anevum-public-original-works-${{ github.event.pull_request.number }}
-          path: ${{ runner.temp }}/anevum-public-*.png
-          if-no-files-found: error
-          retention-days: 7
 
       - name: Verify owner-only Access before hosted Cloudflare Preview
         if: github.event_name == 'pull_request' && steps.scope.outputs.app_preview_required == 'true'

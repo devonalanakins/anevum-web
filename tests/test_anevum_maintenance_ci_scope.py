@@ -29,6 +29,27 @@ class ScopeTests(unittest.TestCase):
         ]
         self.assertFalse(scope.app_preview_required(approved))
 
+    def test_cross_repo_verifier_uses_ci_gate_not_hosted_preview(self):
+        ci_only = [
+            "scripts/verify-v5-cross-repo-schema.mjs",
+            "tests/v5-cross-repo-schema.test.mjs",
+        ]
+        public = ["apps/anevum-public-studio/worker.mjs"]
+        self.assertFalse(scope.app_preview_required(ci_only))
+        self.assertFalse(scope.public_studio_required(ci_only))
+        self.assertFalse(scope.app_preview_required(ci_only + public))
+        self.assertTrue(scope.public_studio_required(ci_only + public))
+        # An unrelated/private runtime change still fails closed through the
+        # existing Cloudflare Access requirement before any hosted preview.
+        for protected in ("src/App.tsx", "worker.mjs", "wrangler.jsonc"):
+            with self.subTest(protected=protected):
+                self.assertTrue(scope.app_preview_required(ci_only + public + [protected]))
+        workflow = (target.parents[2] / ".github/workflows/anevum-verify.yml").read_text()
+        self.assertIn("Enforce pinned WEB/RHEN cross-repository workspace schema parity", workflow)
+        self.assertIn("run: node scripts/verify-v5-cross-repo-schema.mjs", workflow)
+        self.assertIn("steps.scope.outputs.app_preview_required == 'true'", workflow)
+        self.assertIn("Verify owner-only Access before hosted Cloudflare Preview", workflow)
+
     def test_root_readme_only_does_not_require_preview(self):
         self.assertFalse(scope.app_preview_required(["README.md"]))
 
@@ -86,7 +107,7 @@ class ScopeTests(unittest.TestCase):
 
     def test_public_studio_has_separate_mandatory_no_deploy_review(self):
         paths = list(scope.ISOLATED_PUBLIC_STUDIO_PATHS)
-        self.assertEqual(len(paths), 7)
+        self.assertEqual(len(paths), 21)
         self.assertFalse(scope.app_preview_required(paths))
         self.assertTrue(scope.public_studio_required(paths))
         self.assertFalse(scope.isolated_review_required(paths))
@@ -105,6 +126,15 @@ class ScopeTests(unittest.TestCase):
         files = ["apps/anevum-public-studio/worker.mjs", "src/App.tsx"]
         self.assertTrue(scope.app_preview_required(files))
         self.assertTrue(scope.public_studio_required(files))
+
+    def test_image_assets_are_isolated_but_unknown_images_fail_closed(self):
+        known = ["apps/anevum-public-studio/art/lab-hero-v1.webp",
+                 "apps/anevum-public-studio/living-laboratory-art.mjs"]
+        self.assertFalse(scope.app_preview_required(known))
+        self.assertTrue(scope.public_studio_required(known))
+        unknown = ["apps/anevum-public-studio/art/unreviewed-v2.webp"]
+        self.assertTrue(scope.app_preview_required(known + unknown))
+        self.assertTrue(scope.public_studio_required(known + unknown))
 
     def test_unknown_new_public_studio_file_cannot_bypass_preview(self):
         files = ["apps/anevum-public-studio/worker.mjs", "apps/anevum-public-studio/auth.mjs"]

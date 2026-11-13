@@ -22,6 +22,11 @@ MAINTENANCE_PATHS = frozenset([
     "tests/v5-preview-encrypted-backup.test.mjs",
     "tests/v5-production-manual-deploy.test.mjs",
     "tests/v5-production-release.test.mjs",
+    # These two files implement and test a read-only, always-on CI contract
+    # checker. They are not application or hosted-preview inputs. The workflow
+    # must still run the verifier unconditionally and fail closed on mismatch.
+    "scripts/verify-v5-cross-repo-schema.mjs",
+    "tests/v5-cross-repo-schema.test.mjs",
     # Reviewed repository-extraction tooling and standalone project metadata.
     # These do not alter the ANEVUM web runtime, build or deployments.
     ".github/workflows/deploy-brandle.yml",
@@ -55,6 +60,20 @@ ISOLATED_ORIGINAL_WORKS_REVIEW_PATHS = frozenset([
 # Its own browser/security gate is mandatory for these exact files only.
 ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "apps/anevum-public-studio/worker.mjs",
+    "apps/anevum-public-studio/living-laboratory-home.mjs",
+    "apps/anevum-public-studio/living-laboratory-experiments.mjs",
+    "apps/anevum-public-studio/living-laboratory-research.mjs",
+    "apps/anevum-public-studio/living-laboratory-archive.mjs",
+    "apps/anevum-public-studio/living-laboratory-art.mjs",
+    "apps/anevum-public-studio/art/lab-hero-v1.webp",
+    "apps/anevum-public-studio/art/rhen-generative-v1.webp",
+    "apps/anevum-public-studio/art/brandle-interactive-v1.webp",
+    "apps/anevum-public-studio/art/original-worlds-v1.webp",
+    "apps/anevum-public-studio/art/research-generation-v1.webp",
+    "apps/anevum-public-studio/art/research-computation-v1.webp",
+    "apps/anevum-public-studio/art/research-worlds-v1.webp",
+    "apps/anevum-public-studio/art/research-imagination-v1.webp",
+    "apps/anevum-public-studio/art/lab-archive-v1.webp",
     "tests/anevum-public-studio.test.mjs",
     "scripts/ops/anevum-public-studio-test-server.mjs",
     "scripts/ops/verify-anevum-public-studio-browser.mjs",
