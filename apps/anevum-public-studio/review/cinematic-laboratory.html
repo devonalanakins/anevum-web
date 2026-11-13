@@ -332,9 +332,11 @@ function orbitalCenter() {
           cutoff:shiftY + naturalHeight * coordinate('orbitCutoff',.39,.15,.8) * scale};
 }
 function ringCoordinate(angle, phase, ring, cx, cy, radius) {
-  const tilt = ring.tilt + .13 * Math.sin(phase + ring.phase);
-  const spin = ring.spin + .18 * Math.sin(phase - ring.phase);
-  const yaw = ring.yaw + .09 * Math.cos(phase + ring.phase);
+  // Rigid physical plane rotates through a complete 3D orbit each period.
+  // speed is an integer winding, so phase = 2*pi returns the exact pose.
+  const tilt = ring.tilt;
+  const spin = ring.spin;
+  const yaw = ring.yaw + phase * ring.speed;
   const x0 = Math.cos(angle) * radius * ring.radius;
   const y0 = Math.sin(angle) * radius * ring.radius;
   const y1 = y0 * Math.cos(tilt);
@@ -399,9 +401,9 @@ function renderOrbitalFrame(timestamp) {
     ambient.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=ambient; ctx.beginPath();ctx.arc(center.x,center.y,center.radius,0,2*Math.PI);ctx.fill();
     const rings=[
-      {radius:.99,tilt:1.05,spin:-.48,yaw:.56,phase:.13,color:'#EBA065',bright:'#FFD6A5'},
-      {radius:.83,tilt:.71,spin:.72,yaw:-.52,phase:.58,color:'#92C6F4',bright:'#E1EEFF'},
-      {radius:1.12,tilt:1.26,spin:.15,yaw:.22,phase:.88,color:'#DDA571',bright:'#FFE4BD'}
+      {radius:.99,tilt:1.05,spin:-.48,yaw:.56,speed:1,phase:.13,color:'#EBA065',bright:'#FFD6A5'},
+      {radius:.83,tilt:.71,spin:.72,yaw:-.52,speed:-1,phase:.58,color:'#92C6F4',bright:'#E1EEFF'},
+      {radius:1.12,tilt:1.26,spin:.15,yaw:.22,speed:1,phase:.88,color:'#DDA571',bright:'#FFE4BD'}
     ];
     for(const ring of rings)drawOrbitalRing(ctx,ring,phase,center);
     ctx.shadowBlur = 5;
