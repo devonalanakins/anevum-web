@@ -86,3 +86,18 @@ test('review-only clip inspector is operable but cannot activate unapproved netw
  assert.doesNotMatch(script,/\bfetch\s*\(|localStorage|sessionStorage|XMLHttpRequest/);
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
+
+test('procedural orbital study respects passive motion and accessibility boundaries',()=>{
+ assert.match(html,/<canvas class="hero-orbit-canvas" aria-hidden="true" tabindex="-1"><\/canvas>/);
+ assert.match(styles,/html\[data-orbital-motion=still\] \.hero-orbit-canvas\{display:none!important\}/);
+ assert.match(script,/function drawOrbitalRing\(/);
+ assert.match(script,/function renderOrbitalFrame\(/);
+ assert.match(script,/function stopOrbitalMotion\(/);
+ assert.match(script,/function syncOrbitalMotion\(/);
+ assert.match(script,/cancelAnimationFrame\(orbitalHandle\)/);
+ assert.match(script,/!isActive\(\) \|\| !visible\.has\(orbitalScene\)/);
+ assert.match(script,/Math\.sqrt\(1800000 \/ \(rect\.width \* rect\.height\)\)/);
+ assert.match(script,/syncOrbitalMotion\(\);/);
+ assert.doesNotMatch(script,/\bfetch\s*\(|localStorage|sessionStorage|XMLHttpRequest/);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
