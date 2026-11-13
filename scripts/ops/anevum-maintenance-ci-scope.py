@@ -69,6 +69,8 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "apps/anevum-public-studio/review/assets/archive.webp",
     "docs/design/ANEVUM.WEB.DESIGN.2026-11-13.002.CINEMATIC-LABORATORY-PRODUCTION.md",
     "tests/anevum-cinematic-review.test.mjs",
+    # Offline original animation renderer; never deployed or bundled by the public Worker.
+    "scripts/ops/render-anevum-research-motion.py",
     "apps/anevum-public-studio/living-laboratory-home.mjs",
     "apps/anevum-public-studio/living-laboratory-experiments.mjs",
     "apps/anevum-public-studio/living-laboratory-research.mjs",
