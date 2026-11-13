@@ -95,6 +95,14 @@ async function verifyClickThroughJourney(){
  console.log("ANEVUM_CLICK_JOURNEY_PASS");
 }
 
+// CDP full-page capture can project an offscreen fixed skip link into the
+// screenshot at the scroll offset left by keyboard or lazy-image tests.
+// Capture the reviewed design from its actual initial viewport state instead.
+async function prepareModernScreenshot(){
+ const state=await evalJS("(async()=>{const active=document.activeElement;if(active&&typeof active.blur==='function')active.blur();document.querySelector('details.lab-mobile')?.removeAttribute('open');window.scrollTo({top:0,behavior:'instant'});await new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done)));const skip=document.querySelector('.lab-skip');return {scrollY:window.scrollY,skipFocused:!!skip?.matches(':focus'),skipBottom:skip?.getBoundingClientRect().bottom??null,menuOpen:!!document.querySelector('details.lab-mobile[open]')}})()");
+ if(state.scrollY!==0||state.skipFocused||state.skipBottom===null||state.skipBottom>0||state.menuOpen)throw Error("Full-page visual capture not reset: "+JSON.stringify(state));
+}
+
 async function view(pathname,width,height,name,saveScreenshot=false){
  // Exact apex is the independent Living Laboratory. Legacy routes continue
  // through the established Original Works browser acceptance below.
@@ -122,6 +130,7 @@ async function view(pathname,width,height,name,saveScreenshot=false){
    if(!menu.opened||!menu.closed||!menu.links.includes("/original-works/archive"))throw Error("Archive mobile navigation failed: "+JSON.stringify(menu));
   }
   if(saveScreenshot){
+   await prepareModernScreenshot();
    const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
    const file=path.join(output,"anevum-public-"+name+".png");
    writeFileSync(file,Buffer.from(shot.data,"base64"));
@@ -165,6 +174,7 @@ async function view(pathname,width,height,name,saveScreenshot=false){
    if(!menu.opened||!menu.closed||!menu.links.includes('/original-works/research'))throw Error("Research mobile menu failure: "+JSON.stringify(menu));
   }
   if(saveScreenshot){
+   await prepareModernScreenshot();
    const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
    const file=path.join(output,"anevum-public-"+name+".png");
    writeFileSync(file,Buffer.from(shot.data,"base64"));
@@ -200,6 +210,7 @@ async function view(pathname,width,height,name,saveScreenshot=false){
    if(!menu.isOpen||!menu.closed||!menu.links.includes("/original-works/experiments"))throw Error("Experiments mobile navigation failed: "+JSON.stringify(menu));
   }
   if(saveScreenshot){
+   await prepareModernScreenshot();
    const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
    const file=path.join(output,"anevum-public-"+name+".png");writeFileSync(file,Buffer.from(shot.data,"base64"));
    if(readFileSync(file).length<12000)throw Error("Experiments blank screenshot");
@@ -234,6 +245,7 @@ async function view(pathname,width,height,name,saveScreenshot=false){
    if(!menu.opened||!menu.closed||!menu.links.includes("/original-works/experiments"))throw Error("Lab mobile disclosure failed: "+JSON.stringify(menu));
   }
   if(saveScreenshot){
+   await prepareModernScreenshot();
    const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
    const filepath=path.join(output,"anevum-public-"+name+".png");
    writeFileSync(filepath,Buffer.from(shot.data,"base64"));
