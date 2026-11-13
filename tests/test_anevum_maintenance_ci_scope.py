@@ -160,6 +160,18 @@ class ScopeTests(unittest.TestCase):
             with self.subTest(unknown=unknown):
                 self.assertTrue(scope.app_preview_required(reviewed + [unknown]))
 
+    def test_original_research_motion_renderer_is_isolated_but_unknown_media_fails_closed(self):
+        approved = "scripts/ops/render-anevum-research-motion.py"
+        self.assertIn(approved, scope.ISOLATED_PUBLIC_STUDIO_PATHS)
+        self.assertFalse(scope.app_preview_required([approved]))
+        self.assertTrue(scope.public_studio_required([approved]))
+        self.assertTrue(scope.app_preview_required([
+            approved, "apps/anevum-public-studio/review/assets/research.mp4"
+        ]))
+        self.assertTrue(scope.app_preview_required([
+            approved, "scripts/ops/unreviewed-media-publisher.py"
+        ]))
+
     def test_unknown_new_public_studio_file_cannot_bypass_preview(self):
         files = ["apps/anevum-public-studio/worker.mjs", "apps/anevum-public-studio/auth.mjs"]
         self.assertTrue(scope.app_preview_required(files))
