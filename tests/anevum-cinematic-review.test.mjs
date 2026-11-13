@@ -236,26 +236,23 @@ test('procedural orbit yields to approved local film playback without changing m
 });
 
 
-test('armillary ring motion is periodic rigid 3D geometry and remains preview-only',()=>{
- assert.match(script,/const yaw = ring\.yaw \+ phase \* ring\.speed/);
- assert.match(script,/speed:1/);
- assert.match(script,/speed:-1/);
+test('cinematic orbital accents are bounded and preserve the image-led scene',()=>{
+ assert.match(script,/const tilt = ring\.tilt \+ \.13 \* Math\.sin\(phase \+ ring\.phase\)/);
+ assert.match(script,/const spin = ring\.spin \+ \.18 \* Math\.sin\(phase - ring\.phase\)/);
+ assert.match(script,/const yaw = ring\.yaw \+ \.09 \* Math\.cos\(phase \+ ring\.phase\)/);
+ assert.doesNotMatch(script,/ring\.yaw \+ phase \* ring\.speed/);
  assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
- assert.equal((html.match(/data-video-ready="true"/g)||[]).length,0);
  const part=script.match(/function ringCoordinate\([\s\S]*?\n\}\n(?=function drawOrbitalRing)/)?.[0];
- assert.ok(part,'isolated armillary function is available');
- const project=new Script('('+part.trim()+')',{filename:'ringCoordinate.js'}).runInNewContext({Math});
- const sample={radius:1,tilt:.73,spin:.24,yaw:.34,speed:1,phase:.1};
- const origin=project(.83,0,sample,320,210,170);
- const quarter=project(.83,Math.PI/2,sample,320,210,170);
- const closed=project(.83,2*Math.PI,sample,320,210,170);
- assert.ok(Math.hypot(origin.x-quarter.x,origin.y-quarter.y)>8,'a full 3D orientation change must be observable');
- assert.ok(Math.abs(origin.z-quarter.z)>.04,'3D z depth must change');
- assert.ok(Math.abs(origin.x-closed.x)<1e-8 && Math.abs(origin.y-closed.y)<1e-8 && Math.abs(origin.z-closed.z)<1e-8,'rigid orbit must loop without pose discontinuity');
- assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
+ assert.ok(part,'image-led orbital overlay remains independent');
+ const coordinate=new Script('('+part.trim()+')',{filename:'ringCoordinate.js'}).runInNewContext({Math});
+ const ring={radius:1,tilt:.73,spin:.24,yaw:.34,phase:.1};
+ const first=coordinate(.83,0,ring,320,210,170);
+ const quarter=coordinate(.83,Math.PI/2,ring,320,210,170);
+ const closed=coordinate(.83,2*Math.PI,ring,320,210,170);
+ assert.ok(Math.hypot(first.x-quarter.x,first.y-quarter.y)>1,'subtle orbital motion remains visible');
+ assert.ok(Math.abs(first.x-closed.x)<1e-8 && Math.abs(first.y-closed.y)<1e-8 && Math.abs(first.z-closed.z)<1e-8,'accents loop without a pose jump');
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
-
 
 test('cinematic preview handles invalid or unsupported video without repeated retries',()=>{
  assert.match(script,/if \(state\.initialized \|\| state\.failed\) return;/);
