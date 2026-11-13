@@ -171,3 +171,28 @@ test('Experiences portal motion remains passive and fail-closed',()=>{
  assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
+
+
+test('Archive illumination remains passive and fail-closed',()=>{
+ assert.match(html,/<a class="scene destination destination-archive"[^>]*href="\/original-works\/archive"/);
+ assert.match(html,/<canvas class="archive-illumination-canvas" aria-hidden="true" tabindex="-1"><\/canvas>/);
+ assert.equal((html.match(/class="archive-illumination-canvas"/g)||[]).length,1);
+ assert.match(styles,/\.destination-archive\.is-playing \.archive-illumination-canvas\{opacity:0\}/);
+ assert.match(styles,/html\[data-motion=still\] \.archive-illumination-canvas\{display:none!important\}/);
+ for(const token of [
+  "const archiveScene = document.querySelector('.destination-archive')",
+  "function sizeArchiveCanvas()",
+  "function renderArchiveFrame(timestamp)",
+  "function stopArchiveIllumination()",
+  "function syncArchiveIllumination()",
+  "Math.sqrt(215000/(rect.width*rect.height))",
+  "!visible.has(archiveScene)",
+  "archiveScene.classList.contains('is-playing')",
+  "cancelAnimationFrame(archiveHandle)",
+  "window.addEventListener('pagehide',stopArchiveIllumination)",
+  "syncArchiveIllumination();"
+ ]) assert.ok(script.includes(token),'missing Archive contract: '+token);
+ assert.equal((html.match(/data-video-ready="false"/g)||[]).length,5);
+ assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
