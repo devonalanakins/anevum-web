@@ -113,7 +113,7 @@ const isActive = () => document.visibilityState === 'visible' && !isStill();
 
 function setupVideo(scene) {
   const state = sceneStates.get(scene);
-  if (state.initialized) return;
+  if (state.initialized || state.failed) return;
   // Never request nonexistent or unapproved media. Posters are available independently.
   if (scene.dataset.videoReady !== 'true') return;
   const video = scene.querySelector('video');
@@ -135,9 +135,9 @@ function setupVideo(scene) {
   video.muted = true; video.loop = true; video.playsInline = true;
   video.preload = scene.dataset.scene === 'hero' ? 'metadata' : 'none';
   if (!state.listenersBound) {
-    video.addEventListener('playing',()=>{scene.classList.add('is-playing');syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
+    video.addEventListener('playing',()=>{state.failed=false;scene.classList.add('is-playing');syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
     video.addEventListener('pause',()=>{scene.classList.remove('is-playing');syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
-    video.addEventListener('error',()=>{scene.classList.remove('is-playing');syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
+    video.addEventListener('error',()=>{state.failed=true;scene.classList.remove('is-playing');syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
     state.listenersBound = true;
   }
   state.initialized = true;
@@ -188,16 +188,23 @@ function syncPlayback() {
   // Budget two simultaneously decoded videos, prioritizing the hero scene.
   let remaining=2;
   for (const scene of scenes) {
-    const eligible = visible.has(scene) && remaining > 0 && scene.dataset.videoReady === 'true';
+    const eligible = visible.has(scene) && remaining > 0 && scene.dataset.videoReady === 'true' && !sceneStates.get(scene).failed;
     if (!eligible) { stopVideo(scene); continue; }
     setupVideo(scene);
     const video = scene.querySelector('video');
     if (!sceneStates.get(scene).initialized || !video) continue;
     remaining -= 1;
-    if (video.paused) video.play().catch(()=>scene.classList.remove('is-playing'));
+    if (video.paused) video.play().catch(()=>{
+      // A rejected/unsupported video is not retried on every hover or scroll.
+      // Keep the sharp poster and independent procedural ambience available.
+      const state=sceneStates.get(scene);
+      if(state)state.failed=true;
+      scene.classList.remove('is-playing');
+      syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();
+    });
   }
 }
-for(const scene of scenes) sceneStates.set(scene,{initialized:false,localUrl:null,listenersBound:false});
+for(const scene of scenes) sceneStates.set(scene,{initialized:false,localUrl:null,listenersBound:false,failed:false});
 const observer = new IntersectionObserver(entries=>{
   for (const entry of entries) {
     if(entry.isIntersecting) visible.add(entry.target); else visible.delete(entry.target);
@@ -214,7 +221,7 @@ for(const scene of scenes) {
 motionQuery.addEventListener('change',syncPlayback);
 mobileQuery.addEventListener('change',()=>{
   // Switching viewports invalidates media selection, never duplicates source nodes.
-  for(const scene of scenes){const state=sceneStates.get(scene);if(!state.initialized || state.localUrl)continue;stopVideo(scene);const video=scene.querySelector('video');video?.querySelectorAll('source').forEach(s=>s.remove());video?.load();state.initialized=false;}
+  for(const scene of scenes){const state=sceneStates.get(scene);if(!state.initialized || state.localUrl)continue;stopVideo(scene);const video=scene.querySelector('video');video?.querySelectorAll('source').forEach(s=>s.remove());video?.load();state.initialized=false;state.failed=false;}
   syncPlayback();
 });
 connection?.addEventListener?.('change',syncPlayback);
@@ -236,7 +243,7 @@ if (inspector) {
     const video=scene.querySelector('video');
     if(video){video.removeAttribute('src');video.querySelectorAll('source').forEach(src=>src.remove());video.load();}
     if(state.localUrl)URL.revokeObjectURL(state.localUrl);
-    state.localUrl=null;state.initialized=false;
+    state.localUrl=null;state.initialized=false;state.failed=false;
     scene.dataset.videoReady='false';
     syncPlayback();
   }
