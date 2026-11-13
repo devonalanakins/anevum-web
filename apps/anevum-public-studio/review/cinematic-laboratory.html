@@ -63,7 +63,7 @@ html[data-motion=still] .scene-video,html[data-motion=still] .atmosphere{display
 .review-media-actions button:hover{background:#334b62}
 .review-media-actions button:disabled{opacity:.45;cursor:not-allowed}
 .review-media-body #review-status{min-height:35px;font-size:11px;color:#e5c6a7}
-@media(max-width:720px){.review-media-tools{right:10px;bottom:calc(10px + env(safe-area-inset-bottom));width:min(360px,calc(100vw - 20px))}.review-media-body{max-height:min(75svh,600px);overflow:auto}}
+@media(max-width:720px){.review-media-tools{position:relative;right:auto;bottom:auto;z-index:1;width:calc(100% - 30px);margin:18px auto 24px}.review-media-body{max-height:none;overflow:visible}}
 @media(forced-colors:active){.review-media-tools,.review-media-actions button{border:1px solid CanvasText}}
 
 .hero-orbit-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;mix-blend-mode:screen;opacity:.91;contain:strict}
