@@ -403,6 +403,20 @@ function renderOrbitalFrame(timestamp) {
       {radius:1.12,tilt:1.26,spin:.15,yaw:.22,phase:.88,color:'#DDA571',bright:'#FFE4BD'}
     ];
     for(const ring of rings)drawOrbitalRing(ctx,ring,phase,center);
+    // Register a faint reflected pool directly beneath the photographed orb.
+    // This is light only: no replacement mesh, outline, or manufactured object.
+    const reflectedY=Math.min(h*.84,center.y+center.radius*1.55);
+    ctx.save();
+    ctx.translate(center.x,reflectedY);
+    ctx.scale(1,.16);
+    const reflectedGlow=ctx.createRadialGradient(0,0,0,0,0,center.radius*1.6);
+    const reflectedAlpha=.025+.008*Math.sin(phase);
+    reflectedGlow.addColorStop(0,`rgba(255,191,112,${reflectedAlpha})`);
+    reflectedGlow.addColorStop(.45,`rgba(121,185,242,${reflectedAlpha*.43})`);
+    reflectedGlow.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=reflectedGlow;
+    ctx.beginPath();ctx.arc(0,0,center.radius*1.6,0,Math.PI*2);ctx.fill();
+    ctx.restore();
     ctx.shadowBlur = 5;
     for(const mote of orbitalMotes) {
       const t = mote.azimuth + phase*(.24+.12*mote.radius);
