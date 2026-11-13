@@ -146,7 +146,37 @@ function stopVideo(scene) {
   if (video && !video.paused) video.pause();
   scene.classList.remove('is-playing');
 }
+// ANEVUM.WEB.BUILD.2026-11-13.010.PROCEDURAL-MOTION-GOVERNOR
+// Budget concurrent procedural effects without changing their individual scene algorithms.
+// At most three compositor/canvas loops on desktop and one on narrow phones.
+// Videos retain their separate two-decoder budget and do not count twice.
+const proceduralActive = new Set();
+function proceduralAllowed(scene) { return proceduralActive.has(scene); }
+function refreshProceduralBudget() {
+  proceduralActive.clear();
+  if (!isActive()) return;
+  const limit = innerWidth < 720 ? 1 : innerWidth < 1100 ? 2 : 3;
+  const vw = innerWidth, vh = innerHeight;
+  const candidates = [];
+  for(const scene of scenes) {
+    if (!visible.has(scene) || scene.classList.contains('is-playing')) continue;
+    const rect = scene.getBoundingClientRect();
+    const overlapX = Math.max(0,Math.min(rect.right,vw)-Math.max(rect.left,0));
+    const overlapY = Math.max(0,Math.min(rect.bottom,vh)-Math.max(rect.top,0));
+    if(overlapX < 1 || overlapY < 1) continue;
+    const proximity = Math.abs((rect.top+rect.bottom)/2-vh*.5)/Math.max(vh,1);
+    const focus = scene.contains(document.activeElement);
+    const hover = scene.matches(':hover');
+    const sceneScore = (focus ? 10 : 0) + (hover ? 6 : 0) +
+      (scene.dataset.scene === 'hero' ? 1.4 : 0) - proximity;
+    candidates.push({scene,sceneScore});
+  }
+  candidates.sort((a,b)=>b.sceneScore-a.sceneScore || scenes.indexOf(a.scene)-scenes.indexOf(b.scene));
+  for(const candidate of candidates.slice(0,limit)) proceduralActive.add(candidate.scene);
+}
+
 function syncPlayback() {
+  refreshProceduralBudget();
   document.documentElement.dataset.motion = isStill() ? 'still' : 'dynamic';
   syncOrbitalMotion();
   syncResearchFlow();
@@ -174,6 +204,12 @@ const observer = new IntersectionObserver(entries=>{
   syncPlayback();
 },{rootMargin:'120px 0px 120px 0px',threshold:.03});
 scenes.forEach(scene=>observer.observe(scene));
+for(const scene of scenes) {
+  scene.addEventListener('pointerenter',syncPlayback,{passive:true});
+  scene.addEventListener('pointerleave',syncPlayback,{passive:true});
+  scene.addEventListener('focusin',syncPlayback);
+  scene.addEventListener('focusout',()=>requestAnimationFrame(syncPlayback));
+}
 motionQuery.addEventListener('change',syncPlayback);
 mobileQuery.addEventListener('change',()=>{
   // Switching viewports invalidates media selection, never duplicates source nodes.
@@ -338,7 +374,7 @@ function drawOrbitalRing(ctx, ring, phase, center) {
 }
 function renderOrbitalFrame(timestamp) {
   orbitalHandle = 0;
-  if (!orbitalContext || !orbitalScene || !isActive() || !visible.has(orbitalScene)) {
+  if (!orbitalContext || !orbitalScene || !isActive() || !visible.has(orbitalScene) || !proceduralAllowed(orbitalScene)) {
     stopOrbitalMotion();return;
   }
   if(timestamp - orbitalLastFrame >= 42) {
@@ -387,7 +423,7 @@ function stopOrbitalMotion(){
   document.documentElement.dataset.orbitalMotion='still';
 }
 function syncOrbitalMotion(){
-  if(!orbitalContext || !isActive() || !visible.has(orbitalScene)){
+  if(!orbitalContext || !isActive() || !visible.has(orbitalScene) || !proceduralAllowed(orbitalScene)){
     stopOrbitalMotion();return;
   }
   document.documentElement.dataset.orbitalMotion='dynamic';
@@ -430,7 +466,7 @@ function sizeResearchCanvas(){
 }
 function renderResearchFrame(timestamp){
   researchHandle=0;
-  if(!researchContext || !isActive() || !visible.has(researchScene) || researchScene.classList.contains('is-playing')){
+  if(!researchContext || !isActive() || !visible.has(researchScene) || !proceduralAllowed(researchScene) || researchScene.classList.contains('is-playing')){
     stopResearchFlow();return;
   }
   // Visual quality above the requested throughput: 20 Hz capped, on-screen only.
@@ -484,7 +520,7 @@ function stopResearchFlow(){
   if(researchScene)researchScene.dataset.researchMotion='still';
 }
 function syncResearchFlow(){
-  if(!researchContext || !isActive() || !visible.has(researchScene) || researchScene.classList.contains('is-playing')){
+  if(!researchContext || !isActive() || !visible.has(researchScene) || !proceduralAllowed(researchScene) || researchScene.classList.contains('is-playing')){
     stopResearchFlow();return;
   }
   researchScene.dataset.researchMotion='dynamic';
@@ -541,7 +577,7 @@ function stopExperimentsFlow(){
 }
 function renderExperimentsFrame(timestamp){
   experimentsHandle=0;
-  if(!experimentsContext || !isActive() || !visible.has(experimentsScene) || experimentsScene.classList.contains('is-playing')){
+  if(!experimentsContext || !isActive() || !visible.has(experimentsScene) || !proceduralAllowed(experimentsScene) || experimentsScene.classList.contains('is-playing')){
     stopExperimentsFlow();return;
   }
   // ~24 Hz maximum. Uses a bounded device-resolution canvas rather than full-resolution GPU effects.
@@ -593,7 +629,7 @@ function renderExperimentsFrame(timestamp){
   experimentsHandle=requestAnimationFrame(renderExperimentsFrame);
 }
 function syncExperimentsFlow(){
-  if(!experimentsContext || !isActive() || !visible.has(experimentsScene) || experimentsScene.classList.contains('is-playing')){
+  if(!experimentsContext || !isActive() || !visible.has(experimentsScene) || !proceduralAllowed(experimentsScene) || experimentsScene.classList.contains('is-playing')){
     stopExperimentsFlow();return;
   }
   experimentsScene.dataset.experimentsMotion='dynamic';
@@ -638,7 +674,7 @@ function stopExperiencesAtmosphere(){
 }
 function renderExperiencesFrame(timestamp){
   experiencesHandle=0;
-  if(!experiencesContext || !isActive() || !visible.has(experiencesScene) || experiencesScene.classList.contains('is-playing')){
+  if(!experiencesContext || !isActive() || !visible.has(experiencesScene) || !proceduralAllowed(experiencesScene) || experiencesScene.classList.contains('is-playing')){
     stopExperiencesAtmosphere();return;
   }
   if(timestamp-experiencesLastFrame>=46){
@@ -703,7 +739,7 @@ function renderExperiencesFrame(timestamp){
   experiencesHandle=requestAnimationFrame(renderExperiencesFrame);
 }
 function syncExperiencesAtmosphere(){
-  if(!experiencesContext || !isActive() || !visible.has(experiencesScene) || experiencesScene.classList.contains('is-playing')){
+  if(!experiencesContext || !isActive() || !visible.has(experiencesScene) || !proceduralAllowed(experiencesScene) || experiencesScene.classList.contains('is-playing')){
     stopExperiencesAtmosphere();return;
   }
   experiencesScene.dataset.experiencesMotion='dynamic';
@@ -747,7 +783,7 @@ function stopArchiveIllumination(){
 }
 function renderArchiveFrame(timestamp){
   archiveHandle=0;
-  if(!archiveContext||!isActive()||!visible.has(archiveScene)||archiveScene.classList.contains('is-playing')){
+  if(!archiveContext||!isActive()||!visible.has(archiveScene) || !proceduralAllowed(archiveScene)||archiveScene.classList.contains('is-playing')){
     stopArchiveIllumination();return;
   }
   if(timestamp-archiveLastFrame>=45){
@@ -805,7 +841,7 @@ function renderArchiveFrame(timestamp){
   archiveHandle=requestAnimationFrame(renderArchiveFrame);
 }
 function syncArchiveIllumination(){
-  if(!archiveContext||!isActive()||!visible.has(archiveScene)||archiveScene.classList.contains('is-playing')){
+  if(!archiveContext||!isActive()||!visible.has(archiveScene) || !proceduralAllowed(archiveScene)||archiveScene.classList.contains('is-playing')){
     stopArchiveIllumination();return;
   }
   archiveScene.dataset.archiveMotion='dynamic';
@@ -820,7 +856,7 @@ if(archiveContext){
 
 // Measured, bounded depth response; no event-to-layout synchronous reads.
 const hero=document.querySelector('.hero-scene');
-function scrollMotion(){ ticking=false;if(!hero || !isActive())return;const y=Math.min(window.scrollY,600);hero.style.setProperty('--scroll-depth',`${Math.round(y*.027)}px`); }
+function scrollMotion(){ ticking=false;if(!hero || !isActive())return;const y=Math.min(window.scrollY,600);hero.style.setProperty('--scroll-depth',`${Math.round(y*.027)}px`);syncPlayback(); }
 window.addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(scrollMotion)}},{passive:true});
 syncPlayback();
 
