@@ -77,6 +77,8 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "scripts/ops/render-anevum-research-image-led-v21.py",
     "scripts/ops/build-anevum-lightweight-review.py",
     "scripts/ops/serve-anevum-cinematic-review.mjs",
+    "scripts/ops/assemble-anevum-five-scene-review.mjs",
+    "tests/anevum-five-scene-review.test.mjs",
     "tests/anevum-review-http.test.mjs",
     "tests/test_anevum_lightweight_review.py",
     "tests/anevum-research-image-led-v21.test.mjs",
