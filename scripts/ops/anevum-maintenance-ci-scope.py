@@ -60,6 +60,27 @@ ISOLATED_ORIGINAL_WORKS_REVIEW_PATHS = frozenset([
 # Its own browser/security gate is mandatory for these exact files only.
 ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "apps/anevum-public-studio/worker.mjs",
+    # Exact review-only cinematic source and its mandatory review checks.
+    "apps/anevum-public-studio/review/cinematic-laboratory.html",
+    "apps/anevum-public-studio/review/assets/hero.webp",
+    "apps/anevum-public-studio/review/assets/hero-mobile.webp",
+    "apps/anevum-public-studio/review/assets/experiments.webp",
+    "apps/anevum-public-studio/review/assets/research.webp",
+    "apps/anevum-public-studio/review/assets/experiences.webp",
+    "apps/anevum-public-studio/review/assets/archive.webp",
+    "docs/design/ANEVUM.WEB.DESIGN.2026-11-13.002.CINEMATIC-LABORATORY-PRODUCTION.md",
+    "tests/anevum-cinematic-review.test.mjs",
+    # Review-only V17 local media bridge and negative-path tests (no binary media).
+    "scripts/ops/anevum-cinematic-local-preview.mjs",
+    "tests/anevum-cinematic-local-preview.test.mjs",
+    "scripts/ops/verify-anevum-cinematic-http-browser.mjs",
+    # Offline original animation renderer; never deployed or bundled by the public Worker.
+    "scripts/ops/render-anevum-research-motion.py",
+    # Original, offline-only V12 material/3D footage pipeline and tests.
+    # No output media, deploy operation, Worker route, or token access.
+    "scripts/ops/anevum_metal_shader.py",
+    "scripts/ops/render_anevum_armillary_v12.py",
+    "tests/test_anevum_metal_shader.py",
     "apps/anevum-public-studio/living-laboratory-home.mjs",
     "apps/anevum-public-studio/living-laboratory-experiments.mjs",
     "apps/anevum-public-studio/living-laboratory-research.mjs",
