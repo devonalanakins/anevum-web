@@ -108,6 +108,14 @@ jobs:
           node --test tests/anevum-public-studio.test.mjs
           node scripts/ops/verify-anevum-public-studio-browser.mjs
 
+      - name: Verify cinematic preview media over HTTP in Chromium (synthetic only)
+        if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v ffmpeg
+          node --check scripts/ops/verify-anevum-cinematic-http-browser.mjs
+          node scripts/ops/verify-anevum-cinematic-http-browser.mjs
       - name: Upload public studio screenshot evidence
         if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
         uses: actions/upload-artifact@v4
