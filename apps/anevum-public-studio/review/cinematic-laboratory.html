@@ -97,6 +97,11 @@ html[data-motion=still] .experiences-atmosphere-canvas{display:none!important}
 html[data-motion=still] .archive-illumination-canvas{display:none!important}
 @media(prefers-reduced-motion:reduce){.archive-illumination-canvas{display:none!important;transition:none!important}}
 
+.cinematic-motion-toggle{margin:19px auto 0;min-height:44px;min-width:145px;padding:10px 19px;background:rgba(8,13,20,.52);border:1px solid rgba(244,209,167,.47);border-radius:999px;color:#f4e9dc;font:600 10px/1.4 var(--body);letter-spacing:.19em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:background .2s,border-color .2s,transform .2s}
+.cinematic-motion-toggle:hover:not(:disabled){background:rgba(67,43,27,.72);border-color:#f5c99a;transform:translateY(-2px)}
+.cinematic-motion-toggle:focus-visible{outline:2px solid #f5c99a;outline-offset:4px}
+.cinematic-motion-toggle:disabled{opacity:.58;cursor:not-allowed}
+@media(prefers-reduced-motion:reduce){.cinematic-motion-toggle{transition:none}}
 </style>
   <script type="module">
 // ANEVUM cinematic preview: no external runtime, no speculative footage, no account/data access.
@@ -109,6 +114,27 @@ const sceneStates = new Map();
 let visible = new Set();
 let ticking = false;
 let reviewPaused = false;
+const ambientMotionToggle = document.querySelector('#ambient-motion-toggle');
+function reflectMotionPreference() {
+  const label = reviewPaused ? 'Resume motion' : 'Pause motion';
+  for (const control of [ambientMotionToggle, document.querySelector('#review-pause')]) {
+    if (!control) continue;
+    control.setAttribute('aria-pressed', String(reviewPaused));
+    control.textContent = label;
+  }
+  if (ambientMotionToggle) {
+    const systemStill = motionQuery.matches || connection?.saveData === true;
+    ambientMotionToggle.disabled = systemStill;
+    ambientMotionToggle.setAttribute('aria-label', systemStill
+      ? 'Background motion disabled by device preference'
+      : reviewPaused ? 'Resume background motion' : 'Pause background motion');
+  }
+}
+ambientMotionToggle?.addEventListener('click', () => {
+  reviewPaused = !reviewPaused;
+  reflectMotionPreference();
+  syncPlayback();
+});
 const isStill = () => motionQuery.matches || connection?.saveData === true || reviewPaused;
 const isActive = () => document.visibilityState === 'visible' && !isStill();
 
@@ -220,12 +246,15 @@ for(const scene of scenes) {
   scene.addEventListener('focusout',()=>requestAnimationFrame(syncPlayback));
 }
 motionQuery.addEventListener('change',syncPlayback);
+motionQuery.addEventListener('change',reflectMotionPreference);
 mobileQuery.addEventListener('change',()=>{
   // Switching viewports invalidates media selection, never duplicates source nodes.
   for(const scene of scenes){const state=sceneStates.get(scene);if(!state.initialized || state.localUrl)continue;stopVideo(scene);const video=scene.querySelector('video');video?.querySelectorAll('source').forEach(s=>s.remove());video?.load();state.initialized=false;state.failed=false;}
   syncPlayback();
 });
 connection?.addEventListener?.('change',syncPlayback);
+connection?.addEventListener?.('change',reflectMotionPreference);
+reflectMotionPreference();
 document.addEventListener('visibilitychange',syncPlayback);
 // Local-only footage inspection before owner motion sign-off. No upload, storage or network API.
 const inspector = document.querySelector('#review-media-tools');
@@ -273,8 +302,7 @@ if (inspector) {
   });
   pause.addEventListener('click',()=>{
     reviewPaused=!reviewPaused;
-    pause.setAttribute('aria-pressed',String(reviewPaused));
-    pause.textContent=reviewPaused?'Resume motion':'Pause motion';
+    reflectMotionPreference();
     syncPlayback();
     setStatus(reviewPaused?'Motion paused by reviewer.':'Motion resumed where system settings allow.');
   });
@@ -927,6 +955,7 @@ syncPlayback();
       <div class="hero-rule" aria-hidden="true"></div>
       <p class="hero-intro">An independent studio exploring advanced technology, scientific ideas, creative systems, and immersive experiences.</p>
       <div class="hero-actions"><a class="action action-primary" href="/original-works/experiments">Explore experiments <span aria-hidden="true">↗</span></a><a class="action action-secondary" href="/original-works/research">Research &amp; archive <span aria-hidden="true">↗</span></a></div>
+      <button type="button" id="ambient-motion-toggle" class="cinematic-motion-toggle" aria-pressed="false" aria-label="Pause background motion">Pause motion</button>
     </div>
     <div class="destinations" aria-label="Explore ANEVUM">
       <a class="scene destination destination-experiments" data-scene="experiments" data-video-ready="false" data-video-webm="/original-works/assets/motion/experiments.webm" data-video-mp4="/original-works/assets/motion/experiments.mp4" href="/original-works/experiments">
