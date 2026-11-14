@@ -55,7 +55,7 @@ jobs:
           node --test tests/original-works-preview.test.mjs tests/transcosmic-reader-preview.test.mjs tests/original-works-hosted-access.test.mjs tests/original-works-protected-preview.test.mjs tests/transcosmic-wiki.test.mjs tests/transcosmic-wiki-expansion.test.mjs
           node --experimental-strip-types --test tests/wiki-directory.test.mjs
           node --test tests/original-works-preview-bundle.test.mjs
-          node --test tests/anevum-cinematic-review.test.mjs tests/anevum-cinematic-local-preview.test.mjs tests/anevum-image-led-recovery.test.mjs tests/anevum-image-led-v20.test.mjs tests/anevum-research-image-led-v21.test.mjs tests/anevum-review-http.test.mjs
+          node --test tests/anevum-cinematic-review.test.mjs tests/anevum-cinematic-local-preview.test.mjs tests/anevum-image-led-recovery.test.mjs tests/anevum-image-led-v20.test.mjs tests/anevum-research-image-led-v21.test.mjs tests/anevum-review-http.test.mjs tests/anevum-five-scene-review.test.mjs
           python -m unittest discover -s tests -p "test_anevum_lightweight_review.py" -v
           python -m unittest discover -s tests -p "test_anevum_experiments_image_led_v29.py" -v
           python -m unittest discover -s tests -p "test_anevum_experiences_image_led_v30.py" -v
