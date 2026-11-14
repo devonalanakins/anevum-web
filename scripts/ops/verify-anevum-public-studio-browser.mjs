@@ -81,7 +81,9 @@ async function verifyClickThroughJourney(){
  await go('nav.lab-nav a[href="/original-works/archive"]',"/original-works/archive","Archive","Archive");
  await go('a.lab-arc-feature[href="/original-works/reply"]',"/original-works/reply","A signal.");
  await go('header.site-header a.brand[href="/"]',"/","ANEVUM");
- for(const hash of ["#experiences","#contact"]){
+ await go('nav.lab-nav a[href="/original-works/experiences"]',"/original-works/experiences","Experiences","Experiences");
+ await go('a.lab-brand[href="/"]',"/","ANEVUM");
+ for(const hash of ["#contact"]){
   const clicked=await evalJS("(()=>{const a=document.querySelector('nav.lab-nav a[href="+JSON.stringify(hash)+"]');if(!a)return false;a.click();return true})()");
   if(!clicked)throw Error("Missing public anchor "+hash);
   await waitFor(async()=>await evalJS("location.pathname==='/'&&location.hash==="+JSON.stringify(hash)+"&&!!document.getElementById("+JSON.stringify(hash.slice(1))+")"),"public anchor "+hash);
