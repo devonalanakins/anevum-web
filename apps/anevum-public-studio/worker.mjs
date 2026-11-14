@@ -3,6 +3,7 @@ import {renderLaboratoryResearch} from "./living-laboratory-research.mjs";
 import {renderLivingLaboratoryArchive} from "./living-laboratory-archive.mjs";
 import {LAB_ART} from "./living-laboratory-art.mjs";
 import {renderLivingLaboratoryHome} from "./living-laboratory-home.mjs";
+import {renderLivingLaboratoryExperiences} from "./living-laboratory-experiences.mjs";
 /**
  * ANEVUM.WEB.OPS.2026-11-03.027.CANONICAL-ORIGINAL-WORKS-LAUNCH
  * Self-contained public creative studio with no client JS or private content.
@@ -66,6 +67,10 @@ export default {async fetch(request){
    'Cross-Origin-Resource-Policy':'same-origin','X-Anevum-Surface':VERSION
   };
   return new Response(request.method==='HEAD'?null:imageBytes,{status:200,headers});
+ }
+ if(path===ROOT+'/experiences'){
+  const html=renderLivingLaboratoryExperiences();
+  return new Response(request.method==='HEAD'?null:html,{status:200,headers:securityHeaders});
  }
  if(path===ROOT+'/archive'){
   const html=renderLivingLaboratoryArchive();
