@@ -50,5 +50,9 @@ test('V17 same-origin local server supports verified range and rejects unknown o
   r=await fetch(origin+page+'?x=1');assert.equal(r.status,404);
   r=await fetch(origin+page,{method:'POST'});assert.equal(r.status,405);
   r=await fetch(origin+'/original-works/assets/motion/hero-desktop.mp4',{headers:{Range:'bytes=999999-'}});assert.equal(r.status,416);
+  for(const invalid of ['bytes=-','bytes=-9999999999999999999999','bytes=0-9999999999999999999999']){
+    r=await fetch(origin+'/original-works/assets/motion/hero-desktop.mp4',{headers:{Range:invalid}});
+    assert.equal(r.status,416,invalid);
+  }
  }finally{if(server)await new Promise(ok=>server.close(ok));rmSync(f.root,{recursive:true,force:true});if(out)rmSync(out,{recursive:true,force:true});}
 });
