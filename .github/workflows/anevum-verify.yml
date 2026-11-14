@@ -60,6 +60,7 @@ jobs:
           python -m unittest discover -s tests -p "test_anevum_experiments_image_led_v29.py" -v
           python -m unittest discover -s tests -p "test_anevum_experiences_image_led_v30.py" -v
           python -m unittest discover -s tests -p "test_anevum_archive_image_led_v31.py" -v
+          python -m unittest discover -s tests -p "test_anevum_five_scene_film_qc.py" -v
       - name: Verify legacy RHEN retirement and Commons independence
         run: node --test tests/legacy-rhen-retirement.test.mjs
       - name: Enforce single guarded production Worker deployment
@@ -120,6 +121,8 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends ffmpeg
           command -v ffmpeg
+          command -v ffprobe
+          python -m unittest discover -s tests -p "test_anevum_five_scene_film_qc.py" -v
           node --check scripts/ops/verify-anevum-cinematic-http-browser.mjs
           node scripts/ops/verify-anevum-cinematic-http-browser.mjs
       - name: Upload public studio screenshot evidence
