@@ -59,6 +59,7 @@ jobs:
           python -m unittest discover -s tests -p "test_anevum_lightweight_review.py" -v
           python -m unittest discover -s tests -p "test_anevum_experiments_image_led_v29.py" -v
           python -m unittest discover -s tests -p "test_anevum_experiences_image_led_v30.py" -v
+          python -m unittest discover -s tests -p "test_anevum_archive_image_led_v31.py" -v
       - name: Verify legacy RHEN retirement and Commons independence
         run: node --test tests/legacy-rhen-retirement.test.mjs
       - name: Enforce single guarded production Worker deployment
