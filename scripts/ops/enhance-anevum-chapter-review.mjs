@@ -316,7 +316,7 @@ export function buildChapterReview(v32Directory,archiveMp4,archiveWebm,outputDir
       'ANEVUM V35: FIVE LIVING ENVIRONMENTS / PRIVATE CINEMATIC REVIEW\n\n'+
       'Review-only, not published, not rights-verified or owner-accepted.\n'+
       'Keep all files together. On desktop, open index.html. Some browsers\n'+
-      'require the loopback HTTP server: node serve-anevum-cinematic-review.mjs review-v35 4179\n'+
+      'require the loopback HTTP server: node serve-anevum-cinematic-review.mjs review 4179\n'+
       'On iPhone, use a separately Access-protected hosted preview only after\n'+
       'owner approval. Do not upload this review package to a public host.\n'+
       'Select a scene card or the Enter cinematic review control, then use\n'+
