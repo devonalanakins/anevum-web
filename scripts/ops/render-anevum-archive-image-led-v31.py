@@ -73,6 +73,11 @@ def setup(image: np.ndarray) -> dict:
 def frame(layers: dict, phase: float) -> np.ndarray:
     """Cyclic illumination with stable book geometry and no source regeneration."""
     phase %= math.tau
+    # Source-only cyclic time reparameterization: reduce abrupt changes at the
+    # final-to-first frame without crossfading, freezing or moving book geometry.
+    # sin(2*phase) vanishes at quarter-cycle review points, preserving their
+    # spatial lighting placement while slowing the phase near the loop seam.
+    phase -= .42 * math.sin(2 * phase)
     x, y, xn, yn = layers['x'], layers['y'], layers['xn'], layers['yn']
     h, w = layers['h'], layers['w']
     base = layers['base'].astype(np.float32)
