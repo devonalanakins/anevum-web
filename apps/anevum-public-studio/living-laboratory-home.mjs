@@ -3,6 +3,7 @@
  * Review-only: no production deployment, protected routes, or email settings are changed.
  * Content is static, public-safe and has no runtime dependencies or client scripts.
  */
+import {renderCinematicPoster} from "./living-laboratory-cinema.mjs";
 export const LAB_STYLES = String.raw`
 :root{color-scheme:dark;--void:#09070d;--deep:#110d17;--surface:#17111e;--line:#53475684;--ivory:#eee7e4;--muted:#b9aebb;--copper:#dda884;--purple:#9d78cb;--display:Georgia,'Times New Roman',serif;--sans:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 *,*::before,*::after{box-sizing:border-box}
@@ -29,7 +30,8 @@ a{color:inherit;text-decoration:none}a:focus-visible,summary:focus-visible{outli
 .lab-hero{position:relative;min-height:505px;isolation:isolate;display:flex;align-items:center;overflow:hidden;background:#09070d}
 .lab-hero::before{content:'';position:absolute;z-index:2;inset:0;background:linear-gradient(90deg,#09070dfd 0%,#0a0713e7 25%,#120a19b8 42%,transparent 77%);pointer-events:none}
 .lab-hero::after{content:'';position:absolute;z-index:1;bottom:0;left:0;right:0;height:132px;background:linear-gradient(transparent,#09070de8);pointer-events:none}
-.lab-art{position:absolute;z-index:0;pointer-events:none;inset:0 0 -15px 30%;opacity:.98;background-image:url('/original-works/assets/lab-hero-v1.webp');background-size:cover;background-position:57% center;background-repeat:no-repeat;filter:saturate(1.08) contrast(1.05)}
+.lab-art{position:absolute;z-index:0;pointer-events:none;inset:0 0 -15px 30%;opacity:.98;overflow:hidden;filter:saturate(1.08) contrast(1.05)}
+.lab-hero-poster{display:block;width:100%;height:100%;object-fit:cover;object-position:57% center}
 
 .lab-hero-copy{position:relative;z-index:3;padding:53px 0 70px}
 .lab-hero-copy>*{max-width:610px}
@@ -54,10 +56,10 @@ a{color:inherit;text-decoration:none}a:focus-visible,summary:focus-visible{outli
 .lab-worlds-head p{margin:0;max-width:340px;color:#bdacbc;font:14px/1.55 var(--display)}
 .lab-worlds-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .lab-world{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;min-height:330px;padding:21px;border:1px solid #a6889b74;background:#1b1421;transition:transform .25s,border-color .25s}
-.lab-world::before{content:"";position:absolute;inset:0;z-index:-2;background:var(--art) center/cover no-repeat;transition:transform .65s}
+.lab-world-poster{position:absolute;inset:0;z-index:-2;display:block;width:100%;height:100%;object-fit:cover;pointer-events:none;transition:transform .65s}
 .lab-world::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#08070cf7,#0e0b16c4 41%,#09081315 100%)}
 .lab-world:hover,.lab-world:focus-visible{border-color:#efbd9e;transform:translateY(-3px)}
-.lab-world:hover::before,.lab-world:focus-visible::before{transform:scale(1.045)}
+.lab-world:hover .lab-world-poster,.lab-world:focus-visible .lab-world-poster{transform:scale(1.045)}
 .lab-world-index{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#edc0a6;margin-bottom:auto}
 .lab-world h3{font:italic normal clamp(26px,2.6vw,37px)/1.12 var(--display);margin:0 0 9px}
 .lab-world p{font:12px/1.65 var(--sans);color:#d8c9d7;min-height:57px;margin:0}
@@ -66,7 +68,7 @@ a{color:inherit;text-decoration:none}a:focus-visible,summary:focus-visible{outli
 @media(max-width:1050px){.lab-worlds-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lab-world{min-height:300px}}
 @media(max-width:530px){.lab-worlds{padding:30px 0 36px}.lab-worlds-head{align-items:start;flex-direction:column;gap:10px}.lab-world{min-height:255px;padding:15px}.lab-worlds-grid{gap:9px}.lab-world h3{font-size:clamp(20px,6vw,30px)}.lab-world p{font-size:11px;line-height:1.48;min-height:70px}.lab-world-link{font-size:9px}}
 @media(max-width:340px){.lab-worlds-grid{grid-template-columns:1fr}.lab-world p{min-height:0}}
-@media(prefers-reduced-motion:reduce){.lab-world,.lab-world::before{transition:none!important;transform:none!important}}
+@media(prefers-reduced-motion:reduce){.lab-world,.lab-world-poster{transition:none!important;transform:none!important}}
 @media(forced-colors:active){.lab-world{border:1px solid CanvasText}}
 .lab-content{position:relative;z-index:2;padding-top:22px;padding-bottom:66px}
 .lab-section{scroll-margin-top:24px;padding-top:40px}
@@ -123,7 +125,7 @@ const BODY = String.raw`
  <details class="lab-mobile"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="/original-works/experiences">Experiences</a><a href="/original-works/archive">Archive</a><a href="#contact">Contact</a></nav></details>
 </div></header>
 <main id="main" tabindex="-1">
- <section class="lab-hero" aria-labelledby="lab-home-title"><div class="lab-art" aria-hidden="true"></div><div class="lab-wrap lab-hero-copy">
+ <section class="lab-hero" aria-labelledby="lab-home-title"><div class="lab-art" aria-hidden="true">@HERO_POSTER@</div><div class="lab-wrap lab-hero-copy">
   <p class="lab-micro">Independent experimental studio · Created by Devon Akins</p>
   <h1 id="lab-home-title" class="lab-heading">ANEVUM</h1>
   <p class="lab-italic">A laboratory for the possible.</p>
@@ -135,10 +137,10 @@ const BODY = String.raw`
  <section class="lab-worlds" aria-labelledby="lab-worlds-heading"><div class="lab-wrap">
  <div class="lab-worlds-head"><div><span class="lab-micro">Explore / The Living Laboratory</span><h2 id="lab-worlds-heading">Four ways into ANEVUM.</h2></div><p>Follow actual experiments, investigate open questions, enter existing experiences, or revisit the original creative archive.</p></div>
  <nav class="lab-worlds-grid" aria-label="Explore the four ANEVUM destinations">
-  <a class="lab-world" href="/original-works/experiments" style="--art:url('/original-works/assets/rhen-generative-v1.webp')"><span class="lab-world-index">01 / Working systems</span><h3>Experiments</h3><p>Source projects and interactive prototypes with verifiable links.</p><span class="lab-world-link">Explore experiments <span aria-hidden="true">↗</span></span></a>
-  <a class="lab-world" href="/original-works/research" style="--art:url('/original-works/assets/research-computation-v1.webp')"><span class="lab-world-index">02 / Open questions</span><h3>Research</h3><p>Computational ideas presented honestly, without invented findings.</p><span class="lab-world-link">Explore research <span aria-hidden="true">↗</span></span></a>
-  <a class="lab-world" href="/original-works/experiences" style="--art:url('/original-works/assets/research-worlds-v1.webp')"><span class="lab-world-index">03 / Enter the work</span><h3>Experiences</h3><p>Real source, editorial journeys, and exploratory worlds.</p><span class="lab-world-link">Explore experiences <span aria-hidden="true">↗</span></span></a>
-  <a class="lab-world" href="/original-works/archive" style="--art:url('/original-works/assets/lab-archive-v1.webp')"><span class="lab-world-index">04 / Preserved worlds</span><h3>Archive</h3><p>The earlier ANEVUM literary universe, kept intact and accessible.</p><span class="lab-world-link">Enter the archive <span aria-hidden="true">↗</span></span></a>
+  <a class="lab-world" href="/original-works/experiments">@POSTER_EXPERIMENTS@<span class="lab-world-index">01 / Working systems</span><h3>Experiments</h3><p>Source projects and interactive prototypes with verifiable links.</p><span class="lab-world-link">Explore experiments <span aria-hidden="true">↗</span></span></a>
+  <a class="lab-world" href="/original-works/research">@POSTER_RESEARCH@<span class="lab-world-index">02 / Open questions</span><h3>Research</h3><p>Computational ideas presented honestly, without invented findings.</p><span class="lab-world-link">Explore research <span aria-hidden="true">↗</span></span></a>
+  <a class="lab-world" href="/original-works/experiences">@POSTER_EXPERIENCES@<span class="lab-world-index">03 / Enter the work</span><h3>Experiences</h3><p>Real source, editorial journeys, and exploratory worlds.</p><span class="lab-world-link">Explore experiences <span aria-hidden="true">↗</span></span></a>
+  <a class="lab-world" href="/original-works/archive">@POSTER_ARCHIVE@<span class="lab-world-index">04 / Preserved worlds</span><h3>Archive</h3><p>The earlier ANEVUM literary universe, kept intact and accessible.</p><span class="lab-world-link">Enter the archive <span aria-hidden="true">↗</span></span></a>
  </nav></div></section>
  <div class="lab-wrap lab-content">
  <section id="experiments" class="lab-section" aria-labelledby="lab-experiments-heading">
@@ -173,6 +175,11 @@ const BODY = String.raw`
 <footer class="lab-footer" id="contact"><div class="lab-wrap lab-footer-inner"><p>ANEVUM — A laboratory for the possible. · An independent studio</p><p>Created by <a href="https://devonakins.com">Devon Akins</a> · <a href="https://github.com/devonalanakins">Source &amp; contact</a></p></div></footer>`;
 
 export function renderLivingLaboratoryHome(){
- const body=BODY.replace('@BRAND@',LAB_BRAND);
+ const body=BODY.replace('@BRAND@',LAB_BRAND)
+  .replace('@HERO_POSTER@',renderCinematicPoster('hero',{priority:true}))
+  .replace('@POSTER_EXPERIMENTS@',renderCinematicPoster('experiments',{card:true}))
+  .replace('@POSTER_RESEARCH@',renderCinematicPoster('research',{card:true}))
+  .replace('@POSTER_EXPERIENCES@',renderCinematicPoster('experiences',{card:true}))
+  .replace('@POSTER_ARCHIVE@',renderCinematicPoster('archive',{card:true}));
  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="theme-color" content="#09070d"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="description" content="ANEVUM is an independent experimental studio exploring software, computation, creative technology and imagined worlds."><meta property="og:type" content="website"><meta property="og:site_name" content="ANEVUM"><meta property="og:description" content="A laboratory for the possible. Experimental software, computational research and imagined worlds."><title>ANEVUM | A laboratory for the possible</title><style>'+LAB_STYLES+'</style></head><body>'+body+'</body></html>';
 }
