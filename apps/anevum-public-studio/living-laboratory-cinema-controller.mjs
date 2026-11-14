@@ -79,8 +79,10 @@ export function startCinematicPlayback({
         video.load?.();
         const outcome=video.play();
         outcome?.catch?.(()=>{
+          // An AbortError from scrolling away must not poison later playback.
+          if (!active.has(video) || video.getAttribute('src')!==src) return;
           failed.add(video);
-          unload(video); // poster remains visible on rejected autoplay
+          unload(video); // poster remains visible on genuine autoplay rejection
         });
       }catch{
         failed.add(video);
