@@ -27,14 +27,15 @@ function environment(videos){
  const doc=new Target();doc.hidden=false;doc.querySelectorAll=()=>videos;
  const reduced=new Target();reduced.matches=false;const reducedData=new Target();reducedData.matches=false;
  const connection=new Target();connection.saveData=false;
- const win=new Target();const observers=[];win.matchMedia=q=>q.includes('reduced-motion')?reduced:reducedData;
+ const portrait=new Target();portrait.matches=false;
+ const win=new Target();const observers=[];win.matchMedia=q=>q.includes('max-width: 720px')?portrait:q.includes('reduced-motion')?reduced:reducedData;
  win.IntersectionObserver=class {
    constructor(callback,opts){this.callback=callback;this.options=opts;this.disconnected=false;this.targets=new Set();observers.push(this)}
    observe(v){this.targets.add(v)}
    disconnect(){this.disconnected=true}
    update(entries){this.callback(entries.map(([target,ratio])=>({target,isIntersecting:ratio>0,intersectionRatio:ratio})))}
  };
- return {doc,win,reduced,reducedData,connection,observers,videos,
+ return {doc,win,reduced,reducedData,portrait,connection,observers,videos,
   start:()=>startCinematicPlayback({root:doc,viewport:win,connection})};
 }
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -122,4 +123,24 @@ test('old promise rejection after scroll exit does not poison later playback',as
  obs.update([[video,1]]);
  assert.equal(video.playCount,2);
  run.stop();
+});
+
+
+test('approved portrait master swaps at breakpoint, retaining bounded decoder count',()=>{
+ const hero=new Video('3');hero.dataset.cinemaScene='hero';
+ hero.dataset.cinemaMobileMp4='/original-works/assets/motion/'+('4'.repeat(24))+'.mp4';
+ hero.dataset.cinemaMobileWebm='/original-works/assets/motion/'+('5'.repeat(24))+'.webm';
+ const e=environment([hero]),run=e.start(),obs=e.observers[0];
+ obs.update([[hero,1]]);
+ assert.equal(hero.getAttribute('src'),'/original-works/assets/motion/'+('3'.repeat(24))+'.webm');
+ assert.equal(hero.playCount,1);
+ e.portrait.matches=true;e.portrait.dispatch('change');
+ assert.equal(hero.getAttribute('src'),hero.dataset.cinemaMobileWebm);
+ assert.equal(hero.playCount,2);
+ assert.equal(hero.pauseCount,1);
+ e.portrait.matches=false;e.portrait.dispatch('change');
+ assert.equal(hero.getAttribute('src'),hero.dataset.cinemaWebm);
+ assert.equal(hero.playCount,3);
+ run.stop();
+ assert.equal(hero.getAttribute('src'),null);
 });
