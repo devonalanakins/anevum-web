@@ -27,8 +27,8 @@ def sha256(path: Path) -> str:
 
 def setup(image: np.ndarray) -> dict:
     h, w = image.shape[:2]
-    if w < 900 or h < 450:
-        raise ValueError('Source poster resolution is below review minimum')
+    if w < 450 or h < 220:
+        raise ValueError('Review frame resolution is too small')
     y, x = np.mgrid[:h, :w].astype(np.float32)
     x /= w
     y /= h
@@ -72,6 +72,7 @@ def render(layers: dict, phase: float) -> np.ndarray:
 def stream_render(poster_path: Path, output: Path, fps: int, seconds: int, preview_scale: float=1.0) -> dict:
     image = cv2.imread(str(poster_path),cv2.IMREAD_COLOR)
     if image is None: raise ValueError('Cannot read source artwork')
+    if image.shape[1] < 900 or image.shape[0] < 450: raise ValueError('Source poster resolution is below review minimum')
     if not 0.5 <= preview_scale <= 1.0: raise ValueError('Invalid review scale')
     if preview_scale != 1.0:
         w = max(2, round(image.shape[1]*preview_scale)//2*2)
