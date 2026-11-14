@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070b12">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="description" content="ANEVUM — an independent experimental studio for software, computational research and immersive experiences.">
+  <title>ANEVUM — The Living Laboratory | Cinematic Review</title>
+  <link rel="preload" href="./assets/hero.webp" as="image" fetchpriority="high" media="(min-width: 721px)">
+  <link rel="preload" href="./assets/hero-mobile.webp" as="image" fetchpriority="high" media="(max-width: 720px)">
+  <style>
+:root{color-scheme:dark;--void:#070b12;--ivory:#f6f1e9;--muted:#c5c8cb;--copper:#f1b67b;--blue:#9bc9e9;--edge:rgba(244,230,208,.24);--display:'Helvetica Neue',Arial,sans-serif;--body:Inter,'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--void)}
+body{margin:0;background:#090e16;color:var(--ivory);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:clip}
+a{color:inherit;text-decoration:none}button,a,summary{-webkit-tap-highlight-color:transparent}a:focus-visible,summary:focus-visible{outline:2px solid #f5c99a;outline-offset:4px}
+::selection{background:#b57c4a;color:#fff}em{font-style:normal;color:#d9bfad}
+.skip{position:fixed;top:-90px;left:20px;padding:12px 16px;z-index:100;background:var(--ivory);color:#09121b;font-weight:700}.skip:focus{top:13px}
+.site-header{position:absolute;inset:0 0 auto;z-index:15;background:linear-gradient(180deg,rgba(4,7,11,.93),rgba(6,10,15,.70));border-bottom:1px solid rgba(255,247,233,.13);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.site-header__inner{min-height:78px;max-width:1700px;padding:0 clamp(26px,3.9vw,66px);margin:auto;display:flex;align-items:center;gap:32px}
+.wordmark{position:relative;isolation:isolate;display:flex;align-items:center;flex-shrink:0;padding:10px 0;font-family:var(--display);font-weight:300;font-size:clamp(21px,2vw,31px);letter-spacing:.29em;line-height:1.2;white-space:nowrap}
+.brand-orbit{position:absolute;z-index:-1;left:-15px;top:-7px;width:52px;height:48px;border-left:1.8px solid #ffca8d;border-top:2px solid #fbb879;border-radius:50%;transform:rotate(-24deg);filter:drop-shadow(0 0 7px #efa561)}
+.brand-divider{width:1px;height:30px;background:#f3e7d03e;flex-shrink:0}
+.brand-caption{white-space:nowrap;font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:#d8d3d0}
+.desktop-nav{display:flex;align-items:center;gap:clamp(20px,2.9vw,48px);margin-left:auto}.desktop-nav a{position:relative;padding:17px 0;font-size:10px;font-weight:720;letter-spacing:.24em;text-transform:uppercase;color:#ebebea;white-space:nowrap;transition:color .2s}.desktop-nav a:hover,.desktop-nav a:focus-visible{color:#ffd09b}.desktop-nav a:after{content:'';position:absolute;bottom:11px;left:0;right:100%;height:1px;background:var(--copper);transition:right .22s}.desktop-nav a:hover:after{right:0}
+.mobile-nav{display:none;margin-left:auto;position:relative}.mobile-nav summary{cursor:pointer;list-style:none;min-height:44px;padding:10px 4px 10px 14px;letter-spacing:.16em;text-transform:uppercase;display:flex;align-items:center;gap:16px;font-size:11px}.mobile-nav summary::-webkit-details-marker{display:none}.mobile-nav summary span{font-size:19px}.mobile-nav nav{position:absolute;right:0;top:calc(100% + 4px);width:min(310px,calc(100vw - 24px));display:grid;padding:10px 15px;background:#0c121aeF;border:1px solid #f1b67b62;box-shadow:0 15px 50px #000b}.mobile-nav nav a{padding:15px 7px;border-bottom:1px solid #ffffff17;text-transform:uppercase;letter-spacing:.2em;font-size:11px}.mobile-nav nav a:last-child{border:0}
+.laboratory{position:relative;isolation:isolate;min-height:min(100svh,1050px);padding:clamp(175px,26vh,275px) clamp(19px,2.5vw,40px) 56px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;overflow:hidden;background:#070b12}
+.hero-scene{position:absolute;inset:0;z-index:-3;overflow:hidden}
+.scene{isolation:isolate}.scene-poster,.scene-video{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}.scene-video{opacity:0;transition:opacity .8s ease}.scene.is-playing .scene-video{opacity:1}.scene-poster{z-index:-3}.scene-video{z-index:-2}.hero-scene .scene-poster,.hero-scene .scene-video{object-position:50% 43%}.hero-scene .scene-poster{transform:translate3d(0,var(--scroll-depth,0px),0) scale(1.02);will-change:transform}
+.atmosphere{position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:.72;z-index:0}.atmosphere:before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 52% 47%,rgba(252,191,117,.09),transparent 23%),linear-gradient(115deg,transparent 10%,rgba(255,205,144,.055) 40%,transparent 55%);mix-blend-mode:screen;animation:atmosphere-breathe 12s ease-in-out infinite alternate}.glint{position:absolute;left:50%;top:29%;width:2px;height:38%;background:linear-gradient(transparent,#fff1ca5a,transparent);transform-origin:center center;filter:blur(7px);animation:orbit-light 13s linear infinite}.glint-two{left:47%;top:24%;animation-delay:-7s;width:4px;opacity:.4}.orbital-radiance{position:absolute;left:49%;top:32%;width:min(48vw,550px);height:min(48vw,550px);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 70px 18px rgba(246,167,73,.07),inset 0 0 80px 12px rgba(241,146,70,.12);animation:atmosphere-breathe 9s ease-in-out infinite alternate}
+.hero-vignette{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 29% 31% at 51% 44%,rgba(2,7,13,.79) 0%,rgba(2,7,13,.49) 55%,transparent 100%),linear-gradient(180deg,rgba(6,9,15,.09) 0%,rgba(7,10,15,.06) 28%,rgba(6,8,14,.18) 49%,rgba(6,9,14,.63) 71%,rgba(4,6,10,.96) 100%)}
+.hero-content{z-index:2;position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:clamp(38px,5.8vh,76px);max-width:880px;width:100%;text-shadow:0 2px 28px #000d}
+.hero-overline{font-size:10px;letter-spacing:.27em;text-transform:uppercase;color:#f5dec7;font-weight:650;margin-bottom:16px}.hero-overline span{padding:0 10px;color:var(--copper)}
+.hero-content h1{font-family:var(--display);font-weight:200;font-size:clamp(61px,7.6vw,112px);line-height:1.06;letter-spacing:clamp(.16em,2.6vw,.33em);margin:0 -0.3em 2px 0;color:#fffdf9;white-space:nowrap;text-shadow:0 3px 36px #010812f7}
+.hero-kicker{margin:4px 0 0;font-size:clamp(9px,1.15vw,15px);font-weight:500;letter-spacing:clamp(.26em,.64vw,.56em);text-transform:uppercase}.hero-rule{width:47px;height:2px;background:#efb76a;box-shadow:0 0 15px #eea45e;margin:27px auto 17px}.hero-intro{max-width:680px;color:#f4ebe5;font-size:clamp(13px,1.15vw,16px);line-height:1.56;margin:0 0 28px;filter:drop-shadow(0 1px 6px #000)}
+.hero-actions{display:flex;justify-content:center;gap:21px;flex-wrap:wrap}.action{display:flex;align-items:center;justify-content:space-between;gap:28px;min-width:234px;min-height:51px;padding:0 24px;font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:.18em;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:background .2s,box-shadow .2s,transform .2s}.action span{font-size:19px;font-weight:400}.action-primary{background:rgba(62,35,13,.49);border:1px solid #ffd39d;box-shadow:0 0 24px #ffc07860,inset 0 0 9px #ffc07829}.action-secondary{background:rgba(4,13,27,.54);border:1px solid #b9d7f2b8}.action:hover{transform:translateY(-3px);background:rgba(87,48,27,.82);box-shadow:0 0 23px #e9aa7469}
+.destinations{position:relative;z-index:3;width:min(100%,1660px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.destination{display:flex;position:relative;flex-direction:column;justify-content:flex-end;min-height:clamp(165px,12vw,210px);padding:22px 21px 18px;border:1px solid #f1e6d06b;border-radius:8px;overflow:hidden;background:#0a1017;transition:transform .33s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .3s;box-shadow:inset 0 1px 6px #ffecd713,0 4px 18px #0007}.destination .scene-poster{object-position:center}.destination:before{content:'';position:absolute;z-index:-1;inset:0;background:linear-gradient(0deg,#040910eF 0%,#050910d7 31%,#03050a28 75%),linear-gradient(90deg,#03060b69,transparent 75%)}.destination:hover,.destination:focus-visible{transform:translateY(-6px);border-color:#f4cda7;box-shadow:0 0 26px #ffb26b48,0 18px 42px #0008}.destination-content{display:flex;flex-direction:column;position:relative;z-index:1}.destination-icon{font-family:Georgia,serif;color:#f5e9e0;font-size:30px;line-height:1;display:block;height:35px;font-weight:400}.destination strong{font-weight:650;font-size:13px;line-height:1.3;letter-spacing:.26em;text-transform:uppercase;color:#fff}.destination small{margin-top:8px;color:#dddde0;font-size:11.5px;line-height:1.42;max-width:280px}.destination-arrow{position:absolute;right:18px;bottom:17px;font-size:21px;color:#f4d7b1;transition:transform .2s}.destination:hover .destination-arrow{transform:translate(2px,-2px)}
+.discover-cue{z-index:4;display:flex;align-items:center;gap:13px;justify-content:center;margin-top:24px;font-size:9px;letter-spacing:.35em;text-transform:uppercase;color:#f1dfc7;min-height:30px}.discover-cue span{font-size:21px;line-height:1}
+.discover{position:relative;padding:clamp(70px,9vw,150px) clamp(24px,6vw,110px) 135px;max-width:1600px;margin:auto}.section-label{display:flex;justify-content:space-between;border-top:1px solid #cbb3957d;padding-top:21px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#d2a477}.discover-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:clamp(40px,6vw,120px);align-items:end;margin:48px 0 100px}.eyebrow{color:#e1ac7e;text-transform:uppercase;letter-spacing:.23em;font-size:11px;font-weight:700}.discover h2{font:300 clamp(48px,5.4vw,81px)/1.08 var(--display);letter-spacing:-.07em;margin:15px 0 0}.discover-grid>div:last-child p{font-size:17px;line-height:1.83;color:#c6c8cb;margin:0 0 22px}.text-link{color:#fac493;text-transform:uppercase;letter-spacing:.17em;font-size:11px;border-bottom:1px solid #f3b77b8f;padding-bottom:9px}.featured-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.featured{min-height:275px;display:flex;flex-direction:column;background:linear-gradient(140deg,#172333c9,#0b121eee);border:1px solid #d4ae8247;padding:33px}.featured-number{color:#dbad80;font-size:10px;letter-spacing:.18em;text-transform:uppercase}.featured h3{font:300 clamp(28px,2.9vw,40px)/1.15 var(--display);letter-spacing:-.045em;margin:30px 0 14px}.featured p{color:#adb7c0;font-size:13px;line-height:1.75;margin:0 0 25px}.featured a{margin-top:auto;color:#e5bb91;letter-spacing:.12em;text-transform:uppercase;font-size:10px;font-weight:700}
+footer{display:flex;gap:20px;justify-content:space-between;align-items:center;padding:29px clamp(25px,5vw,90px);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#b9b5af;border-top:1px solid #ddc7a52b}footer a{text-decoration:underline;text-underline-offset:4px;color:#e5c3a4}
+@keyframes atmosphere-breathe{0%{opacity:.35;transform:scale(1)}100%{opacity:.8;transform:scale(1.03)}}@keyframes orbit-light{0%{transform:rotate(0deg) scaleY(.7);opacity:.05}50%{opacity:.55}100%{transform:rotate(360deg) scaleY(.7);opacity:.05}}
+@media(max-width:1050px){.site-header__inner{gap:19px}.brand-caption{font-size:9px;letter-spacing:.16em}.desktop-nav{gap:16px}.desktop-nav a{font-size:9px;letter-spacing:.14em}.destinations{grid-template-columns:repeat(2,minmax(0,1fr))}.destination{min-height:190px}.laboratory{padding-top:190px;min-height:950px}.hero-content{margin-bottom:55px}.hero-scene .scene-poster{object-position:50% 20%}}
+@media(max-width:720px){.site-header__inner{min-height:67px;padding:0 20px;gap:14px}.wordmark{font-size:22px;letter-spacing:.23em}.brand-orbit{left:-11px;width:43px;height:39px}.brand-divider{height:23px}.brand-caption{font-size:8px;max-width:105px;line-height:1.4;white-space:normal;letter-spacing:.12em}.desktop-nav{display:none}.mobile-nav{display:block}.laboratory{padding:390px 15px 40px;min-height:0}.hero-scene .scene-poster{object-position:50% top}.hero-scene{height:610px;bottom:auto}.hero-vignette{background:linear-gradient(0deg,#090c13 3%,rgba(5,9,13,.72) 42%,rgba(4,7,14,.22) 75%,rgba(4,7,14,.06))}.hero-content{margin-bottom:44px}.hero-overline{font-size:8px;letter-spacing:.16em}.hero-content h1{font-size:clamp(43px,12.5vw,73px);letter-spacing:.19em}.hero-kicker{letter-spacing:.18em;font-size:10px}.hero-rule{margin:22px auto 15px}.hero-intro{font-size:13px;max-width:430px}.hero-actions{gap:10px;max-width:440px;width:100%}.action{min-width:0;flex:1 1 165px;gap:10px;padding:0 13px;min-height:49px;font-size:9px;letter-spacing:.08em}.destinations{gap:11px}.destination{min-height:202px;padding:16px}.destination strong{font-size:11px;letter-spacing:.18em}.destination small{font-size:11px;max-width:170px}.destination-icon{height:32px}.destination-arrow{bottom:13px;right:10px}.discover{padding:68px 20px 75px}.discover-grid{grid-template-columns:1fr;gap:25px;margin:35px 0 55px}.discover h2{font-size:clamp(43px,10vw,69px)}.discover-grid>div:last-child p{font-size:15px}.featured-grid{grid-template-columns:1fr;gap:12px}.featured{min-height:220px}footer{align-items:flex-start;flex-direction:column;padding:30px 20px}}
+@media(max-width:390px){.brand-caption{display:none}.brand-divider{display:none}.laboratory{padding-top:345px}.hero-content h1{font-size:clamp(43px,12.2vw,49px)}.hero-intro{font-size:12px}.destinations{grid-template-columns:1fr}.destination{min-height:160px}.destination small{max-width:240px}.action{flex:1 1 100%;justify-content:center}.destination-icon{height:28px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.scene-video{display:none!important}.atmosphere{display:none!important}}
+html[data-motion=still] .scene-video,html[data-motion=still] .atmosphere{display:none!important}html[data-motion=still] *{animation:none!important}html[data-motion=still] .hero-scene .scene-poster{transform:none!important}
+@media(forced-colors:active){.action,.destination,.featured{border:1px solid CanvasText}.hero-content{text-shadow:none}}
+
+/* Review-only player: real DOM controls, not included in the public Worker. */
+.review-media-tools{position:fixed;right:18px;bottom:18px;z-index:35;width:min(356px,calc(100vw - 36px));background:rgba(6,11,18,.95);border:1px solid rgba(246,190,129,.56);border-radius:12px;box-shadow:0 18px 52px #000c;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:12px;color:#e9e6e4}
+.review-media-tools summary{display:flex;align-items:center;justify-content:space-between;cursor:pointer;list-style:none;min-height:48px;padding:12px 15px;color:#f8ebd9;font-weight:700;font-size:11px;letter-spacing:.13em;text-transform:uppercase}
+.review-media-tools summary::after{content:'+';font-size:20px;font-weight:300;color:#efbc87}
+.review-media-tools[open] summary::after{content:'-'}
+.review-media-tools summary::-webkit-details-marker{display:none}
+.review-media-body{border-top:1px solid #d8a97545;padding:14px 15px 17px;display:grid;gap:11px}
+.review-media-body p{margin:0;line-height:1.55;color:#bec7cc}
+.review-media-body label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#e4c2a0}
+.review-media-body select,.review-media-body input[type=file]{width:100%;min-height:42px;color:#f1eee9;background:#141e29;border:1px solid #7993a06e;border-radius:4px;padding:9px;font:inherit}
+.review-media-body input[type=file]::file-selector-button{padding:6px 10px;margin-right:9px;border:1px solid #cda275;background:#182736;color:#f9eee2;cursor:pointer}
+.review-media-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.review-media-actions button{font:inherit;font-weight:650;letter-spacing:.04em;padding:10px 9px;min-height:44px;color:#f9e9d5;background:#263447;border:1px solid #bf97707e;cursor:pointer;border-radius:4px}
+.review-media-actions button:hover{background:#334b62}
+.review-media-actions button:disabled{opacity:.45;cursor:not-allowed}
+.review-media-body #review-status{min-height:35px;font-size:11px;color:#e5c6a7}
+@media(max-width:720px){.review-media-tools{position:relative;right:auto;bottom:auto;z-index:1;width:calc(100% - 30px);margin:18px auto 24px}.review-media-body{max-height:none;overflow:visible}}
+@media(forced-colors:active){.review-media-tools,.review-media-actions button{border:1px solid CanvasText}}
+
+.hero-orbit-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;mix-blend-mode:screen;opacity:.91;contain:strict}
+html[data-orbital-motion=still] .hero-orbit-canvas{display:none!important}
+.hero-scene.is-playing .hero-orbit-canvas{display:none!important}
+/* ANEVUM Research | integrated computational terrain illumination.
+   The transparent canvas shares the poster's perspective; the card remains a native anchor. */
+.destination-research .research-flow-canvas{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;opacity:.82;mix-blend-mode:screen;contain:strict;transition:opacity .45s ease}
+.destination-research.is-playing .research-flow-canvas{opacity:0}
+html[data-motion=still] .research-flow-canvas{display:none!important}
+@media(prefers-reduced-motion:reduce){.research-flow-canvas{display:none!important}}
+
+/* ANEVUM Experiments | original luminous spiral flow. Review-only artwork enhancement. */
+.destination-experiments .experiments-vortex-canvas{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;opacity:.78;mix-blend-mode:screen;contain:strict;transition:opacity .45s ease}
+.destination-experiments.is-playing .experiments-vortex-canvas{opacity:0}
+html[data-motion=still] .experiments-vortex-canvas{display:none!important}
+@media(prefers-reduced-motion:reduce){.experiments-vortex-canvas{display:none!important}}
+
+/* ANEVUM.WEB.BUILD.2026-11-13.008.EXPERIENCES-LIVING-PORTAL
+   Original review-only environmental animation, independent of cinematic media. */
+.destination-experiences .experiences-atmosphere-canvas{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;opacity:.82;transition:opacity .45s ease}
+.destination-experiences.is-playing .experiences-atmosphere-canvas{opacity:0}
+html[data-motion=still] .experiences-atmosphere-canvas{display:none!important}
+@media(prefers-reduced-motion:reduce){.experiences-atmosphere-canvas{display:none!important;transition:none!important}}
+
+/* ANEVUM.WEB.BUILD.2026-11-13.009.ARCHIVE-LIVING-ILLUMINATION
+   Original review-only light and archival dust, layered over a stable book image. */
+.destination-archive .archive-illumination-canvas{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;opacity:.80;contain:strict;transition:opacity .45s ease}
+.destination-archive.is-playing .archive-illumination-canvas{opacity:0}
+html[data-motion=still] .archive-illumination-canvas{display:none!important}
+@media(prefers-reduced-motion:reduce){.archive-illumination-canvas{display:none!important;transition:none!important}}
+
+.cinematic-motion-toggle{margin:19px auto 0;min-height:44px;min-width:145px;padding:10px 19px;background:rgba(8,13,20,.52);border:1px solid rgba(244,209,167,.47);border-radius:999px;color:#f4e9dc;font:600 10px/1.4 var(--body);letter-spacing:.19em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:background .2s,border-color .2s,transform .2s}
+.cinematic-motion-toggle:hover:not(:disabled){background:rgba(67,43,27,.72);border-color:#f5c99a;transform:translateY(-2px)}
+.cinematic-motion-toggle:focus-visible{outline:2px solid #f5c99a;outline-offset:4px}
+.cinematic-motion-toggle:disabled{opacity:.58;cursor:not-allowed}
+@media(prefers-reduced-motion:reduce){.cinematic-motion-toggle{transition:none}}
+</style>
+  <script type="module">
+// ANEVUM cinematic preview: no external runtime, no speculative footage, no account/data access.
+// Asset gating: only flip data-video-ready after corresponding real media passes visual and codec QA.
+const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+const mobileQuery = window.matchMedia('(max-width: 720px)');
+const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+const scenes = [...document.querySelectorAll('[data-scene]')];
+const sceneStates = new Map();
+let visible = new Set();
+let ticking = false;
+let reviewPaused = false;
+const ambientMotionToggle = document.querySelector('#ambient-motion-toggle');
+function reflectMotionPreference() {
+  const label = reviewPaused ? 'Resume motion' : 'Pause motion';
+  for (const control of [ambientMotionToggle, document.querySelector('#review-pause')]) {
+    if (!control) continue;
+    control.setAttribute('aria-pressed', String(reviewPaused));
+    control.textContent = label;
+  }
+  if (ambientMotionToggle) {
+    const systemStill = motionQuery.matches || connection?.saveData === true;
+    ambientMotionToggle.disabled = systemStill;
+    ambientMotionToggle.setAttribute('aria-label', systemStill
+      ? 'Background motion disabled by device preference'
+      : reviewPaused ? 'Resume background motion' : 'Pause background motion');
+  }
+}
+ambientMotionToggle?.addEventListener('click', () => {
+  reviewPaused = !reviewPaused;
+  reflectMotionPreference();
+  syncPlayback();
+});
+const isStill = () => motionQuery.matches || connection?.saveData === true || reviewPaused;
+const isActive = () => document.visibilityState === 'visible' && !isStill();
+
+function setupVideo(scene) {
+  const state = sceneStates.get(scene);
+  if (state.initialized || state.failed) return;
+  // Never request nonexistent or unapproved media. Posters are available independently.
+  if (scene.dataset.videoReady !== 'true') return;
+  const video = scene.querySelector('video');
+  if (!video) return;
+  const mobile = mobileQuery.matches;
+  const webm = mobile ? (scene.dataset.mobileWebm || scene.dataset.videoWebm) : scene.dataset.videoWebm;
+  const mp4 = mobile ? (scene.dataset.mobileMp4 || scene.dataset.videoMp4) : scene.dataset.videoMp4;
+  if (state.localUrl) {
+    // Only a user-selected local File may be previewed; the file never leaves this tab.
+    video.src = state.localUrl;
+  } else {
+    for (const [src,type] of [[webm,'video/webm'],[mp4,'video/mp4']]) {
+      if (!src || !/^\/original-works\/assets\/motion\/[a-z0-9-]+\.(webm|mp4)$/.test(src)) continue;
+      const source = document.createElement('source');
+      source.src = src; source.type = type; video.append(source);
+    }
+    if (!video.querySelector('source')) return;
+  }
+  video.muted = true; video.loop = true; video.playsInline = true;
+  video.preload = scene.dataset.scene === 'hero' ? 'metadata' : 'none';
+  if (!state.listenersBound) {
+    video.addEventListener('playing',()=>{state.failed=false;scene.classList.add('is-playing');syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
+    video.addEventListener('pause',()=>{scene.classList.remove('is-playing');syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
+    video.addEventListener('error',()=>{state.failed=true;scene.classList.remove('is-playing');syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();});
+    state.listenersBound = true;
+  }
+  state.initialized = true;
+}
+function stopVideo(scene) {
+  const video=scene.querySelector('video');
+  if (video && !video.paused) video.pause();
+  scene.classList.remove('is-playing');
+}
+// ANEVUM.WEB.BUILD.2026-11-13.010.PROCEDURAL-MOTION-GOVERNOR
+// Budget concurrent procedural effects without changing their individual scene algorithms.
+// At most three compositor/canvas loops on desktop and one on narrow phones.
+// Videos retain their separate two-decoder budget and do not count twice.
+const proceduralActive = new Set();
+function proceduralAllowed(scene) { return proceduralActive.has(scene); }
+function refreshProceduralBudget() {
+  proceduralActive.clear();
+  if (!isActive()) return;
+  const limit = innerWidth < 720 ? 1 : innerWidth < 1100 ? 2 : 3;
+  const vw = innerWidth, vh = innerHeight;
+  const candidates = [];
+  for(const scene of scenes) {
+    if (!visible.has(scene) || scene.classList.contains('is-playing')) continue;
+    const rect = scene.getBoundingClientRect();
+    const overlapX = Math.max(0,Math.min(rect.right,vw)-Math.max(rect.left,0));
+    const overlapY = Math.max(0,Math.min(rect.bottom,vh)-Math.max(rect.top,0));
+    if(overlapX < 1 || overlapY < 1) continue;
+    const proximity = Math.abs((rect.top+rect.bottom)/2-vh*.5)/Math.max(vh,1);
+    const focus = scene.contains(document.activeElement);
+    const hover = scene.matches(':hover');
+    const sceneScore = (focus ? 10 : 0) + (hover ? 6 : 0) +
+      (scene.dataset.scene === 'hero' ? 1.4 : 0) - proximity;
+    candidates.push({scene,sceneScore});
+  }
+  candidates.sort((a,b)=>b.sceneScore-a.sceneScore || scenes.indexOf(a.scene)-scenes.indexOf(b.scene));
+  for(const candidate of candidates.slice(0,limit)) proceduralActive.add(candidate.scene);
+}
+
+function syncPlayback() {
+  refreshProceduralBudget();
+  document.documentElement.dataset.motion = isStill() ? 'still' : 'dynamic';
+  syncOrbitalMotion();
+  syncResearchFlow();
+  syncExperimentsFlow();
+  syncExperiencesAtmosphere();
+  syncArchiveIllumination();
+  if (!isActive()) { scenes.forEach(stopVideo); return; }
+  // Budget two simultaneously decoded videos, prioritizing the hero scene.
+  let remaining=2;
+  for (const scene of scenes) {
+    const eligible = visible.has(scene) && remaining > 0 && scene.dataset.videoReady === 'true' && !sceneStates.get(scene).failed;
+    if (!eligible) { stopVideo(scene); continue; }
+    setupVideo(scene);
+    const video = scene.querySelector('video');
+    if (!sceneStates.get(scene).initialized || !video) continue;
+    remaining -= 1;
+    if (video.paused) video.play().catch(()=>{
+      // A rejected/unsupported video is not retried on every hover or scroll.
+      // Keep the sharp poster and independent procedural ambience available.
+      const state=sceneStates.get(scene);
+      if(state)state.failed=true;
+      scene.classList.remove('is-playing');
+      syncOrbitalMotion();syncResearchFlow();syncExperimentsFlow();syncExperiencesAtmosphere();syncArchiveIllumination();
+    });
+  }
+}
+for(const scene of scenes) sceneStates.set(scene,{initialized:false,localUrl:null,listenersBound:false,failed:false});
+const observer = new IntersectionObserver(entries=>{
+  for (const entry of entries) {
+    if(entry.isIntersecting) visible.add(entry.target); else visible.delete(entry.target);
+  }
+  syncPlayback();
+},{rootMargin:'120px 0px 120px 0px',threshold:.03});
+scenes.forEach(scene=>observer.observe(scene));
+for(const scene of scenes) {
+  scene.addEventListener('pointerenter',syncPlayback,{passive:true});
+  scene.addEventListener('pointerleave',syncPlayback,{passive:true});
+  scene.addEventListener('focusin',syncPlayback);
+  scene.addEventListener('focusout',()=>requestAnimationFrame(syncPlayback));
+}
+motionQuery.addEventListener('change',syncPlayback);
+motionQuery.addEventListener('change',reflectMotionPreference);
+mobileQuery.addEventListener('change',()=>{
+  // Switching viewports invalidates media selection, never duplicates source nodes.
+  for(const scene of scenes){const state=sceneStates.get(scene);if(!state.initialized || state.localUrl)continue;stopVideo(scene);const video=scene.querySelector('video');video?.querySelectorAll('source').forEach(s=>s.remove());video?.load();state.initialized=false;state.failed=false;}
+  syncPlayback();
+});
+connection?.addEventListener?.('change',syncPlayback);
+connection?.addEventListener?.('change',reflectMotionPreference);
+reflectMotionPreference();
+document.addEventListener('visibilitychange',syncPlayback);
+// Local-only footage inspection before owner motion sign-off. No upload, storage or network API.
+const inspector = document.querySelector('#review-media-tools');
+if (inspector) {
+  const picker = inspector.querySelector('#review-file');
+  const sceneChoice = inspector.querySelector('#review-scene');
+  const clear = inspector.querySelector('#review-clear');
+  const pause = inspector.querySelector('#review-pause');
+  const status = inspector.querySelector('#review-status');
+  const maxBytes = 40 * 1024 * 1024;
+  function setStatus(message){status.textContent=message;}
+  function releaseScene(scene) {
+    if(!scene) return;
+    stopVideo(scene);
+    const state=sceneStates.get(scene);
+    const video=scene.querySelector('video');
+    if(video){video.removeAttribute('src');video.querySelectorAll('source').forEach(src=>src.remove());video.load();}
+    if(state.localUrl)URL.revokeObjectURL(state.localUrl);
+    state.localUrl=null;state.initialized=false;state.failed=false;
+    scene.dataset.videoReady='false';
+    syncPlayback();
+  }
+  function acceptLocalFile(file, id=sceneChoice.value) {
+    if(!file || !['video/mp4','video/webm'].includes(file.type) || file.size === 0 || file.size>maxBytes) {
+      setStatus('Choose a nonempty MP4 or WebM no larger than 40 MB. No clip was loaded.');
+      return false;
+    }
+    const scene=scenes.find(s=>s.dataset.scene===id);
+    if(!scene){setStatus('Unknown scene.');return false;}
+    releaseScene(scene);
+    const state=sceneStates.get(scene);
+    state.localUrl=URL.createObjectURL(file);
+    scene.dataset.videoReady='true';
+    setStatus('Local ' + id + ' clip loaded. It will play when visible and motion is allowed.');
+    scene.scrollIntoView({behavior:isStill()?'auto':'smooth',block:'center'});
+    syncPlayback();
+    return true;
+  }
+  picker.addEventListener('change',()=>{acceptLocalFile(picker.files?.[0]);});
+  clear.addEventListener('click',()=>{
+    const scene=scenes.find(s=>s.dataset.scene===sceneChoice.value);
+    releaseScene(scene);
+    picker.value='';
+    setStatus('Scene reset to its static poster. Local video URL released.');
+  });
+  pause.addEventListener('click',()=>{
+    reviewPaused=!reviewPaused;
+    reflectMotionPreference();
+    syncPlayback();
+    setStatus(reviewPaused?'Motion paused by reviewer.':'Motion resumed where system settings allow.');
+  });
+  window.addEventListener('pagehide',()=>scenes.forEach(scene=>{
+    const state=sceneStates.get(scene);
+    if(state?.localUrl)URL.revokeObjectURL(state.localUrl);
+  }),{once:true});
+  // Explicit test seam for offline browser QA; no data is sent anywhere.
+  if (document.documentElement.hasAttribute('data-local-review-test')) {
+    window.__anevumMediaReview = Object.freeze({acceptLocalFile,releaseScene});
+  }
+}
+
+window.addEventListener('pagehide',()=>scenes.forEach(stopVideo));
+// ANEVUM WEB — original, preview-only orbital motion study.
+// This is a canvas effect, not a claim of approved photoreal cinematic footage.
+const orbitalCanvas = document.querySelector('.hero-orbit-canvas');
+const orbitalScene = document.querySelector('.hero-scene');
+const orbitalPoster = orbitalScene?.querySelector('.scene-poster');
+const orbitalContext = orbitalCanvas?.getContext('2d', {alpha: true});
+let orbitalHandle = 0;
+let orbitalLastFrame = 0;
+let orbitalCanvasWidth = 0;
+let orbitalCanvasHeight = 0;
+let orbitalScale = 1;
+const orbitalPeriodMs = 9600;
+const orbitalMotes = Array.from({length: 76}, (_, i) => ({
+  azimuth: ((i * 0.61803398875) % 1) * Math.PI * 2,
+  radius: 0.41 + 0.62 * (((i * 73) % 79) / 79),
+  phase: ((i * 0.754877666) % 1) * Math.PI * 2,
+  size: 0.6 + (i % 4) * 0.28,
+}));
+function sizeOrbitalCanvas() {
+  if (!orbitalCanvas || !orbitalContext || !orbitalScene) return;
+  const rect = orbitalScene.getBoundingClientRect();
+  if (rect.width < 1 || rect.height < 1) return;
+  const maxRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+  // Upper bound on pixels prevents a high-DPR phone from spending its whole GPU budget here.
+  orbitalScale = Math.min(maxRatio, Math.sqrt(1800000 / (rect.width * rect.height)));
+  orbitalCanvasWidth = rect.width;
+  orbitalCanvasHeight = rect.height;
+  orbitalCanvas.width = Math.max(1, Math.round(rect.width * orbitalScale));
+  orbitalCanvas.height = Math.max(1, Math.round(rect.height * orbitalScale));
+  orbitalContext.setTransform(orbitalScale, 0, 0, orbitalScale, 0, 0);
+}
+function orbitalCenter() {
+  const naturalWidth = orbitalPoster?.naturalWidth || 1536;
+  const naturalHeight = orbitalPoster?.naturalHeight || 864;
+  const scale = Math.max(orbitalCanvasWidth / naturalWidth, orbitalCanvasHeight / naturalHeight);
+  const shiftX = (orbitalCanvasWidth - naturalWidth * scale) / 2;
+  // Match object-position: 50% 43% on desktop, 50% top on phone.
+  const positionY = mobileQuery.matches ? 0 : .43;
+  const shiftY = (orbitalCanvasHeight - naturalHeight * scale) * positionY;
+  // Scene-calibrated source geometry is descriptive, never derived from video
+  // frames or painted into the interactive UI. Defaults match the old poster.
+  const coordinate=(key,fallback,min,max)=>{
+    const parsed=Number(orbitalScene?.dataset[key] ?? fallback);
+    return Number.isFinite(parsed) && parsed >= min && parsed <= max ? parsed : fallback;
+  };
+  return {x:shiftX + naturalWidth * coordinate('orbitX',.50,.25,.75) * scale,
+          y:shiftY + naturalHeight * coordinate('orbitY',.252,.08,.55) * scale,
+          radius:naturalWidth * coordinate('orbitRadius',171/1536,.04,.28) * scale,
+          cutoff:shiftY + naturalHeight * coordinate('orbitCutoff',.39,.15,.8) * scale};
+}
+function ringCoordinate(angle, phase, ring, cx, cy, radius) {
+  // Owner visual direction: preserve the image-led Observatory and its
+  // atmospheric, tightly bounded orbital accents. Avoid replacing cinematic
+  // geometry with visibly synthetic, full-turn software-rendered models.
+  const tilt = ring.tilt + .13 * Math.sin(phase + ring.phase);
+  const spin = ring.spin + .18 * Math.sin(phase - ring.phase);
+  const yaw = ring.yaw + .09 * Math.cos(phase + ring.phase);
+  const x0 = Math.cos(angle) * radius * ring.radius;
+  const y0 = Math.sin(angle) * radius * ring.radius;
+  const y1 = y0 * Math.cos(tilt);
+  const z1 = y0 * Math.sin(tilt);
+  const x2 = x0 * Math.cos(yaw) + z1 * Math.sin(yaw);
+  const z2 = z1 * Math.cos(yaw) - x0 * Math.sin(yaw);
+  const x3 = x2 * Math.cos(spin) - y1 * Math.sin(spin);
+  const y3 = x2 * Math.sin(spin) + y1 * Math.cos(spin);
+  const perspective = 1 / (1 + z2 / (radius * 5));
+  return {x:cx + x3 * perspective, y:cy + y3 * perspective, z:z2 / radius};
+}
+// IMAGE-LED LIGHT: the approved photographic plate already contains the metal
+// and glass. Never sketch duplicate ring outlines or generate new object meshes.
+// A few broad specular glints travel through the illustration with restrained
+// brightness; all typography and controls remain native DOM.
+function drawOrbitalRing(ctx, ring, phase, center) {
+  const progress=phase / (Math.PI*2);
+  for(let j=0;j<2;j++){
+    // Slow and seamless; coordinates are only light-placement guides, not
+    // geometry to be rendered over the finished artwork.
+    const angle=2*Math.PI*((progress+ring.phase+j*.51)%1);
+    const p=ringCoordinate(angle,0,ring,center.x,center.y,center.radius);
+    const radius=Math.max(10,center.radius*(j===0?.09:.052));
+    const glow=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,radius);
+    const color=ring.bright==='#E1EEFF'?'182,215,249':'255,195,126';
+    const strength=j===0?.13:.075;
+    glow.addColorStop(0,`rgba(${color},${strength})`);
+    glow.addColorStop(.25,`rgba(${color},${strength*.37})`);
+    glow.addColorStop(1,`rgba(${color},0)`);
+    ctx.globalAlpha=1;ctx.fillStyle=glow;
+    ctx.beginPath();ctx.arc(p.x,p.y,radius,0,Math.PI*2);ctx.fill();
+  }
+}
+function renderOrbitalFrame(timestamp) {
+  orbitalHandle = 0;
+  if (!orbitalContext || !orbitalScene || !isActive() || !visible.has(orbitalScene) || orbitalScene.classList.contains('is-playing') || !proceduralAllowed(orbitalScene)) {
+    stopOrbitalMotion();return;
+  }
+  if(timestamp - orbitalLastFrame >= 42) {
+    orbitalLastFrame = timestamp;
+    const ctx = orbitalContext;
+    const {width:w,height:h} = {width:orbitalCanvasWidth,height:orbitalCanvasHeight};
+    ctx.clearRect(0,0,w,h);
+    const center = orbitalCenter();
+    const phase = (timestamp % orbitalPeriodMs) * Math.PI * 2 / orbitalPeriodMs;
+    ctx.save();
+    ctx.globalCompositeOperation='screen';
+    const ambient = ctx.createRadialGradient(center.x,center.y,center.radius*.05,center.x,center.y,center.radius*.91);
+    ambient.addColorStop(0, `rgba(255,202,123,${.047+.021*Math.cos(phase)})`);
+    ambient.addColorStop(.46,`rgba(116,181,227,${.039+.013*Math.sin(phase)})`);
+    ambient.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=ambient; ctx.beginPath();ctx.arc(center.x,center.y,center.radius,0,2*Math.PI);ctx.fill();
+    const rings=[
+      {radius:.99,tilt:1.05,spin:-.48,yaw:.56,phase:.13,color:'#EBA065',bright:'#FFD6A5'},
+      {radius:.83,tilt:.71,spin:.72,yaw:-.52,phase:.58,color:'#92C6F4',bright:'#E1EEFF'},
+      {radius:1.12,tilt:1.26,spin:.15,yaw:.22,phase:.88,color:'#DDA571',bright:'#FFE4BD'}
+    ];
+    for(const ring of rings)drawOrbitalRing(ctx,ring,phase,center);
+    // Register a faint reflected pool directly beneath the photographed orb.
+    // This is light only: no replacement mesh, outline, or manufactured object.
+    const reflectedY=Math.min(h*.84,center.y+center.radius*1.55);
+    ctx.save();
+    ctx.translate(center.x,reflectedY);
+    ctx.scale(1,.16);
+    const reflectedGlow=ctx.createRadialGradient(0,0,0,0,0,center.radius*1.6);
+    const reflectedAlpha=.025+.008*Math.sin(phase);
+    reflectedGlow.addColorStop(0,`rgba(255,191,112,${reflectedAlpha})`);
+    reflectedGlow.addColorStop(.45,`rgba(121,185,242,${reflectedAlpha*.43})`);
+    reflectedGlow.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=reflectedGlow;
+    ctx.beginPath();ctx.arc(0,0,center.radius*1.6,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    ctx.shadowBlur = 5;
+    for(const mote of orbitalMotes) {
+      const t = mote.azimuth + phase*(.24+.12*mote.radius);
+      const distance = mote.radius * center.radius * (1+.018*Math.sin(phase+mote.phase));
+      const x=center.x + Math.cos(t)*distance;
+      const y=center.y + Math.sin(t)*distance*.7;
+      ctx.globalAlpha=.10+.21*(.5+.5*Math.sin(t*2 + mote.phase));
+      ctx.fillStyle=mote.size>1.15?'#F4C99A':'#A8D0EF';
+      ctx.beginPath();ctx.arc(x,y,mote.size*center.radius/171,0,2*Math.PI);ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+    // Softly fade the VFX before the live DOM title and primary controls.
+    const clip=ctx.createLinearGradient(0,center.cutoff-75*center.radius/171,0,center.cutoff+20*center.radius/171);
+    clip.addColorStop(0,'rgba(255,255,255,1)');
+    clip.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.globalCompositeOperation='destination-in';ctx.globalAlpha=1;ctx.fillStyle=clip;ctx.fillRect(0,0,w,h);
+    ctx.restore();
+  }
+  orbitalHandle = requestAnimationFrame(renderOrbitalFrame);
+}
+function stopOrbitalMotion(){
+  if(orbitalHandle){cancelAnimationFrame(orbitalHandle);orbitalHandle=0;}
+  orbitalContext?.clearRect(0,0,orbitalCanvasWidth,orbitalCanvasHeight);
+  document.documentElement.dataset.orbitalMotion='still';
+}
+function syncOrbitalMotion(){
+  if(!orbitalContext || !isActive() || !visible.has(orbitalScene) || orbitalScene.classList.contains('is-playing') || !proceduralAllowed(orbitalScene)){
+    stopOrbitalMotion();return;
+  }
+  document.documentElement.dataset.orbitalMotion='dynamic';
+  if(!orbitalHandle)orbitalHandle=requestAnimationFrame(renderOrbitalFrame);
+}
+if(orbitalContext){
+  sizeOrbitalCanvas();
+  orbitalPoster?.addEventListener('load',()=>{sizeOrbitalCanvas();syncOrbitalMotion();},{once:true});
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{sizeOrbitalCanvas();syncOrbitalMotion();}).observe(orbitalScene);
+  else window.addEventListener('resize',()=>{sizeOrbitalCanvas();syncOrbitalMotion();});
+  window.addEventListener('pagehide',stopOrbitalMotion);
+}
+
+// ANEVUM WEB — independently illuminated, original mathematical Research terrain.
+// Review-only canvas; genuine cinematic masters are still required for release.
+// All pixels are decorative. Native anchor/content remain fully operable without JS.
+const researchScene = document.querySelector('.destination-research');
+const researchCanvas = researchScene?.querySelector('.research-flow-canvas');
+const researchContext = researchCanvas?.getContext('2d', {alpha:true});
+let researchHandle = 0;
+let researchLastFrame = 0;
+let researchWidth = 0;
+let researchHeight = 0;
+let researchScale = 1;
+const researchPeriodMs = 8800;
+const terrainHeight = (u, row, phase) => {
+  const ridge = .36*Math.exp(-Math.pow((u-.59)/.21, 2)) + .18*Math.exp(-Math.pow((u-.19)/.18,2));
+  const wave = .012*Math.sin(17*u + 1.5*Math.sin(phase) + row*.51) + .009*Math.cos(21*u + 1.2*Math.sin(phase-.7) + row*.34);
+  return .48 + row*.046 - ridge*(.65-row*.047) + wave * Math.sin(Math.PI*u);
+};
+function sizeResearchCanvas(){
+  if(!researchCanvas || !researchContext || !researchScene)return;
+  const box=researchScene.getBoundingClientRect();
+  if(box.width<1 || box.height<1)return;
+  researchWidth=box.width;researchHeight=box.height;
+  researchScale=Math.min(window.devicePixelRatio||1,1.5,Math.sqrt(250000/(box.width*box.height)));
+  researchCanvas.width=Math.max(1,Math.round(box.width*researchScale));
+  researchCanvas.height=Math.max(1,Math.round(box.height*researchScale));
+  researchContext.setTransform(researchScale,0,0,researchScale,0,0);
+}
+function renderResearchFrame(timestamp){
+  researchHandle=0;
+  if(!researchContext || !isActive() || !visible.has(researchScene) || !proceduralAllowed(researchScene) || researchScene.classList.contains('is-playing')){
+    stopResearchFlow();return;
+  }
+  // Visual quality above the requested throughput: 20 Hz capped, on-screen only.
+  if(timestamp-researchLastFrame>=48){
+    researchLastFrame=timestamp;
+    const ctx=researchContext, w=researchWidth,h=researchHeight;
+    ctx.clearRect(0,0,w,h);
+    const phase=(timestamp%researchPeriodMs)*Math.PI*2/researchPeriodMs;
+    ctx.save();ctx.globalCompositeOperation='screen';ctx.lineJoin='round';ctx.lineCap='round';
+    // Nine connected original contours, gently breathing with the background's mountain geometry.
+    for(let row=0;row<9;row++){
+      const curve=new Path2D();
+      for(let col=0;col<=66;col++){
+        const u=col/66,x=u*w,y=terrainHeight(u,row,phase)*h;
+        if(!col)curve.moveTo(x,y);else curve.lineTo(x,y);
+      }
+      ctx.strokeStyle=row%3===0?'#9FD8FF':'#62B6EB';
+      ctx.lineWidth=row%3===0?1.2:.75;
+      ctx.globalAlpha=.11+.075*(1-row/9);
+      ctx.shadowColor='#71C8FA';ctx.shadowBlur=row%3===0?7:2;
+      ctx.stroke(curve);
+    }
+    // Coherent travelling impulses follow actual warped contours rather than moving over a still image.
+    for(let k=0;k<6;k++){
+      const u=(phase/(Math.PI*2)*(.85+.02*k)+k*.179)%1;
+      const row=(k*3)%8;
+      const x=u*w,y=terrainHeight(u,row,phase)*h;
+      const rr=Math.max(5,Math.min(13,w*.027));
+      const bloom=ctx.createRadialGradient(x,y,0,x,y,rr);
+      bloom.addColorStop(0,'rgba(231,247,255,.72)');
+      bloom.addColorStop(.18,'rgba(138,219,255,.35)');
+      bloom.addColorStop(1,'rgba(54,149,249,0)');
+      ctx.globalAlpha=.42+.2*Math.cos(phase+k);
+      ctx.fillStyle=bloom;ctx.shadowBlur=0;
+      ctx.beginPath();ctx.arc(x,y,rr,0,2*Math.PI);ctx.fill();
+    }
+    // Fade into the native title and description; the text does not move with the artwork.
+    ctx.globalCompositeOperation='destination-in';ctx.globalAlpha=1;ctx.shadowBlur=0;
+    const mask=ctx.createLinearGradient(0,h*.24,0,h*.80);
+    mask.addColorStop(0,'rgba(255,255,255,.95)');
+    mask.addColorStop(.62,'rgba(255,255,255,.50)');
+    mask.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=mask;ctx.fillRect(0,0,w,h);
+    ctx.restore();
+  }
+  researchHandle=requestAnimationFrame(renderResearchFrame);
+}
+function stopResearchFlow(){
+  if(researchHandle){cancelAnimationFrame(researchHandle);researchHandle=0;}
+  researchContext?.clearRect(0,0,researchWidth,researchHeight);
+  if(researchScene)researchScene.dataset.researchMotion='still';
+}
+function syncResearchFlow(){
+  if(!researchContext || !isActive() || !visible.has(researchScene) || !proceduralAllowed(researchScene) || researchScene.classList.contains('is-playing')){
+    stopResearchFlow();return;
+  }
+  researchScene.dataset.researchMotion='dynamic';
+  if(!researchHandle)researchHandle=requestAnimationFrame(renderResearchFrame);
+}
+if(researchContext){
+  sizeResearchCanvas();
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{sizeResearchCanvas();syncResearchFlow();}).observe(researchScene);
+  else window.addEventListener('resize',()=>{sizeResearchCanvas();syncResearchFlow();});
+  window.addEventListener('pagehide',stopResearchFlow);
+}
+
+// ANEVUM.WEB.BUILD.2026-11-13.007.EXPERIMENTS-SPIRAL-MOTION
+// Review-only original spiral geometry: not an approved 4K cinematic master.
+// Real user navigation/content stay in HTML and the poster remains the fallback.
+const experimentsScene = document.querySelector('.destination-experiments');
+const experimentsCanvas = experimentsScene?.querySelector('.experiments-vortex-canvas');
+const experimentsContext = experimentsCanvas?.getContext('2d', {alpha:true});
+let experimentsHandle=0, experimentsLastFrame=0;
+let experimentsWidth=0, experimentsHeight=0, experimentsScale=1;
+// Deterministic particles ensure that frames have continuous identities, not flickering random stars.
+const experimentsDust = Array.from({length:200},(_,i)=>({
+  arm:i%3,
+  t:.10+.88*((i*0.618033988749895)%1),
+  jitter:((i*0.7548776662466927)%1-.5)*.072,
+  phase:(i*0.414213562373095)%1*Math.PI*2,
+  radius:.36+(i%5)*.155,
+  cold:i%6===0
+}));
+function sizeExperimentsCanvas(){
+  if(!experimentsCanvas || !experimentsContext || !experimentsScene)return;
+  const box=experimentsScene.getBoundingClientRect();
+  if(box.width<1 || box.height<1)return;
+  experimentsWidth=box.width;experimentsHeight=box.height;
+  experimentsScale=Math.min(window.devicePixelRatio||1,1.5,Math.sqrt(240000/(box.width*box.height)));
+  experimentsCanvas.width=Math.max(1,Math.round(box.width*experimentsScale));
+  experimentsCanvas.height=Math.max(1,Math.round(box.height*experimentsScale));
+  experimentsContext.setTransform(experimentsScale,0,0,experimentsScale,0,0);
+}
+function spiralPoint(t,arm,phase,jitter=0){
+  // Bright nuclear core in the source poster lives at roughly (66%, 33%).
+  const w=experimentsWidth,h=experimentsHeight;
+  const turns=t*5.9 + arm*Math.PI*2/3 + phase*.23 + jitter;
+  const radial=(.06+.93*Math.pow(t,1.38));
+  const rX=w*.425*radial,rY=h*.40*radial;
+  const x=w*.66 + rX*Math.cos(turns);
+  const y=h*.33 + rY*Math.sin(turns);
+  return {x,y};
+}
+function stopExperimentsFlow(){
+  if(experimentsHandle){cancelAnimationFrame(experimentsHandle);experimentsHandle=0;}
+  experimentsContext?.clearRect(0,0,experimentsWidth,experimentsHeight);
+  if(experimentsScene)experimentsScene.dataset.experimentsMotion='still';
+}
+function renderExperimentsFrame(timestamp){
+  experimentsHandle=0;
+  if(!experimentsContext || !isActive() || !visible.has(experimentsScene) || !proceduralAllowed(experimentsScene) || experimentsScene.classList.contains('is-playing')){
+    stopExperimentsFlow();return;
+  }
+  // ~24 Hz maximum. Uses a bounded device-resolution canvas rather than full-resolution GPU effects.
+  if(timestamp-experimentsLastFrame>=40){
+    experimentsLastFrame=timestamp;
+    const c=experimentsContext,w=experimentsWidth,h=experimentsHeight;
+    const phase=(timestamp%14000)*Math.PI*2/14000;
+    c.clearRect(0,0,w,h);
+    c.save();c.globalCompositeOperation='screen';c.lineCap='round';
+    // Three discrete arms rotate at a small physical angular rate, tied to a stable source image.
+    for(let arm=0;arm<3;arm++){
+      const spine=new Path2D();
+      for(let sample=0;sample<=80;sample++){
+        const p=spiralPoint(.035+sample/80*.94,arm,phase);
+        if(sample===0)spine.moveTo(p.x,p.y);else spine.lineTo(p.x,p.y);
+      }
+      c.strokeStyle=arm===1?'#FFCFB2':arm===2?'#B7C8FE':'#F6A5C4';
+      c.lineWidth=arm===1?1.05:.8;
+      c.globalAlpha=.16;
+      // The backdrop and core gradient supply bloom. Per-frame path shadowBlur stalls software Chromium.
+      c.shadowBlur=0;
+      c.stroke(spine);
+    }
+    c.shadowBlur=0;
+    // Luminous dust travels with the arms, rather than remaining a random flashing particle field.
+    const count=experimentsWidth<250?120:experimentsDust.length;
+    for(let i=0;i<count;i++){
+      const mote=experimentsDust[i],p=spiralPoint(mote.t,mote.arm,phase,mote.jitter);
+      const pulse=.56+.44*Math.sin(phase*2+mote.phase);
+      c.globalAlpha=(.22+.33*pulse)*(1-mote.t*.17);
+      c.fillStyle=mote.cold?'#B4C7FF':(i%3===0?'#F7C2DC':'#FFD9B6');
+      c.beginPath();c.arc(p.x,p.y,mote.radius*(.8+.22*pulse),0,Math.PI*2);c.fill();
+    }
+    const cx=w*.66,cy=h*.33;
+    const core=c.createRadialGradient(cx,cy,0,cx,cy,Math.max(17,w*.11));
+    core.addColorStop(0,'rgba(255,249,236,.36)');
+    core.addColorStop(.3,'rgba(255,200,150,.14)');
+    core.addColorStop(1,'rgba(248,130,171,0)');
+    c.globalAlpha=.7;c.fillStyle=core;
+    c.beginPath();c.arc(cx,cy,Math.max(17,w*.11),0,2*Math.PI);c.fill();
+    // Protect the caption area: galaxy light belongs to the upper image, not the real UI layer.
+    c.globalAlpha=1;c.globalCompositeOperation='destination-in';
+    const mask=c.createLinearGradient(0,h*.36,0,h*.90);
+    mask.addColorStop(0,'rgba(255,255,255,.94)');
+    mask.addColorStop(.52,'rgba(255,255,255,.42)');
+    mask.addColorStop(1,'rgba(255,255,255,0)');
+    c.fillStyle=mask;c.fillRect(0,0,w,h);
+    c.restore();
+  }
+  experimentsHandle=requestAnimationFrame(renderExperimentsFrame);
+}
+function syncExperimentsFlow(){
+  if(!experimentsContext || !isActive() || !visible.has(experimentsScene) || !proceduralAllowed(experimentsScene) || experimentsScene.classList.contains('is-playing')){
+    stopExperimentsFlow();return;
+  }
+  experimentsScene.dataset.experimentsMotion='dynamic';
+  if(!experimentsHandle)experimentsHandle=requestAnimationFrame(renderExperimentsFrame);
+}
+if(experimentsContext){
+  sizeExperimentsCanvas();
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{sizeExperimentsCanvas();syncExperimentsFlow();}).observe(experimentsScene);
+  else window.addEventListener('resize',()=>{sizeExperimentsCanvas();syncExperimentsFlow();});
+  window.addEventListener('pagehide',stopExperimentsFlow);
+}
+
+// ANEVUM.WEB.BUILD.2026-11-13.008.EXPERIENCES-LIVING-PORTAL
+// Independent atmospheric study: stable stone geometry, drifting mist and foliage light.
+// This is not approved cinematic footage; poster, DOM content and destination link remain usable.
+const experiencesScene = document.querySelector('.destination-experiences');
+const experiencesCanvas = experiencesScene?.querySelector('.experiences-atmosphere-canvas');
+const experiencesContext = experiencesCanvas?.getContext('2d', {alpha:true});
+let experiencesHandle=0, experiencesLastFrame=0, experiencesWidth=0, experiencesHeight=0;
+const experiencesDust=Array.from({length:56},(_,i)=>({
+  x:(i*0.61803398875+.17)%1,
+  y:.045+((i*0.75487766625)%1)*.55,
+  size:.45+(i%5)*.21,
+  phase:(i*.38196601125%1)*Math.PI*2,
+  speed:.25+(i%7)*.10,
+  gold:i%4===0
+}));
+function sizeExperiencesCanvas(){
+  if(!experiencesCanvas || !experiencesContext || !experiencesScene)return;
+  const rect=experiencesScene.getBoundingClientRect();
+  if(rect.width<1 || rect.height<1)return;
+  experiencesWidth=rect.width;experiencesHeight=rect.height;
+  const dpr=Math.min(window.devicePixelRatio||1,1.5,Math.sqrt(210000/(rect.width*rect.height)));
+  experiencesCanvas.width=Math.max(1,Math.round(rect.width*dpr));
+  experiencesCanvas.height=Math.max(1,Math.round(rect.height*dpr));
+  experiencesContext.setTransform(dpr,0,0,dpr,0,0);
+}
+function stopExperiencesAtmosphere(){
+  if(experiencesHandle){cancelAnimationFrame(experiencesHandle);experiencesHandle=0;}
+  experiencesContext?.clearRect(0,0,experiencesWidth,experiencesHeight);
+  if(experiencesScene)experiencesScene.dataset.experiencesMotion='still';
+}
+function renderExperiencesFrame(timestamp){
+  experiencesHandle=0;
+  if(!experiencesContext || !isActive() || !visible.has(experiencesScene) || !proceduralAllowed(experiencesScene) || experiencesScene.classList.contains('is-playing')){
+    stopExperiencesAtmosphere();return;
+  }
+  if(timestamp-experiencesLastFrame>=46){
+    experiencesLastFrame=timestamp;
+    const c=experiencesContext,w=experiencesWidth,h=experiencesHeight;
+    const phase=timestamp*Math.PI*2/17000;
+    c.clearRect(0,0,w,h);
+    c.save();c.globalCompositeOperation='screen';
+    // Stationary arch remains the subject. Only warm volumetric daylight behind it changes.
+    const bright=w*.68,high=h*.34,reach=Math.max(36,w*.27);
+    const portal=c.createRadialGradient(bright,high,0,bright,high,reach);
+    portal.addColorStop(0,`rgba(241,255,214,${(.14+.03*Math.sin(phase)).toFixed(3)})`);
+    portal.addColorStop(.38,'rgba(203,243,205,.070)');portal.addColorStop(1,'rgba(183,226,195,0)');
+    c.fillStyle=portal;c.fillRect(0,0,w,h*.76);
+    // Sunlight travelling through the arch and canopy: coherent beams, not vibrating architecture.
+    for(let i=0;i<4;i++){
+      const startX=w*(.59+i*.053);
+      const sway=Math.sin(phase*.68+i*.8)*w*.018;
+      const shaft=new Path2D();
+      shaft.moveTo(startX,h*.04);
+      shaft.lineTo(startX+w*.045,h*.04);
+      shaft.lineTo(startX+w*(.12+i*.012)+sway,h*.68);
+      shaft.lineTo(startX+w*(.025+i*.01)+sway,h*.68);
+      shaft.closePath();
+      const beam=c.createLinearGradient(startX,h*.08,startX,h*.73);
+      beam.addColorStop(0,'rgba(247,244,195,.03)');beam.addColorStop(.65,'rgba(238,255,214,.035)');beam.addColorStop(1,'rgba(219,244,211,0)');
+      c.globalAlpha=.6+.22*Math.sin(phase*.78+i*.74);
+      c.fillStyle=beam;c.fill(shaft);
+    }
+    c.globalAlpha=1;
+    // Two horizontal mist banks travel at different speeds, giving depth without moving stone/trees.
+    for(let band=0;band<3;band++){
+      const offset=Math.sin(phase*(.48+.06*band)+band*1.5)*w*.045;
+      const y=h*(.49+band*.053);
+      const alpha=.075-band*.016;
+      const mist=c.createRadialGradient(w*(.60+.06*band)+offset,y,0,w*(.60+.06*band)+offset,y,w*(.43+.045*band));
+      mist.addColorStop(0,`rgba(217,247,217,${alpha.toFixed(3)})`);
+      mist.addColorStop(.5,`rgba(207,235,224,${(alpha*.52).toFixed(3)})`);
+      mist.addColorStop(1,'rgba(203,234,225,0)');
+      c.fillStyle=mist;c.beginPath();c.ellipse(w*(.60+.06*band)+offset,y,w*(.43+.045*band),h*(.15+.035*band),0,0,Math.PI*2);c.fill();
+    }
+    // Deterministic fireflies drift subtly in 3D-like layers; no frame-to-frame random jumps.
+    const count=w<280?35:experiencesDust.length;
+    for(let i=0;i<count;i++){
+      const mote=experiencesDust[i];
+      const x=w*(mote.x+.018*Math.sin(phase*mote.speed+mote.phase));
+      const y=h*(mote.y+.024*Math.cos(phase*(mote.speed*.74)+mote.phase));
+      const pulse=(.5+.5*Math.sin(phase*(.9+mote.speed)+mote.phase));
+      c.globalAlpha=.13+.45*pulse;
+      c.fillStyle=mote.gold?'#FFE8AE':'#D6F6DA';
+      c.beginPath();c.arc(x,y,mote.size*(.63+.43*pulse),0,Math.PI*2);c.fill();
+    }
+    // Keep UI text and its contrast unaltered; light falls away before the caption.
+    c.globalAlpha=1;c.globalCompositeOperation='destination-in';
+    const mask=c.createLinearGradient(0,h*.28,0,h*.82);
+    mask.addColorStop(0,'rgba(255,255,255,.92)');
+    mask.addColorStop(.48,'rgba(255,255,255,.62)');
+    mask.addColorStop(1,'rgba(255,255,255,0)');
+    c.fillStyle=mask;c.fillRect(0,0,w,h);
+    c.restore();
+  }
+  experiencesHandle=requestAnimationFrame(renderExperiencesFrame);
+}
+function syncExperiencesAtmosphere(){
+  if(!experiencesContext || !isActive() || !visible.has(experiencesScene) || !proceduralAllowed(experiencesScene) || experiencesScene.classList.contains('is-playing')){
+    stopExperiencesAtmosphere();return;
+  }
+  experiencesScene.dataset.experiencesMotion='dynamic';
+  if(!experiencesHandle)experiencesHandle=requestAnimationFrame(renderExperiencesFrame);
+}
+if(experiencesContext){
+  sizeExperiencesCanvas();
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{sizeExperiencesCanvas();syncExperiencesAtmosphere();}).observe(experiencesScene);
+  else window.addEventListener('resize',()=>{sizeExperiencesCanvas();syncExperiencesAtmosphere();});
+  window.addEventListener('pagehide',stopExperiencesAtmosphere);
+}
+
+// ANEVUM.WEB.BUILD.2026-11-13.009.ARCHIVE-LIVING-ILLUMINATION
+// Keep leather volumes physically stationary: only light, shelf haze and dust shift.
+const archiveScene = document.querySelector('.destination-archive');
+const archiveCanvas = archiveScene?.querySelector('.archive-illumination-canvas');
+const archiveContext = archiveCanvas?.getContext('2d', {alpha:true});
+let archiveHandle=0, archiveLastFrame=0, archiveWidth=0, archiveHeight=0;
+const archiveSpines=[.18,.29,.40,.50,.60,.68,.76,.84,.91];
+const archiveDust=Array.from({length:58},(_,i)=>({
+  x:(i*.618033988749895+.25)%1,
+  y:.04+((i*.75487766625)%1)*.58,
+  radius:.42+(i%6)*.17,
+  phase:((i*.3819660112501)%1)*Math.PI*2,
+  speed:.18+(i%8)*.07
+}));
+function sizeArchiveCanvas(){
+  if(!archiveCanvas||!archiveContext||!archiveScene)return;
+  const rect=archiveScene.getBoundingClientRect();
+  if(rect.width<1||rect.height<1)return;
+  archiveWidth=rect.width;archiveHeight=rect.height;
+  const ratio=Math.min(window.devicePixelRatio||1,1.5,Math.sqrt(215000/(rect.width*rect.height)));
+  archiveCanvas.width=Math.max(1,Math.round(rect.width*ratio));
+  archiveCanvas.height=Math.max(1,Math.round(rect.height*ratio));
+  archiveContext.setTransform(ratio,0,0,ratio,0,0);
+}
+function stopArchiveIllumination(){
+  if(archiveHandle){cancelAnimationFrame(archiveHandle);archiveHandle=0;}
+  archiveContext?.clearRect(0,0,archiveWidth,archiveHeight);
+  if(archiveScene)archiveScene.dataset.archiveMotion='still';
+}
+function renderArchiveFrame(timestamp){
+  archiveHandle=0;
+  if(!archiveContext||!isActive()||!visible.has(archiveScene) || !proceduralAllowed(archiveScene)||archiveScene.classList.contains('is-playing')){
+    stopArchiveIllumination();return;
+  }
+  if(timestamp-archiveLastFrame>=45){
+    archiveLastFrame=timestamp;
+    const c=archiveContext,w=archiveWidth,h=archiveHeight;
+    const phase=timestamp*Math.PI*2/19000;
+    c.clearRect(0,0,w,h);
+    c.save();c.globalCompositeOperation='screen';
+    // Light advances slowly across the fixed leather book spines, never moving geometry.
+    const focusX=w*(.60+.14*Math.sin(phase*.62));
+    const shelfGlow=c.createRadialGradient(focusX,h*.25,0,focusX,h*.25,w*.48);
+    shelfGlow.addColorStop(0,`rgba(255,193,111,${(.145+.038*Math.sin(phase)).toFixed(3)})`);
+    shelfGlow.addColorStop(.46,'rgba(219,135,59,.052)');
+    shelfGlow.addColorStop(1,'rgba(175,83,27,0)');
+    c.fillStyle=shelfGlow;c.fillRect(0,0,w,h*.82);
+    // Narrow bevel highlights correspond to actual vertical book spines in the poster.
+    for(let i=0;i<archiveSpines.length;i++){
+      const x=archiveSpines[i]*w;
+      const light=.30+.36*(.5+.5*Math.sin(phase*.78-i*.68));
+      const ribbon=c.createLinearGradient(x-w*.020,0,x+w*.033,0);
+      ribbon.addColorStop(0,'rgba(255,171,83,0)');
+      ribbon.addColorStop(.42,`rgba(255,204,133,${(.075*light).toFixed(3)})`);
+      ribbon.addColorStop(.55,`rgba(255,229,164,${(.135*light).toFixed(3)})`);
+      ribbon.addColorStop(1,'rgba(252,143,61,0)');
+      c.fillStyle=ribbon;c.fillRect(x-w*.020,h*.04,w*.053,h*.53);
+    }
+    // Long soft reflected band. Its motion is coherent, not a repetitive full-image zoom.
+    const sweep=w*(.19+.56*(.5+.5*Math.sin(phase*.43-.25)));
+    const reflected=c.createLinearGradient(sweep-w*.26,0,sweep+w*.20,0);
+    reflected.addColorStop(0,'rgba(255,193,123,0)');
+    reflected.addColorStop(.45,'rgba(255,205,144,.037)');
+    reflected.addColorStop(1,'rgba(255,192,122,0)');
+    c.fillStyle=reflected;c.fillRect(0,0,w,h*.68);
+    // Deterministic drifting motes with near/far depth: no frame-to-frame random positions.
+    const dustCount=w<300?34:archiveDust.length;
+    for(let i=0;i<dustCount;i++){
+      const mote=archiveDust[i];
+      const x=w*(mote.x+.023*Math.sin(phase*mote.speed+mote.phase));
+      const y=h*(mote.y+.028*Math.cos(phase*mote.speed*.77+mote.phase));
+      const sparkle=.5+.5*Math.cos(phase*(.45+mote.speed)+mote.phase);
+      c.globalAlpha=.13+.44*sparkle;
+      c.fillStyle=i%5===0?'#F9DEA4':'#F6BD80';
+      c.beginPath();c.arc(x,y,mote.radius*(.75+.35*sparkle),0,Math.PI*2);c.fill();
+    }
+    c.globalAlpha=1;
+    // Fade to zero before the real DOM caption: don't sacrifice readability for effects.
+    c.globalCompositeOperation='destination-in';
+    const mask=c.createLinearGradient(0,h*.20,0,h*.84);
+    mask.addColorStop(0,'rgba(255,255,255,.90)');
+    mask.addColorStop(.48,'rgba(255,255,255,.66)');
+    mask.addColorStop(1,'rgba(255,255,255,0)');
+    c.fillStyle=mask;c.fillRect(0,0,w,h);
+    c.restore();
+  }
+  archiveHandle=requestAnimationFrame(renderArchiveFrame);
+}
+function syncArchiveIllumination(){
+  if(!archiveContext||!isActive()||!visible.has(archiveScene) || !proceduralAllowed(archiveScene)||archiveScene.classList.contains('is-playing')){
+    stopArchiveIllumination();return;
+  }
+  archiveScene.dataset.archiveMotion='dynamic';
+  if(!archiveHandle)archiveHandle=requestAnimationFrame(renderArchiveFrame);
+}
+if(archiveContext){
+  sizeArchiveCanvas();
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{sizeArchiveCanvas();syncArchiveIllumination();}).observe(archiveScene);
+  else window.addEventListener('resize',()=>{sizeArchiveCanvas();syncArchiveIllumination();});
+  window.addEventListener('pagehide',stopArchiveIllumination);
+}
+
+// Measured, bounded depth response; no event-to-layout synchronous reads.
+const hero=document.querySelector('.hero-scene');
+function scrollMotion(){ ticking=false;if(!hero || !isActive())return;const y=Math.min(window.scrollY,600);hero.style.setProperty('--scroll-depth',`${Math.round(y*.027)}px`);syncPlayback(); }
+window.addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(scrollMotion)}},{passive:true});
+syncPlayback();
+
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="wordmark" href="/" aria-label="ANEVUM home"><span class="brand-orbit" aria-hidden="true"></span>ANEVUM</a>
+    <span class="brand-divider" aria-hidden="true"></span>
+    <span class="brand-caption">The Living Laboratory</span>
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      <a href="/original-works/experiments">Experiments</a>
+      <a href="/original-works/research">Research</a>
+      <a href="#experiences">Experiences</a>
+      <a href="/original-works/archive">Archive</a>
+    </nav>
+    <details class="mobile-nav"><summary aria-label="Open navigation">Menu <span aria-hidden="true">☰</span></summary>
+      <nav aria-label="Mobile navigation">
+        <a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="#experiences">Experiences</a><a href="/original-works/archive">Archive</a>
+      </nav>
+    </details>
+  </div>
+</header>
+<main id="main" tabindex="-1">
+  <section class="laboratory" aria-labelledby="lab-title">
+    <div class="scene hero-scene" data-scene="hero" data-video-ready="false" data-orbit-x="0.50" data-orbit-y="0.252" data-orbit-radius="0.111328125" data-orbit-cutoff="0.39"
+      data-video-webm="/original-works/assets/motion/hero-desktop.webm"
+      data-video-mp4="/original-works/assets/motion/hero-desktop.mp4"
+      data-mobile-webm="/original-works/assets/motion/hero-mobile.webm"
+      data-mobile-mp4="/original-works/assets/motion/hero-mobile.mp4">
+      <picture class="hero-picture" aria-hidden="true">
+        <source media="(max-width: 720px)" srcset="./assets/hero-mobile.webp" type="image/webp">
+        <img class="scene-poster hero-poster" src="./assets/hero.webp" width="1536" height="864" alt="" fetchpriority="high">
+      </picture>
+      <video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video>
+      <div class="atmosphere" aria-hidden="true"><span class="glint glint-one"></span><span class="glint glint-two"></span><span class="orbital-radiance"></span></div>
+      <canvas class="hero-orbit-canvas" aria-hidden="true" tabindex="-1"></canvas>
+      <div class="hero-vignette" aria-hidden="true"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-overline">Independent experimental studio <span aria-hidden="true">·</span> An evolving environment</div>
+      <h1 id="lab-title">ANEVUM</h1>
+      <p class="hero-kicker">A laboratory for the possible</p>
+      <div class="hero-rule" aria-hidden="true"></div>
+      <p class="hero-intro">An independent studio exploring advanced technology, scientific ideas, creative systems, and immersive experiences.</p>
+      <div class="hero-actions"><a class="action action-primary" href="/original-works/experiments">Explore experiments <span aria-hidden="true">↗</span></a><a class="action action-secondary" href="/original-works/research">Research &amp; archive <span aria-hidden="true">↗</span></a></div>
+      <button type="button" id="ambient-motion-toggle" class="cinematic-motion-toggle" aria-pressed="false" aria-label="Pause background motion">Pause motion</button>
+    </div>
+    <div class="destinations" aria-label="Explore ANEVUM">
+      <a class="scene destination destination-experiments" data-scene="experiments" data-video-ready="false" data-video-webm="/original-works/assets/motion/experiments.webm" data-video-mp4="/original-works/assets/motion/experiments.mp4" href="/original-works/experiments">
+        <img class="scene-poster" src="./assets/experiments.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video><canvas class="experiments-vortex-canvas" aria-hidden="true" tabindex="-1"></canvas>
+        <span class="destination-content"><span class="destination-icon" aria-hidden="true">◈</span><strong>Experiments</strong><small>Projects, prototypes, and creative systems</small></span><span class="destination-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="scene destination destination-research" data-scene="research" data-video-ready="false" data-video-webm="/original-works/assets/motion/research.webm" data-video-mp4="/original-works/assets/motion/research.mp4" href="/original-works/research">
+        <img class="scene-poster" src="./assets/research.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video><canvas class="research-flow-canvas" aria-hidden="true" tabindex="-1"></canvas>
+        <span class="destination-content"><span class="destination-icon" aria-hidden="true">⌁</span><strong>Research</strong><small>Investigations, ideas, and technical notes</small></span><span class="destination-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="scene destination destination-experiences" data-scene="experiences" data-video-ready="false" data-video-webm="/original-works/assets/motion/experiences.webm" data-video-mp4="/original-works/assets/motion/experiences.mp4" href="#experiences">
+        <img class="scene-poster" src="./assets/experiences.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video><canvas class="experiences-atmosphere-canvas" aria-hidden="true" tabindex="-1"></canvas>
+        <span class="destination-content"><span class="destination-icon" aria-hidden="true">◇</span><strong>Experiences</strong><small>Interactive worlds and immersive creations</small></span><span class="destination-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="scene destination destination-archive" data-scene="archive" data-video-ready="false" data-video-webm="/original-works/assets/motion/archive.webm" data-video-mp4="/original-works/assets/motion/archive.mp4" href="/original-works/archive">
+        <img class="scene-poster" src="./assets/archive.webp" alt="" loading="lazy" width="1050" height="510"><video class="scene-video" aria-hidden="true" muted loop playsinline preload="none" tabindex="-1"></video><canvas class="archive-illumination-canvas" aria-hidden="true" tabindex="-1"></canvas>
+        <span class="destination-content"><span class="destination-icon" aria-hidden="true">▤</span><strong>Archive</strong><small>A curated record of work and exploration</small></span><span class="destination-arrow" aria-hidden="true">↗</span>
+      </a>
+    </div>
+    <a href="#discover" class="discover-cue">Scroll to discover <span aria-hidden="true">↓</span></a>
+  </section>
+  <section class="discover" id="discover" aria-labelledby="discover-title">
+    <div class="section-label"><span>01 / Beyond the entrance</span><span>The studio</span></div>
+    <div class="discover-grid">
+      <div><p class="eyebrow">An experimental practice</p><h2 id="discover-title">Ideas deserve<br><em>room to become real.</em></h2></div>
+      <div><p>ANEVUM is an independent laboratory for exploratory engineering and creative work. Software prototypes, computational questions, and interactive environments are presented with evidence—not imagined launch claims.</p><a href="/original-works/experiments" class="text-link">Browse current work <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="featured-grid" id="experiences">
+      <article class="featured"><span class="featured-number">001 / Experiments</span><h3>Make the unfamiliar tangible.</h3><p>Explore actual source repositories, interactive prototypes, and the questions behind them.</p><a href="/original-works/experiments">Enter experiments ↗</a></article>
+      <article class="featured"><span class="featured-number">002 / Research</span><h3>Questions before claims.</h3><p>Follow technical ideas and emerging explorations with their evidentiary limits clearly stated.</p><a href="/original-works/research">Explore research ↗</a></article>
+      <article class="featured"><span class="featured-number">003 / Archive</span><h3>Preserve the earlier worlds.</h3><p>Return to ANEVUM's original creative and editorial history without implying new publications.</p><a href="/original-works/archive">Open archive ↗</a></article>
+    </div>
+  </section>
+</main>
+<footer><span>ANEVUM · A laboratory for the possible</span><span>Created by <a href="https://devonakins.com">Devon Akins</a></span></footer>
+<!-- Isolated design-review control; this file is NOT imported by the public Worker. -->
+<details class="review-media-tools" id="review-media-tools">
+  <summary>Preview a moving scene</summary>
+  <div class="review-media-body">
+    <p>Load your own MP4/WebM to inspect an animated module in place. Files stay on this device and are never uploaded.</p>
+    <label for="review-scene">Environment</label>
+    <select id="review-scene"><option value="research">Research</option><option value="hero">Observatory hero</option><option value="experiments">Experiments</option><option value="experiences">Experiences</option><option value="archive">Archive</option></select>
+    <label for="review-file">Choose clip (up to 40 MB)</label>
+    <input id="review-file" type="file" accept="video/mp4,video/webm" aria-describedby="review-status">
+    <div class="review-media-actions"><button type="button" id="review-clear">Clear clip</button><button type="button" id="review-pause" aria-pressed="false">Pause motion</button></div>
+    <p id="review-status" role="status" aria-live="polite">Static posters are shown until you choose a video.</p>
+  </div>
+</details>
+
+</body>
+</html>

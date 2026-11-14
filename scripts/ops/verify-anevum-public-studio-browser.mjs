@@ -25,9 +25,9 @@ async function evalJS(expression){
  if(r.exceptionDetails)throw Error(r.exceptionDetails.text||"runtime exception");
  return r.result?.value;
 }
-async function waitFor(fn,label,{failFast=false}={}){
+async function waitFor(fn,label,{failFast=false,maxAttempts=110}={}){
  let lastError;
- for(let i=0;i<110;i++){
+ for(let i=0;i<maxAttempts;i++){
   try{const v=await fn();if(v)return v;}
   catch(error){lastError=error;if(failFast)throw error;}
   await sleep(110);
@@ -81,7 +81,9 @@ async function verifyClickThroughJourney(){
  await go('nav.lab-nav a[href="/original-works/archive"]',"/original-works/archive","Archive","Archive");
  await go('a.lab-arc-feature[href="/original-works/reply"]',"/original-works/reply","A signal.");
  await go('header.site-header a.brand[href="/"]',"/","ANEVUM");
- for(const hash of ["#experiences","#contact"]){
+ await go('nav.lab-nav a[href="/original-works/experiences"]',"/original-works/experiences","Experiences","Experiences");
+ await go('a.lab-brand[href="/"]',"/","ANEVUM");
+ for(const hash of ["#contact"]){
   const clicked=await evalJS("(()=>{const a=document.querySelector('nav.lab-nav a[href="+JSON.stringify(hash)+"]');if(!a)return false;a.click();return true})()");
   if(!clicked)throw Error("Missing public anchor "+hash);
   await waitFor(async()=>await evalJS("location.pathname==='/'&&location.hash==="+JSON.stringify(hash)+"&&!!document.getElementById("+JSON.stringify(hash.slice(1))+")"),"public anchor "+hash);
@@ -231,10 +233,10 @@ async function view(pathname,width,height,name,saveScreenshot=false){
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
   await send("Page.navigate",{url:base+pathname});
   const state=await waitFor(async()=>{
-   const v=await evalJS(`(()=>{const desktop=document.querySelector('nav.lab-nav'),mobile=document.querySelector('details.lab-mobile'),hero=document.querySelector('#lab-home-title');return {path:location.pathname,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,title:document.title,heading:hero?.textContent,tagline:document.querySelector('.lab-italic')?.textContent,nav:[...(desktop?.querySelectorAll('a')||[])].map(a=>a.getAttribute('href')),main:!!document.querySelector('main#main'),skip:!!document.querySelector('a.lab-skip[href="#main"]'),menu:!!mobile,menuVisible:!!mobile&&getComputedStyle(mobile).display!=='none',scripts:document.scripts.length,artwork:getComputedStyle(document.querySelector('.lab-art')).backgroundImage.includes('lab-hero-v1.webp'),artCount:document.querySelectorAll('.lab-theme-shape img').length,heroInset:Math.round(document.querySelector('.lab-hero-copy').getBoundingClientRect().left),anchors:[...document.querySelectorAll('a[href^="#"]')].map(a=>a.getAttribute('href').slice(1)).filter(Boolean).every(id=>!!document.getElementById(id))}})()`);
-   return v?.path===pathname&&v?.heading?v:null;
+   const v=await evalJS(`(()=>{const desktop=document.querySelector('nav.lab-nav'),mobile=document.querySelector('details.lab-mobile'),hero=document.querySelector('#lab-home-title');return {path:location.pathname,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,title:document.title,heading:hero?.textContent,tagline:document.querySelector('.lab-italic')?.textContent,nav:[...(desktop?.querySelectorAll('a')||[])].map(a=>a.getAttribute('href')),main:!!document.querySelector('main#main'),skip:!!document.querySelector('a.lab-skip[href="#main"]'),menu:!!mobile,menuVisible:!!mobile&&getComputedStyle(mobile).display!=='none',scripts:document.scripts.length,artwork:(()=>{const image=document.querySelector('.lab-art img.lab-hero-poster[data-cinema-scene="hero"]');return !!image&&image.getAttribute('src')==='/original-works/assets/lab-hero-v1.webp'&&image.complete&&image.naturalWidth>0&&image.getAttribute('data-cinema-ready')==='false'})(),scenePosters:document.querySelectorAll('.lab-worlds-grid img.lab-world-poster[data-cinema-ready="false"]').length,artCount:document.querySelectorAll('.lab-theme-shape img').length,heroInset:Math.round(document.querySelector('.lab-hero-copy').getBoundingClientRect().left),anchors:[...document.querySelectorAll('a[href^="#"]')].map(a=>a.getAttribute('href').slice(1)).filter(Boolean).every(id=>!!document.getElementById(id))}})()`);
+   return v?.path===pathname&&v?.heading&&v?.artwork?v:null;
   },"Living Laboratory "+name);
-  if(!state.main||!state.skip||!state.menu||!state.artwork||state.artCount!==4||!state.anchors||state.scripts!==0)throw Error("Lab accessibility or link contract failed: "+JSON.stringify(state));
+  if(!state.main||!state.skip||!state.menu||!state.artwork||state.artCount!==4||state.scenePosters!==4||!state.anchors||state.scripts!==0)throw Error("Lab accessibility or link contract failed: "+JSON.stringify(state));
   if(!state.title.includes("laboratory for the possible")||state.heading!=="ANEVUM"||!state.tagline?.includes("laboratory for the possible"))throw Error("Wrong laboratory identity: "+JSON.stringify(state));
   if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Lab horizontal overflow: "+JSON.stringify(state));
   if(state.heroInset<(width<=530?14:width<=1100?24:38))throw Error("Lab desktop/mobile hero gutter missing: "+JSON.stringify(state));
@@ -340,7 +342,7 @@ try {
   if(!existsSync(f))return null;
   const n=Number(readFileSync(f,"utf8").split(/\r?\n/)[0]);
   return Number.isInteger(n)&&n>0?n:null;
- },"Chrome DevTools",{failFast:true}).catch(error=>{throw Error(error.message+"; stderr: "+chromeStderr);});
+ },"Chrome DevTools",{failFast:true,maxAttempts:360}).catch(error=>{throw Error(error.message+"; stderr: "+chromeStderr);});
  const target=await (await fetch("http://127.0.0.1:"+devtools+"/json/new?about:blank",{method:"PUT"})).json();
  ws=new WebSocket(target.webSocketDebuggerUrl);
  ws.addEventListener("message",ev=>{

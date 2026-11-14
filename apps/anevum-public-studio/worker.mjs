@@ -3,6 +3,10 @@ import {renderLaboratoryResearch} from "./living-laboratory-research.mjs";
 import {renderLivingLaboratoryArchive} from "./living-laboratory-archive.mjs";
 import {LAB_ART} from "./living-laboratory-art.mjs";
 import {renderLivingLaboratoryHome} from "./living-laboratory-home.mjs";
+import {renderLivingLaboratoryExperiences} from "./living-laboratory-experiences.mjs";
+import {hasApprovedCinematicMotion} from "./living-laboratory-cinema.mjs";
+import {approvedCinematicScript} from "./living-laboratory-cinema-controller.mjs";
+import {serveApprovedCinematicMotion} from "./living-laboratory-media-origin.mjs";
 /**
  * ANEVUM.WEB.OPS.2026-11-03.027.CANONICAL-ORIGINAL-WORKS-LAUNCH
  * Self-contained public creative studio with no client JS or private content.
@@ -45,7 +49,7 @@ const securityHeaders={
  'X-Anevum-Surface':VERSION
 };
 const unavailable=status=>new Response(status===405?'Method not allowed':'Not found',{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Robots-Tag':'noindex, nofollow, noarchive','Allow':'GET, HEAD','X-Anevum-Surface':VERSION}});
-export default {async fetch(request){
+export default {async fetch(request,env){
  let url;try{url=new URL(request.url);}catch{return unavailable(404);}
  if(url.hostname!==HOST||url.protocol!=='https:')return unavailable(404);
  if(request.method!=='GET'&&request.method!=='HEAD')return unavailable(405);
@@ -53,6 +57,10 @@ export default {async fetch(request){
  // Only exact root and the existing public studio namespace are eligible.
  // Workers routing must still restrict the deployed surface to / and /original-works*.
  if(path!=='/'&&path!==ROOT&&!path.startsWith(ROOT+'/'))return unavailable(404);
+ const motionPrefix=ROOT+'/assets/motion/';
+ if(path.startsWith(motionPrefix)){
+  return serveApprovedCinematicMotion(request,env,path);
+ }
  const mediaPrefix=ROOT+'/assets/';
  if(path.startsWith(mediaPrefix)){
   const assetName=path.slice(mediaPrefix.length);
@@ -66,6 +74,10 @@ export default {async fetch(request){
    'Cross-Origin-Resource-Policy':'same-origin','X-Anevum-Surface':VERSION
   };
   return new Response(request.method==='HEAD'?null:imageBytes,{status:200,headers});
+ }
+ if(path===ROOT+'/experiences'){
+  const html=renderLivingLaboratoryExperiences();
+  return new Response(request.method==='HEAD'?null:html,{status:200,headers:securityHeaders});
  }
  if(path===ROOT+'/archive'){
   const html=renderLivingLaboratoryArchive();
@@ -83,5 +95,16 @@ export default {async fetch(request){
  if(!Object.prototype.hasOwnProperty.call(ROUTES,slug))return unavailable(404);
  const page=ROUTES[slug];
  const html=path==='/'?renderLivingLaboratoryHome():render(page);
- return new Response(request.method==='HEAD'?null:html,{status:200,headers:securityHeaders});
+ let headers=securityHeaders;
+ if(path==='/'&&hasApprovedCinematicMotion()){
+  // Only owner-cleared motion may relax the homepage script/media CSP.
+  // The script is an exact SHA-256 hash of the tested controller, not arbitrary inline JS.
+  const bytes=new TextEncoder().encode(approvedCinematicScript());
+  const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),
+   v=>String.fromCharCode(v)).join('');
+  const scriptHash='sha256-'+btoa(hash);
+  headers={...securityHeaders,'Content-Security-Policy':
+   securityHeaders['Content-Security-Policy']+"; script-src '"+scriptHash+"'; media-src 'self'"};
+ }
+ return new Response(request.method==='HEAD'?null:html,{status:200,headers});
 }};

@@ -107,7 +107,7 @@ class ScopeTests(unittest.TestCase):
 
     def test_public_studio_has_separate_mandatory_no_deploy_review(self):
         paths = list(scope.ISOLATED_PUBLIC_STUDIO_PATHS)
-        self.assertEqual(len(paths), 21)
+        self.assertEqual(len(paths), 68)
         self.assertFalse(scope.app_preview_required(paths))
         self.assertTrue(scope.public_studio_required(paths))
         self.assertFalse(scope.isolated_review_required(paths))
@@ -135,6 +135,96 @@ class ScopeTests(unittest.TestCase):
         unknown = ["apps/anevum-public-studio/art/unreviewed-v2.webp"]
         self.assertTrue(scope.app_preview_required(known + unknown))
         self.assertTrue(scope.public_studio_required(known + unknown))
+
+    def test_exact_cinematic_review_files_stay_in_public_safety_gate(self):
+        reviewed = [
+            "apps/anevum-public-studio/review/cinematic-laboratory.html",
+            "apps/anevum-public-studio/review/assets/hero.webp",
+            "apps/anevum-public-studio/review/assets/hero-mobile.webp",
+            "apps/anevum-public-studio/review/assets/experiments.webp",
+            "apps/anevum-public-studio/review/assets/research.webp",
+            "apps/anevum-public-studio/review/assets/experiences.webp",
+            "apps/anevum-public-studio/review/assets/archive.webp",
+            "docs/design/ANEVUM.WEB.DESIGN.2026-11-13.002.CINEMATIC-LABORATORY-PRODUCTION.md",
+            "tests/anevum-cinematic-review.test.mjs",
+            "scripts/ops/anevum-cinematic-local-preview.mjs",
+            "scripts/ops/recover-anevum-image-led-review.mjs",
+            "scripts/ops/render-anevum-image-led-hero-v20.py",
+            "scripts/ops/render-anevum-research-image-led-v21.py",
+            "scripts/ops/build-anevum-lightweight-review.py",
+            "scripts/ops/serve-anevum-cinematic-review.mjs",
+            "scripts/ops/assemble-anevum-five-scene-review.mjs",
+            "scripts/ops/enhance-anevum-chapter-review.mjs",
+            "tests/anevum-chapter-review.test.mjs",
+            "scripts/ops/audit-anevum-five-scene-review.py",
+            "tests/test_anevum_five_scene_film_qc.py",
+            "tests/anevum-five-scene-review.test.mjs",
+            "apps/anevum-public-studio/living-laboratory-experiences.mjs",
+            "apps/anevum-public-studio/living-laboratory-cinema.mjs",
+            "apps/anevum-public-studio/living-laboratory-cinema-controller.mjs",
+            "tests/anevum-cinematic-playback-engine.test.mjs",
+            "tests/anevum-cinematic-media-integration.test.mjs",
+            "apps/anevum-public-studio/living-laboratory-media-origin.mjs",
+            "tests/anevum-cinematic-media-origin.test.mjs",
+            "scripts/ops/render-anevum-experiments-image-led-v29.py",
+            "tests/test_anevum_experiments_image_led_v29.py",
+            "scripts/ops/render-anevum-experiences-image-led-v30.py",
+            "tests/test_anevum_experiences_image_led_v30.py",
+            "scripts/ops/render-anevum-archive-image-led-v31.py",
+            "tests/test_anevum_archive_image_led_v31.py",
+            "tests/anevum-cinematic-poster-surfaces.test.mjs",
+            "tests/anevum-living-experiences.test.mjs",
+            "tests/anevum-review-http.test.mjs",
+            "tests/test_anevum_lightweight_review.py",
+            "tests/anevum-research-image-led-v21.test.mjs",
+            "tests/anevum-image-led-v20.test.mjs",
+            "tests/anevum-image-led-recovery.test.mjs",
+            "tests/anevum-cinematic-local-preview.test.mjs",
+            "scripts/ops/verify-anevum-cinematic-http-browser.mjs",
+            ".github/workflows/anevum-verify.yml",
+            "scripts/ops/anevum-maintenance-ci-scope.py",
+            "tests/test_anevum_maintenance_ci_scope.py",
+        ]
+        self.assertFalse(scope.app_preview_required(reviewed))
+        self.assertTrue(scope.public_studio_required(reviewed))
+        # Unknown review, future media, private runtime, and auth changes must
+        # never inherit this restricted review-only exception.
+        for unknown in ("apps/anevum-public-studio/review/unknown.html",
+                        "apps/anevum-public-studio/art/hero-v2.webp",
+                        "src/App.tsx", "worker.mjs"):
+            with self.subTest(unknown=unknown):
+                self.assertTrue(scope.app_preview_required(reviewed + [unknown]))
+
+    def test_review_only_v12_renderer_cannot_create_media_preview_exception(self):
+        approved = [
+            "scripts/ops/anevum_metal_shader.py",
+            "scripts/ops/render_anevum_armillary_v12.py",
+            "tests/test_anevum_metal_shader.py",
+        ]
+        self.assertTrue(all(path in scope.ISOLATED_PUBLIC_STUDIO_PATHS for path in approved))
+        self.assertFalse(scope.app_preview_required(approved))
+        self.assertTrue(scope.public_studio_required(approved))
+        # Never generalize the exception to arbitrary media, scripts or private apps.
+        for forbidden in [
+            "apps/anevum-public-studio/review/assets/hero-v12.mp4",
+            "apps/anevum-public-studio/review/assets/hero-v12.webm",
+            "scripts/ops/publish-anevum-media.py",
+            "src/App.tsx",
+        ]:
+            with self.subTest(path=forbidden):
+                self.assertTrue(scope.app_preview_required(approved + [forbidden]))
+
+    def test_original_research_motion_renderer_is_isolated_but_unknown_media_fails_closed(self):
+        approved = "scripts/ops/render-anevum-research-motion.py"
+        self.assertIn(approved, scope.ISOLATED_PUBLIC_STUDIO_PATHS)
+        self.assertFalse(scope.app_preview_required([approved]))
+        self.assertTrue(scope.public_studio_required([approved]))
+        self.assertTrue(scope.app_preview_required([
+            approved, "apps/anevum-public-studio/review/assets/research.mp4"
+        ]))
+        self.assertTrue(scope.app_preview_required([
+            approved, "scripts/ops/unreviewed-media-publisher.py"
+        ]))
 
     def test_unknown_new_public_studio_file_cannot_bypass_preview(self):
         files = ["apps/anevum-public-studio/worker.mjs", "apps/anevum-public-studio/auth.mjs"]
