@@ -19,6 +19,11 @@ const V23_SCHEDULER=`  // Budget two simultaneously decoded videos, prioritizing
     remaining -= 1;
     if (video.paused) video.play().catch(()=>scene.classList.remove('is-playing'));
   }`;
+const V23_STOP=`function stopVideo(scene) {
+  const video=scene.querySelector('video');
+  if (video && !video.paused) video.pause();
+  scene.classList.remove('is-playing');
+}`;
 const makeMedia=(ext,i,length=1400)=>{
  const bytes=Buffer.alloc(length,i);
  if(ext==='webp'){Buffer.from('RIFF').copy(bytes,0);Buffer.from('WEBP').copy(bytes,8)}
@@ -40,7 +45,7 @@ function prepare(){
  for(let i=0;i<3;i++)files.push(row(base,'media','mp4',i+10));
  for(let i=0;i<3;i++)files.push(row(base,'media','webm',i+15));
  const src=`if (!src || !/^\\.\\/media\\/[a-f0-9]{24}\\.(?:webm|mp4)$/.test(src)) continue;`;
- let html='<!doctype html><title>ANEVUM — V22 Lightweight Cinematic Review</title><script>'+src+'\nfunction syncPlayback(){\n'+V23_SCHEDULER+'\n}</script><main>';
+ let html='<!doctype html><title>ANEVUM — V22 Lightweight Cinematic Review</title><script>'+src+'\n'+V23_STOP+'\nfunction syncPlayback(){\n'+V23_SCHEDULER+'\n}</script><main>';
  for(const scene of SCENES){
   const old=scene==='hero'||scene==='research'?'true':'false';
   html+='<a data-scene="'+scene+'" data-video-ready="'+old+'" data-video-webm="/original-works/assets/motion/'+scene+'.webm" data-video-mp4="/original-works/assets/motion/'+scene+'.mp4">'+scene+'</a>';
@@ -65,6 +70,8 @@ test('five-scene assembly is hash-checked, no-overwrite and review-only',()=>inF
  assert.match(html,/scene\.matches\(':hover'\)/);
  assert.match(html,/scene\.contains\(document\.activeElement\)/);
  assert.match(html,/const playing=new Set\(ranked\.slice\(0,2\)/);
+ assert.match(html,/video\.querySelectorAll\('source'\)\.forEach\(source=>source\.remove\(\)\)/);
+ assert.match(html,/state\.initialized=false/);
  for(const scene of SCENES)assert.match(html,new RegExp('data-scene="'+scene+'"'));
  assert.equal(verifyReviewBundle(output).size,20);
  assert.throws(()=>assembleFiveSceneReview(base,extra,output),/Never overwrite/);
