@@ -42,7 +42,9 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
 
 test('cinema engine is inert on the current public worker and rejects invalid environments',()=>{
  const publicWorker=readFileSync('apps/anevum-public-studio/worker.mjs','utf8');
- assert.doesNotMatch(publicWorker,/living-laboratory-cinema-controller|script-src 'self'/);
+ assert.match(publicWorker,/hasApprovedCinematicMotion\(\)/);
+ assert.match(publicWorker,/scriptHash='sha256-'/);
+ assert.doesNotMatch(publicWorker,/script-src 'self'/);
  assert.equal(MAX_ACTIVE_CINEMATIC_DECODES,2);
  assert.throws(()=>startCinematicPlayback({root:null,viewport:null}),/Invalid cinematic/);
  const empty=environment([]);
