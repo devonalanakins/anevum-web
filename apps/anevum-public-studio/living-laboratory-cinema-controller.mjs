@@ -25,6 +25,7 @@ export function startCinematicPlayback({
 
   const motion=viewport.matchMedia?.('(prefers-reduced-motion: reduce)');
   const data=viewport.matchMedia?.('(prefers-reduced-data: reduce)');
+  const portrait=viewport.matchMedia?.('(max-width: 720px)');
   const visible=new Map();
   const active=new Set();
   const failed=new Set();
@@ -39,8 +40,10 @@ export function startCinematicPlayback({
     return typeof value==='string' && MEDIA_URL.test(value) && value.endsWith('.'+extension);
   }
   function sourceFor(video){
-    const mp4=video.dataset.cinemaMp4;
-    const webm=video.dataset.cinemaWebm;
+    const mobile=portrait?.matches===true && video.dataset.cinemaScene==='hero';
+    const hasPortrait=mobile && video.dataset.cinemaMobileMp4 && video.dataset.cinemaMobileWebm;
+    const mp4=hasPortrait ? video.dataset.cinemaMobileMp4 : video.dataset.cinemaMp4;
+    const webm=hasPortrait ? video.dataset.cinemaMobileWebm : video.dataset.cinemaWebm;
     if (!allowedURL(mp4,'mp4') || !allowedURL(webm,'webm')) return null;
     const webmSupport=video.canPlayType?.('video/webm; codecs="vp9"');
     return webmSupport==='probably'||webmSupport==='maybe' ? webm : mp4;
@@ -64,7 +67,7 @@ export function startCinematicPlayback({
     const candidates=videos.filter(v=>(visible.get(v)||0)>=MIN_VISIBLE_RATIO && !failed.has(v))
       .sort((a,b)=>(visible.get(b)||0)-(visible.get(a)||0));
     const desired=new Set(candidates.slice(0,maxActive));
-    for(const v of [...active])if(!desired.has(v))unload(v);
+    for(const v of [...active])if(!desired.has(v) || v.getAttribute('src')!==sourceFor(v))unload(v);
     for(const video of desired){
       if(active.has(video))continue;
       const src=sourceFor(video);
@@ -111,6 +114,7 @@ export function startCinematicPlayback({
   observe(viewport,'pageshow',sync);
   observe(motion,'change',sync);
   observe(data,'change',sync);
+  observe(portrait,'change',sync);
   observe(connection,'change',sync);
 
   return {
