@@ -135,11 +135,14 @@ export function startCinematicPlayback({
  * completely script-free home for the current empty production registry.
  * Bootstrap derives from the exact tested function, preventing drift.
  */
-export function renderApprovedCinematicBootstrap(){
+export function approvedCinematicScript(){
  const js='const MEDIA_URL='+MEDIA_URL.toString()+';\n'+
   'const MAX_ACTIVE_CINEMATIC_DECODES='+MAX_ACTIVE_CINEMATIC_DECODES+';\n'+
   'const MIN_VISIBLE_RATIO='+MIN_VISIBLE_RATIO+';\n'+
   startCinematicPlayback.toString()+';\nstartCinematicPlayback();';
  if(js.includes('</script'))throw new Error('Unsafe cinematic bootstrap source');
- return '<script type="module" data-cinema-bootstrap="approved">'+js+'</script>';
+ return js;
+}
+export function renderApprovedCinematicBootstrap(){
+ return '<script type="module" data-cinema-bootstrap="approved">'+approvedCinematicScript()+'</script>';
 }
