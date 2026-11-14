@@ -6,6 +6,7 @@ import {renderLivingLaboratoryHome} from "./living-laboratory-home.mjs";
 import {renderLivingLaboratoryExperiences} from "./living-laboratory-experiences.mjs";
 import {hasApprovedCinematicMotion} from "./living-laboratory-cinema.mjs";
 import {approvedCinematicScript} from "./living-laboratory-cinema-controller.mjs";
+import {serveApprovedCinematicMotion} from "./living-laboratory-media-origin.mjs";
 /**
  * ANEVUM.WEB.OPS.2026-11-03.027.CANONICAL-ORIGINAL-WORKS-LAUNCH
  * Self-contained public creative studio with no client JS or private content.
@@ -48,7 +49,7 @@ const securityHeaders={
  'X-Anevum-Surface':VERSION
 };
 const unavailable=status=>new Response(status===405?'Method not allowed':'Not found',{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Robots-Tag':'noindex, nofollow, noarchive','Allow':'GET, HEAD','X-Anevum-Surface':VERSION}});
-export default {async fetch(request){
+export default {async fetch(request,env){
  let url;try{url=new URL(request.url);}catch{return unavailable(404);}
  if(url.hostname!==HOST||url.protocol!=='https:')return unavailable(404);
  if(request.method!=='GET'&&request.method!=='HEAD')return unavailable(405);
@@ -56,6 +57,10 @@ export default {async fetch(request){
  // Only exact root and the existing public studio namespace are eligible.
  // Workers routing must still restrict the deployed surface to / and /original-works*.
  if(path!=='/'&&path!==ROOT&&!path.startsWith(ROOT+'/'))return unavailable(404);
+ const motionPrefix=ROOT+'/assets/motion/';
+ if(path.startsWith(motionPrefix)){
+  return serveApprovedCinematicMotion(request,env,path);
+ }
  const mediaPrefix=ROOT+'/assets/';
  if(path.startsWith(mediaPrefix)){
   const assetName=path.slice(mediaPrefix.length);
