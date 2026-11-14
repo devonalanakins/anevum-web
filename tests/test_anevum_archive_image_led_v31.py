@@ -26,6 +26,8 @@ class SourceSafety(unittest.TestCase):
                      'owner_accepted=False', 'rights_verified=False', 'source_native_4k=False',
                      'Refusing to overwrite existing review media'):
             self.assertIn(term, TEXT)
+        # Require the exact periodic phase warp; the static runner can catch drift.
+        self.assertIn('phase -= .42 * math.sin(2 * phase)', TEXT)
         for term in ('https://', 'wrangler', 'boto3', 'requests.post', 'Cloudflare'):
             self.assertNotIn(term, TEXT)
 
@@ -61,6 +63,17 @@ class FrameQA(unittest.TestCase):
         first = renderer.frame(self.layers, 0).astype(np.float32)
         last = renderer.frame(self.layers, math.tau * 143 / 144).astype(np.float32)
         self.assertLess(float(np.abs(first - last).mean()), .28)
+
+    def test_loop_seam_is_smooth_without_suppressing_quarter_cycle_light(self):
+        first = renderer.frame(self.layers, 0).astype(np.float32)
+        last = renderer.frame(self.layers, math.tau * 143 / 144).astype(np.float32)
+        quarter = renderer.frame(self.layers, math.pi / 2).astype(np.float32)
+        seam = float(np.abs(first - last).mean())
+        travel = float(np.abs(first - quarter).mean())
+        # Original phase had >0.09 pixel MAE; the eased loop keeps real travel.
+        self.assertLess(seam, .04)
+        self.assertGreater(travel, .50)
+        self.assertLess(seam / travel, .04)
 
     def test_reject_unusable_artwork(self):
         for bad in (None, np.zeros((100, 300, 3), np.uint8),
