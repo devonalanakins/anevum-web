@@ -94,6 +94,8 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "apps/anevum-public-studio/living-laboratory-home.mjs",
     "apps/anevum-public-studio/living-laboratory-experiences.mjs",
     "apps/anevum-public-studio/living-laboratory-cinema.mjs",
+    "apps/anevum-public-studio/living-laboratory-cinema-controller.mjs",
+    "tests/anevum-cinematic-playback-engine.test.mjs",
     "tests/anevum-cinematic-poster-surfaces.test.mjs",
     "tests/anevum-living-experiences.test.mjs",
     "apps/anevum-public-studio/living-laboratory-experiments.mjs",
