@@ -7,11 +7,20 @@ import {renderLivingLaboratoryHome} from '../apps/anevum-public-studio/living-la
 import {approvedCinematicScript} from '../apps/anevum-public-studio/living-laboratory-cinema-controller.mjs';
 import worker from '../apps/anevum-public-studio/worker.mjs';
 
-const media=name=>'/original-works/assets/motion/'+name.repeat(24);
+import {createHash} from 'node:crypto';
+const proof=(name,ext)=>{
+ const bytes=Buffer.from(name.repeat(30));
+ const sha256=createHash('sha256').update(bytes).digest('hex');
+ return {path:'/original-works/assets/motion/'+sha256.slice(0,24)+'.'+ext,integrity:{sha256,bytes:bytes.length}};
+};
+const media=name=>proof(name,'mp4').path.slice(0,-4);
+const mp4=proof('a','mp4'),webm=proof('b','webm'),
+ mobileMp4=proof('c','mp4'),mobileWebm=proof('d','webm');
 const valid={
  ownerApproved:true,rightsCleared:true,qcPassed:true,poster:'lab-hero-v1.webp',
- mp4:media('a')+'.mp4',webm:media('b')+'.webm',
- mobileMp4:media('c')+'.mp4',mobileWebm:media('d')+'.webm'
+ mp4:mp4.path,webm:webm.path,mobileMp4:mobileMp4.path,mobileWebm:mobileWebm.path,
+ integrity:{mp4:mp4.integrity,webm:webm.integrity,
+  mobileMp4:mobileMp4.integrity,mobileWebm:mobileWebm.integrity}
 };
 const approved=Object.freeze({hero:Object.freeze(valid)});
 
@@ -37,8 +46,8 @@ test('validated future hero emits video without src and exact tested controller 
  assert.equal((markup.match(/loading="eager"/g)||[]).length,1);
  assert.equal((markup.match(/data-cinema-ready="true"/g)||[]).length,1);
  assert.equal((html.match(/data-cinema-ready="false"/g)||[]).length,4);
- assert.match(markup,/data-cinema-mobile-mp4="\/original-works\/assets\/motion\/c{24}\.mp4"/);
- assert.match(markup,/data-cinema-mobile-webm="\/original-works\/assets\/motion\/d{24}\.webm"/);
+ assert.ok(markup.includes('data-cinema-mobile-mp4="'+mobileMp4.path+'"'));
+ assert.ok(markup.includes('data-cinema-mobile-webm="'+mobileWebm.path+'"'));
  assert.match(markup,/muted loop playsinline preload="none"/);
  assert.doesNotMatch(markup,/<video[^>]*\s+src=/);
  assert.doesNotMatch(markup,/<source\b|autoplay\b|https?:\/\/example/);
@@ -65,7 +74,7 @@ test('every manifest entry must pass rights, owner, codec pair, poster and prove
  }
  assert.throws(()=>approvedCinematicScene('__proto__',{}),/Unrecognized/);
  assert.throws(()=>approvedCinematicScene('hero',[]),/Invalid cinematic manifest/);
- const stray={experiments:{...valid,poster:'rhen-generative-v1.webp',mobileMp4:media('f')+'.mp4'}};
+ const stray={experiments:{...valid,poster:'rhen-generative-v1.webp',mobileMp4:media('f')+'.mp4',integrity:{mp4:mp4.integrity,webm:webm.integrity}}};
  assert.throws(()=>approvedCinematicScene('experiments',stray),/Unreviewed destination mobile/);
 });
 
