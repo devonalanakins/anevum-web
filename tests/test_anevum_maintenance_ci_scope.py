@@ -107,7 +107,7 @@ class ScopeTests(unittest.TestCase):
 
     def test_public_studio_has_separate_mandatory_no_deploy_review(self):
         paths = list(scope.ISOLATED_PUBLIC_STUDIO_PATHS)
-        self.assertEqual(len(paths), 34)
+        self.assertEqual(len(paths), 36)
         self.assertFalse(scope.app_preview_required(paths))
         self.assertTrue(scope.public_studio_required(paths))
         self.assertFalse(scope.isolated_review_required(paths))
@@ -147,6 +147,8 @@ class ScopeTests(unittest.TestCase):
             "apps/anevum-public-studio/review/assets/archive.webp",
             "docs/design/ANEVUM.WEB.DESIGN.2026-11-13.002.CINEMATIC-LABORATORY-PRODUCTION.md",
             "tests/anevum-cinematic-review.test.mjs",
+            "scripts/ops/anevum-cinematic-local-preview.mjs",
+            "tests/anevum-cinematic-local-preview.test.mjs",
             ".github/workflows/anevum-verify.yml",
             "scripts/ops/anevum-maintenance-ci-scope.py",
             "tests/test_anevum_maintenance_ci_scope.py",
