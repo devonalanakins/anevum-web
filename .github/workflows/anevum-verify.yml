@@ -113,6 +113,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
           command -v ffmpeg
           node --check scripts/ops/verify-anevum-cinematic-http-browser.mjs
           node scripts/ops/verify-anevum-cinematic-http-browser.mjs
