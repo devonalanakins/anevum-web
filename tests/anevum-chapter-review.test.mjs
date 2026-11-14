@@ -76,6 +76,7 @@ test('full V35 offline provenance and media replacement verified when explicit l
   const index=readFileSync(join(destination,'index.html'),'utf8');
   assert.match(index,/id="cinema-dialog"/);
   assert.match(index,/Five review films are installed locally/);
+  assert.match(readFileSync(join(destination,'README.txt'),'utf8'),/cinematic-review\.mjs review 4179/);
   assert.match(index,/data-video-webm="\.\/media\/b6b8472b0917d107b7ec2fb2\.webm"/);
   assert.match(index,/data-video-mp4="\.\/media\/3a840f138b70e94c2a91daa5\.mp4"/);
   assert.throws(()=>buildChapterReview(process.env.ANEVUM_V35_BASE,process.env.ANEVUM_V35_MP4,process.env.ANEVUM_V35_WEBM,destination),/Refusing to overwrite/);
