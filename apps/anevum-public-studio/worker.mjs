@@ -4,6 +4,8 @@ import {renderLivingLaboratoryArchive} from "./living-laboratory-archive.mjs";
 import {LAB_ART} from "./living-laboratory-art.mjs";
 import {renderLivingLaboratoryHome} from "./living-laboratory-home.mjs";
 import {renderLivingLaboratoryExperiences} from "./living-laboratory-experiences.mjs";
+import {hasApprovedCinematicMotion} from "./living-laboratory-cinema.mjs";
+import {approvedCinematicScript} from "./living-laboratory-cinema-controller.mjs";
 /**
  * ANEVUM.WEB.OPS.2026-11-03.027.CANONICAL-ORIGINAL-WORKS-LAUNCH
  * Self-contained public creative studio with no client JS or private content.
@@ -88,5 +90,16 @@ export default {async fetch(request){
  if(!Object.prototype.hasOwnProperty.call(ROUTES,slug))return unavailable(404);
  const page=ROUTES[slug];
  const html=path==='/'?renderLivingLaboratoryHome():render(page);
- return new Response(request.method==='HEAD'?null:html,{status:200,headers:securityHeaders});
+ let headers=securityHeaders;
+ if(path==='/'&&hasApprovedCinematicMotion()){
+  // Only owner-cleared motion may relax the homepage script/media CSP.
+  // The script is an exact SHA-256 hash of the tested controller, not arbitrary inline JS.
+  const bytes=new TextEncoder().encode(approvedCinematicScript());
+  const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),
+   v=>String.fromCharCode(v)).join('');
+  const scriptHash='sha256-'+btoa(hash);
+  headers={...securityHeaders,'Content-Security-Policy':
+   securityHeaders['Content-Security-Policy']+"; script-src '"+scriptHash+"'; media-src 'self'"};
+ }
+ return new Response(request.method==='HEAD'?null:html,{status:200,headers});
 }};
