@@ -3,7 +3,8 @@
  * Review-only: no production deployment, protected routes, or email settings are changed.
  * Content is static, public-safe and has no runtime dependencies or client scripts.
  */
-import {renderCinematicPoster} from "./living-laboratory-cinema.mjs";
+import {renderCinematicPoster,APPROVED_CINEMATIC_MOTION,hasApprovedCinematicMotion} from "./living-laboratory-cinema.mjs";
+import {renderApprovedCinematicBootstrap} from "./living-laboratory-cinema-controller.mjs";
 export const LAB_STYLES = String.raw`
 :root{color-scheme:dark;--void:#09070d;--deep:#110d17;--surface:#17111e;--line:#53475684;--ivory:#eee7e4;--muted:#b9aebb;--copper:#dda884;--purple:#9d78cb;--display:Georgia,'Times New Roman',serif;--sans:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 *,*::before,*::after{box-sizing:border-box}
@@ -32,6 +33,12 @@ a{color:inherit;text-decoration:none}a:focus-visible,summary:focus-visible{outli
 .lab-hero::after{content:'';position:absolute;z-index:1;bottom:0;left:0;right:0;height:132px;background:linear-gradient(transparent,#09070de8);pointer-events:none}
 .lab-art{position:absolute;z-index:0;pointer-events:none;inset:0 0 -15px 30%;opacity:.98;overflow:hidden;filter:saturate(1.08) contrast(1.05)}
 .lab-hero-poster{display:block;width:100%;height:100%;object-fit:cover;object-position:57% center}
+.lab-cinema-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;opacity:0;transition:opacity .4s ease}
+.lab-cinema-video.is-playing{opacity:1}
+.lab-hero-video{object-position:57% center}
+.lab-world-video{z-index:-1}
+@media(prefers-reduced-motion:reduce){.lab-cinema-video{display:none!important;transition:none!important}}
+@media(forced-colors:active){.lab-cinema-video{display:none!important}}
 
 .lab-hero-copy{position:relative;z-index:3;padding:53px 0 70px}
 .lab-hero-copy>*{max-width:610px}
@@ -174,12 +181,12 @@ const BODY = String.raw`
 </main>
 <footer class="lab-footer" id="contact"><div class="lab-wrap lab-footer-inner"><p>ANEVUM — A laboratory for the possible. · An independent studio</p><p>Created by <a href="https://devonakins.com">Devon Akins</a> · <a href="https://github.com/devonalanakins">Source &amp; contact</a></p></div></footer>`;
 
-export function renderLivingLaboratoryHome(){
+export function renderLivingLaboratoryHome({registry=APPROVED_CINEMATIC_MOTION}={}){
  const body=BODY.replace('@BRAND@',LAB_BRAND)
-  .replace('@HERO_POSTER@',renderCinematicPoster('hero',{priority:true}))
-  .replace('@POSTER_EXPERIMENTS@',renderCinematicPoster('experiments',{card:true}))
-  .replace('@POSTER_RESEARCH@',renderCinematicPoster('research',{card:true}))
-  .replace('@POSTER_EXPERIENCES@',renderCinematicPoster('experiences',{card:true}))
-  .replace('@POSTER_ARCHIVE@',renderCinematicPoster('archive',{card:true}));
- return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="theme-color" content="#09070d"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="description" content="ANEVUM is an independent experimental studio exploring software, computation, creative technology and imagined worlds."><meta property="og:type" content="website"><meta property="og:site_name" content="ANEVUM"><meta property="og:description" content="A laboratory for the possible. Experimental software, computational research and imagined worlds."><title>ANEVUM | A laboratory for the possible</title><style>'+LAB_STYLES+'</style></head><body>'+body+'</body></html>';
+  .replace('@HERO_POSTER@',renderCinematicPoster('hero',{priority:true,registry}))
+  .replace('@POSTER_EXPERIMENTS@',renderCinematicPoster('experiments',{card:true,registry}))
+  .replace('@POSTER_RESEARCH@',renderCinematicPoster('research',{card:true,registry}))
+  .replace('@POSTER_EXPERIENCES@',renderCinematicPoster('experiences',{card:true,registry}))
+  .replace('@POSTER_ARCHIVE@',renderCinematicPoster('archive',{card:true,registry}));
+ return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="theme-color" content="#09070d"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="description" content="ANEVUM is an independent experimental studio exploring software, computation, creative technology and imagined worlds."><meta property="og:type" content="website"><meta property="og:site_name" content="ANEVUM"><meta property="og:description" content="A laboratory for the possible. Experimental software, computational research and imagined worlds."><title>ANEVUM | A laboratory for the possible</title><style>'+LAB_STYLES+'</style></head><body>'+body+(hasApprovedCinematicMotion(registry)?renderApprovedCinematicBootstrap():'')+'</body></html>';
 }
