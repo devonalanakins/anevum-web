@@ -116,6 +116,29 @@ export function assembleFiveSceneReview(baseDirectory,extraDirectory,outputDirec
   }`;
  check(html.includes(originalScheduler)&&html.indexOf(originalScheduler)===html.lastIndexOf(originalScheduler),'Legacy preview scheduler changed unexpectedly');
  html=html.replace(originalScheduler,focusedScheduler);
+ // Pause alone retains multiple decoded video frames after scrolling through scenes.
+ // For the isolated five-scene owner review, unload retired source elements
+ // without touching user-selected inspector blob URLs, so two actually active
+ // films are the practical resource ceiling rather than just the play ceiling.
+ const oldStop=`function stopVideo(scene) {
+  const video=scene.querySelector('video');
+  if (video && !video.paused) video.pause();
+  scene.classList.remove('is-playing');
+}`;
+ const newStop=`function stopVideo(scene) {
+  const video=scene.querySelector('video');
+  if (video && !video.paused) video.pause();
+  scene.classList.remove('is-playing');
+  const state=sceneStates.get(scene);
+  if(video && state?.initialized && !state.localUrl){
+    video.removeAttribute('src');
+    video.querySelectorAll('source').forEach(source=>source.remove());
+    video.load();
+    state.initialized=false;
+  }
+}`;
+ check(html.includes(oldStop)&&html.indexOf(oldStop)===html.lastIndexOf(oldStop),'Legacy video teardown changed unexpectedly');
+ html=html.replace(oldStop,newStop);
  check((html.match(/data-video-ready="true"/g)||[]).length===5 && !html.includes('data-video-ready="false"'),'Five review scenes must be ready only in local bundle');
  for(const row of added)check(!prior.files.some(old=>old.path===row.path),'New film duplicates existing V23 review file');
  html=html.replace(/<title>ANEVUM[^<]*<\/title>/,'<title>ANEVUM — Five Living Environments | Offline Review</title>');
