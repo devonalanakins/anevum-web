@@ -47,6 +47,27 @@ a{color:inherit;text-decoration:none}a:focus-visible,summary:focus-visible{outli
 .lab-secondary{display:inline-flex;min-height:48px;align-items:center;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#f1dce0}
 .lab-secondary:hover{text-decoration:underline;text-underline-offset:8px}
 .lab-edge-label{position:absolute;z-index:4;right:5%;bottom:25px;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#b5989f}
+
+.lab-worlds{position:relative;z-index:3;isolation:isolate;background:linear-gradient(#0b0911,#0f0b14);padding:33px 0 54px;border-top:1px solid #b78a7c44;border-bottom:1px solid #b78a7c33}
+.lab-worlds-head{display:flex;align-items:end;justify-content:space-between;gap:25px;margin-bottom:20px}
+.lab-worlds-head h2{font:normal clamp(26px,3.4vw,48px)/1.12 var(--display);margin:9px 0 0;letter-spacing:.015em}
+.lab-worlds-head p{margin:0;max-width:340px;color:#bdacbc;font:14px/1.55 var(--display)}
+.lab-worlds-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.lab-world{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;min-height:330px;padding:21px;border:1px solid #a6889b74;background:#1b1421;transition:transform .25s,border-color .25s}
+.lab-world::before{content:"";position:absolute;inset:0;z-index:-2;background:var(--art) center/cover no-repeat;transition:transform .65s}
+.lab-world::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#08070cf7,#0e0b16c4 41%,#09081315 100%)}
+.lab-world:hover,.lab-world:focus-visible{border-color:#efbd9e;transform:translateY(-3px)}
+.lab-world:hover::before,.lab-world:focus-visible::before{transform:scale(1.045)}
+.lab-world-index{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#edc0a6;margin-bottom:auto}
+.lab-world h3{font:italic normal clamp(26px,2.6vw,37px)/1.12 var(--display);margin:0 0 9px}
+.lab-world p{font:12px/1.65 var(--sans);color:#d8c9d7;min-height:57px;margin:0}
+.lab-world-link{display:flex;justify-content:space-between;align-items:center;margin-top:15px;border-top:1px solid #d4afc165;padding-top:11px;font:700 10px/1.4 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:#f3c0a8}
+.lab-world-link span{font-size:19px}
+@media(max-width:1050px){.lab-worlds-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lab-world{min-height:300px}}
+@media(max-width:530px){.lab-worlds{padding:30px 0 36px}.lab-worlds-head{align-items:start;flex-direction:column;gap:10px}.lab-world{min-height:255px;padding:15px}.lab-worlds-grid{gap:9px}.lab-world h3{font-size:clamp(20px,6vw,30px)}.lab-world p{font-size:11px;line-height:1.48;min-height:70px}.lab-world-link{font-size:9px}}
+@media(max-width:340px){.lab-worlds-grid{grid-template-columns:1fr}.lab-world p{min-height:0}}
+@media(prefers-reduced-motion:reduce){.lab-world,.lab-world::before{transition:none!important;transform:none!important}}
+@media(forced-colors:active){.lab-world{border:1px solid CanvasText}}
 .lab-content{position:relative;z-index:2;padding-top:22px;padding-bottom:66px}
 .lab-section{scroll-margin-top:24px;padding-top:40px}
 .lab-row-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:20px}
@@ -97,9 +118,9 @@ const BODY = String.raw`
 <header class="lab-header"><div class="lab-wrap lab-head-inner">
  <a class="lab-brand" href="/" aria-label="ANEVUM home">@BRAND@<span>ANEVUM</span></a>
  <nav class="lab-nav" aria-label="Primary navigation">
-  <a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="#experiences">Experiences</a><a href="/original-works/archive">Archive</a><a href="#contact">Contact</a>
+  <a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="/original-works/experiences">Experiences</a><a href="/original-works/archive">Archive</a><a href="#contact">Contact</a>
  </nav>
- <details class="lab-mobile"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="#experiences">Experiences</a><a href="/original-works/archive">Archive</a><a href="#contact">Contact</a></nav></details>
+ <details class="lab-mobile"><summary>Menu</summary><nav aria-label="Mobile navigation"><a href="/original-works/experiments">Experiments</a><a href="/original-works/research">Research</a><a href="/original-works/experiences">Experiences</a><a href="/original-works/archive">Archive</a><a href="#contact">Contact</a></nav></details>
 </div></header>
 <main id="main" tabindex="-1">
  <section class="lab-hero" aria-labelledby="lab-home-title"><div class="lab-art" aria-hidden="true"></div><div class="lab-wrap lab-hero-copy">
@@ -111,6 +132,14 @@ const BODY = String.raw`
   <p class="lab-topics">Experimental software <span>/</span> Computational research <span>/</span> Imagined worlds</p>
   <div class="lab-actions"><a class="lab-action" href="/original-works/experiments">Explore experiments <span class="arr" aria-hidden="true">→</span></a><a class="lab-secondary" href="#about">About ANEVUM</a></div>
  </div><span class="lab-edge-label" aria-hidden="true">The Living Laboratory / 2026</span></section>
+ <section class="lab-worlds" aria-labelledby="lab-worlds-heading"><div class="lab-wrap">
+ <div class="lab-worlds-head"><div><span class="lab-micro">Explore / The Living Laboratory</span><h2 id="lab-worlds-heading">Four ways into ANEVUM.</h2></div><p>Follow actual experiments, investigate open questions, enter existing experiences, or revisit the original creative archive.</p></div>
+ <nav class="lab-worlds-grid" aria-label="Explore the four ANEVUM destinations">
+  <a class="lab-world" href="/original-works/experiments" style="--art:url('/original-works/assets/rhen-generative-v1.webp')"><span class="lab-world-index">01 / Working systems</span><h3>Experiments</h3><p>Source projects and interactive prototypes with verifiable links.</p><span class="lab-world-link">Explore experiments <span aria-hidden="true">↗</span></span></a>
+  <a class="lab-world" href="/original-works/research" style="--art:url('/original-works/assets/research-computation-v1.webp')"><span class="lab-world-index">02 / Open questions</span><h3>Research</h3><p>Computational ideas presented honestly, without invented findings.</p><span class="lab-world-link">Explore research <span aria-hidden="true">↗</span></span></a>
+  <a class="lab-world" href="/original-works/experiences" style="--art:url('/original-works/assets/research-worlds-v1.webp')"><span class="lab-world-index">03 / Enter the work</span><h3>Experiences</h3><p>Real source, editorial journeys, and exploratory worlds.</p><span class="lab-world-link">Explore experiences <span aria-hidden="true">↗</span></span></a>
+  <a class="lab-world" href="/original-works/archive" style="--art:url('/original-works/assets/lab-archive-v1.webp')"><span class="lab-world-index">04 / Preserved worlds</span><h3>Archive</h3><p>The earlier ANEVUM literary universe, kept intact and accessible.</p><span class="lab-world-link">Enter the archive <span aria-hidden="true">↗</span></span></a>
+ </nav></div></section>
  <div class="lab-wrap lab-content">
  <section id="experiments" class="lab-section" aria-labelledby="lab-experiments-heading">
   <div class="lab-row-heading"><h2 class="lab-title-label" id="lab-experiments-heading">Selected experiments</h2><a class="lab-view-link" href="/original-works/experiments">Browse all experiments <span aria-hidden="true">→</span></a></div>
