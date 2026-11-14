@@ -70,6 +70,9 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "apps/anevum-public-studio/review/assets/archive.webp",
     "docs/design/ANEVUM.WEB.DESIGN.2026-11-13.002.CINEMATIC-LABORATORY-PRODUCTION.md",
     "tests/anevum-cinematic-review.test.mjs",
+    # Review-only V17 local media bridge and negative-path tests (no binary media).
+    "scripts/ops/anevum-cinematic-local-preview.mjs",
+    "tests/anevum-cinematic-local-preview.test.mjs",
     # Offline original animation renderer; never deployed or bundled by the public Worker.
     "scripts/ops/render-anevum-research-motion.py",
     # Original, offline-only V12 material/3D footage pipeline and tests.
