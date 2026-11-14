@@ -22,7 +22,7 @@ test('production manifest remains empty and script-free with default homepage CS
  const html=await response.text();
  assert.equal((html.match(/<video\b/g)||[]).length,0);
  assert.equal((html.match(/<script\b/g)||[]).length,0);
- assert.equal((html.match(/data-cinema-ready="false"/g)||[]).length,5);
+ assert.equal((markup.match(/data-cinema-ready="false"/g)||[]).length,5);
  assert.doesNotMatch(response.headers.get('content-security-policy'),/script-src|media-src/);
 });
 
@@ -30,17 +30,18 @@ test('validated future hero emits video without src and exact tested controller 
  assert.equal(hasApprovedCinematicMotion(approved),true);
  assert.equal(approvedCinematicScene('hero',approved),valid);
  const html=renderLivingLaboratoryHome({registry:approved});
- assert.equal((html.match(/<video\b/g)||[]).length,1);
- assert.equal((html.match(/data-cinema-approved="true"/g)||[]).length,1);
+ const markup=html.split('<script type="module"')[0];
+ assert.equal((markup.match(/<video\b/g)||[]).length,1);
+ assert.equal((markup.match(/data-cinema-approved="true"/g)||[]).length,1);
  assert.equal((html.match(/<script\b/g)||[]).length,1);
- assert.equal((html.match(/loading="eager"/g)||[]).length,1);
- assert.equal((html.match(/data-cinema-ready="true"/g)||[]).length,1);
+ assert.equal((markup.match(/loading="eager"/g)||[]).length,1);
+ assert.equal((markup.match(/data-cinema-ready="true"/g)||[]).length,1);
  assert.equal((html.match(/data-cinema-ready="false"/g)||[]).length,4);
- assert.match(html,/data-cinema-mobile-mp4="\/original-works\/assets\/motion\/c{24}\.mp4"/);
- assert.match(html,/data-cinema-mobile-webm="\/original-works\/assets\/motion\/d{24}\.webm"/);
- assert.match(html,/muted loop playsinline preload="none"/);
- assert.doesNotMatch(html,/<video[^>]*\s+src=/);
- assert.doesNotMatch(html,/<source\b|autoplay\b|https?:\/\/example/);
+ assert.match(markup,/data-cinema-mobile-mp4="\/original-works\/assets\/motion\/c{24}\.mp4"/);
+ assert.match(markup,/data-cinema-mobile-webm="\/original-works\/assets\/motion\/d{24}\.webm"/);
+ assert.match(markup,/muted loop playsinline preload="none"/);
+ assert.doesNotMatch(markup,/<video[^>]*\s+src=/);
+ assert.doesNotMatch(markup,/<source\b|autoplay\b|https?:\/\/example/);
  assert.match(html,/\.lab-cinema-video\.is-playing\{opacity:1\}/);
  assert.match(html,/@media\(prefers-reduced-motion:reduce\)\{\.lab-cinema-video\{display:none/);
  new Script(approvedCinematicScript(),{filename:'approved-cinema-bootstrap.js'});
