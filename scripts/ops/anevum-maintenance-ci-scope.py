@@ -73,6 +73,8 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     # Review-only V17 local media bridge and negative-path tests (no binary media).
     "scripts/ops/anevum-cinematic-local-preview.mjs",
     "scripts/ops/recover-anevum-image-led-review.mjs",
+    "scripts/ops/render-anevum-image-led-hero-v20.py",
+    "tests/anevum-image-led-v20.test.mjs",
     "tests/anevum-image-led-recovery.test.mjs",
     "tests/anevum-cinematic-local-preview.test.mjs",
     "scripts/ops/verify-anevum-cinematic-http-browser.mjs",
