@@ -103,6 +103,8 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "tests/test_anevum_experiments_image_led_v29.py",
     "scripts/ops/render-anevum-experiences-image-led-v30.py",
     "tests/test_anevum_experiences_image_led_v30.py",
+    "scripts/ops/render-anevum-archive-image-led-v31.py",
+    "tests/test_anevum_archive_image_led_v31.py",
     "tests/anevum-cinematic-poster-surfaces.test.mjs",
     "tests/anevum-living-experiences.test.mjs",
     "apps/anevum-public-studio/living-laboratory-experiments.mjs",
