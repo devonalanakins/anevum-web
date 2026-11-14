@@ -72,6 +72,8 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "tests/anevum-cinematic-review.test.mjs",
     # Review-only V17 local media bridge and negative-path tests (no binary media).
     "scripts/ops/anevum-cinematic-local-preview.mjs",
+    "scripts/ops/recover-anevum-image-led-review.mjs",
+    "tests/anevum-image-led-recovery.test.mjs",
     "tests/anevum-cinematic-local-preview.test.mjs",
     "scripts/ops/verify-anevum-cinematic-http-browser.mjs",
     # Offline original animation renderer; never deployed or bundled by the public Worker.
