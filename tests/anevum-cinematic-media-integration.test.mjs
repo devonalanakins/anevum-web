@@ -22,7 +22,7 @@ test('production manifest remains empty and script-free with default homepage CS
  const html=await response.text();
  assert.equal((html.match(/<video\b/g)||[]).length,0);
  assert.equal((html.match(/<script\b/g)||[]).length,0);
- assert.equal((markup.match(/data-cinema-ready="false"/g)||[]).length,5);
+ assert.equal((html.match(/data-cinema-ready="false"/g)||[]).length,5);
  assert.doesNotMatch(response.headers.get('content-security-policy'),/script-src|media-src/);
 });
 
