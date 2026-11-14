@@ -106,7 +106,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check apps/anevum-public-studio/worker.mjs
-          node --test tests/anevum-public-studio.test.mjs
+          node --test tests/anevum-public-studio.test.mjs tests/anevum-living-experiences.test.mjs
           node scripts/ops/verify-anevum-public-studio-browser.mjs
 
       - name: Verify cinematic preview media over HTTP in Chromium (synthetic only)
