@@ -4,8 +4,8 @@ import {readFileSync, existsSync, mkdtempSync, rmSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {Script} from 'node:vm';
-import {enhanceCinematicHTML,buildChapterReview} from './enhance-anevum-chapter-review.mjs';
-import {verifyReviewBundle} from './serve-anevum-cinematic-review.mjs';
+import {enhanceCinematicHTML,buildChapterReview} from '../scripts/ops/enhance-anevum-chapter-review.mjs';
+import {verifyReviewBundle} from '../scripts/ops/serve-anevum-cinematic-review.mjs';
 
 const SCENES=['hero','experiments','research','experiences','archive'];
 function sourceHTML(){
