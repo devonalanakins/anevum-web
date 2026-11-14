@@ -93,6 +93,8 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "tests/test_anevum_metal_shader.py",
     "apps/anevum-public-studio/living-laboratory-home.mjs",
     "apps/anevum-public-studio/living-laboratory-experiences.mjs",
+    "apps/anevum-public-studio/living-laboratory-cinema.mjs",
+    "tests/anevum-cinematic-poster-surfaces.test.mjs",
     "tests/anevum-living-experiences.test.mjs",
     "apps/anevum-public-studio/living-laboratory-experiments.mjs",
     "apps/anevum-public-studio/living-laboratory-research.mjs",
