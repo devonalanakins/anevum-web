@@ -4,15 +4,40 @@ import math
 from pathlib import Path
 import unittest
 
-import numpy as np
-
 SOURCE = Path(__file__).resolve().parents[1] / "scripts/ops/render-anevum-experiments-image-led-v29.py"
-spec = importlib.util.spec_from_file_location("anevum_experiments_v29", SOURCE)
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
+SOURCE_TEXT = SOURCE.read_text(encoding="utf8")
+
+try:
+    import numpy as np
+    import cv2
+    GRAPHICS_AVAILABLE = True
+except ImportError:
+    GRAPHICS_AVAILABLE = False
+
+if GRAPHICS_AVAILABLE:
+    spec = importlib.util.spec_from_file_location("anevum_experiments_v29", SOURCE)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
 
 
-class ExperimentsImageMotion(unittest.TestCase):
+class ExperimentsStaticSafety(unittest.TestCase):
+    def test_source_parses_without_optional_graphics_dependencies(self):
+        tree = ast.parse(SOURCE_TEXT)
+        funcs = {node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)}
+        self.assertTrue({"setup", "frame", "render", "main"}.issubset(funcs))
+
+    def test_review_only_and_no_network_publishing(self):
+        self.assertIn("REVIEW_ONLY_NOT_PRODUCTION_APPROVED", SOURCE_TEXT)
+        self.assertIn("'owner_accepted':False", SOURCE_TEXT)
+        self.assertIn("'publication_authorized':False", SOURCE_TEXT)
+        self.assertIn("'source_native_4k':False", SOURCE_TEXT)
+        self.assertNotIn("https://", SOURCE_TEXT)
+        self.assertNotIn("wrangler", SOURCE_TEXT)
+        self.assertIn("if out.exists()", SOURCE_TEXT)
+
+
+@unittest.skipUnless(GRAPHICS_AVAILABLE, "Frame-level tests require optional NumPy and OpenCV")
+class ExperimentsFrameMotion(unittest.TestCase):
     def setUp(self):
         h, w = 510, 1050
         y, x = np.mgrid[:h, :w]
@@ -25,22 +50,13 @@ class ExperimentsImageMotion(unittest.TestCase):
         image[:, :, 0] = np.uint8(np.clip(45 * ring, 0, 255))
         self.layers = module.setup(image)
 
-    def test_source_is_review_only_and_has_no_network(self):
-        source = SOURCE.read_text(encoding="utf8")
-        ast.parse(source)
-        self.assertIn("REVIEW_ONLY_NOT_PRODUCTION_APPROVED", source)
-        self.assertIn("'owner_accepted':False", source)
-        self.assertIn("'publication_authorized':False", source)
-        self.assertNotIn("https://", source)
-        self.assertNotIn("wrangler", source)
-
     def test_exact_loop_closure(self):
         self.assertTrue(np.array_equal(
             module.frame(self.layers, 0),
             module.frame(self.layers, math.tau)
         ))
 
-    def test_spiral_changes_but_lower_safe_zone_stays_still(self):
+    def test_spiral_moves_but_lower_safe_zone_stays_still(self):
         initial = module.frame(self.layers, 0)
         quarter = module.frame(self.layers, math.pi / 2)
         self.assertGreater(
