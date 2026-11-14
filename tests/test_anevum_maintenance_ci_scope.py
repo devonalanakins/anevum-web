@@ -107,7 +107,7 @@ class ScopeTests(unittest.TestCase):
 
     def test_public_studio_has_separate_mandatory_no_deploy_review(self):
         paths = list(scope.ISOLATED_PUBLIC_STUDIO_PATHS)
-        self.assertEqual(len(paths), 47)
+        self.assertEqual(len(paths), 49)
         self.assertFalse(scope.app_preview_required(paths))
         self.assertTrue(scope.public_studio_required(paths))
         self.assertFalse(scope.isolated_review_required(paths))
@@ -153,6 +153,8 @@ class ScopeTests(unittest.TestCase):
             "scripts/ops/render-anevum-research-image-led-v21.py",
             "scripts/ops/build-anevum-lightweight-review.py",
             "scripts/ops/serve-anevum-cinematic-review.mjs",
+            "apps/anevum-public-studio/living-laboratory-experiences.mjs",
+            "tests/anevum-living-experiences.test.mjs",
             "tests/anevum-review-http.test.mjs",
             "tests/test_anevum_lightweight_review.py",
             "tests/anevum-research-image-led-v21.test.mjs",
