@@ -301,3 +301,18 @@ test('image-led specular accents never redraw baked metal and mobile review stay
  assert.doesNotMatch(script,/\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/);
  new Script(script,{filename:'cinematic-laboratory.js'});
 });
+
+
+test('ambient motion toggle is accessible, synchronized and honors system still preferences',()=>{
+ assert.match(html,/<button type="button" id="ambient-motion-toggle"[^>]*aria-pressed="false"[^>]*>Pause motion<\/button>/);
+ assert.match(styles,/\.cinematic-motion-toggle:focus-visible/);
+ assert.match(styles,/\.cinematic-motion-toggle:disabled/);
+ assert.match(script,/function reflectMotionPreference\(\)/);
+ assert.match(script,/ambientMotionToggle\?\.addEventListener\('click'/);
+ assert.match(script,/ambientMotionToggle\.disabled = systemStill/);
+ assert.match(script,/motionQuery\.addEventListener\('change',reflectMotionPreference\)/);
+ assert.match(script,/connection\?\.addEventListener\?\.\('change',reflectMotionPreference\)/);
+ assert.match(script,/reflectMotionPreference\(\);\s*syncPlayback\(\)/);
+ assert.match(script,/for \(const control of \[ambientMotionToggle, document\.querySelector\('#review-pause'\)\]\)/);
+ new Script(script,{filename:'cinematic-laboratory.js'});
+});
