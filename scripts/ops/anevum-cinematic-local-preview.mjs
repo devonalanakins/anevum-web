@@ -82,7 +82,7 @@ export function createLocalReviewServer(stagedRoot){
       h['Accept-Ranges']='bytes';
       if(req.headers.range){
         const m=/^bytes=(\d*)-(\d*)$/.exec(req.headers.range);
-        if(!m||(!m[1]&&!m[2])){res.writeHead(416,{'Content-Range':`bytes */${bytes.length}`});res.end();return;}
+        if(!m||(!m[1]&&!m[2])||(m[1]&&!Number.isSafeInteger(Number(m[1])))||(m[2]&&!Number.isSafeInteger(Number(m[2])))){res.writeHead(416,{'Content-Range':`bytes */${bytes.length}`});res.end();return;}
         if(!m[1])start=Math.max(0,bytes.length-Number(m[2]));
         else {start=Number(m[1]);if(m[2])end=Math.min(end,Number(m[2]));}
         if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||start>end||start>=bytes.length){
