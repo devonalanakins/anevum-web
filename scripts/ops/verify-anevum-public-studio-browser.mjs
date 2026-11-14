@@ -25,9 +25,9 @@ async function evalJS(expression){
  if(r.exceptionDetails)throw Error(r.exceptionDetails.text||"runtime exception");
  return r.result?.value;
 }
-async function waitFor(fn,label,{failFast=false}={}){
+async function waitFor(fn,label,{failFast=false,maxAttempts=110}={}){
  let lastError;
- for(let i=0;i<110;i++){
+ for(let i=0;i<maxAttempts;i++){
   try{const v=await fn();if(v)return v;}
   catch(error){lastError=error;if(failFast)throw error;}
   await sleep(110);
@@ -340,7 +340,7 @@ try {
   if(!existsSync(f))return null;
   const n=Number(readFileSync(f,"utf8").split(/\r?\n/)[0]);
   return Number.isInteger(n)&&n>0?n:null;
- },"Chrome DevTools",{failFast:true}).catch(error=>{throw Error(error.message+"; stderr: "+chromeStderr);});
+ },"Chrome DevTools",{failFast:true,maxAttempts:360}).catch(error=>{throw Error(error.message+"; stderr: "+chromeStderr);});
  const target=await (await fetch("http://127.0.0.1:"+devtools+"/json/new?about:blank",{method:"PUT"})).json();
  ws=new WebSocket(target.webSocketDebuggerUrl);
  ws.addEventListener("message",ev=>{
