@@ -20,6 +20,8 @@ const SCENE_POSTERS=Object.freeze({
 export const CINEMATIC_POSTER_SCENES=Object.freeze(Object.keys(SCENE_POSTERS));
 export const APPROVED_CINEMATIC_MOTION=Object.freeze({}); // no film approved for public routing
 const MOTION_PATH=/^\/original-works\/assets\/motion\/[a-f0-9]{24}\.(?:mp4|webm)$/;
+const SHA256=/^[a-f0-9]{64}$/;
+const MAX_MEDIA_BYTES=128*1024*1024;
 const own=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
 
 export function approvedCinematicScene(scene,registry=APPROVED_CINEMATIC_MOTION){
@@ -30,23 +32,58 @@ export function approvedCinematicScene(scene,registry=APPROVED_CINEMATIC_MOTION)
  if(!film||typeof film!=="object"||Array.isArray(film)||
     film.ownerApproved!==true||film.rightsCleared!==true||film.qcPassed!==true||
     film.poster!==SCENE_POSTERS[scene])throw new Error("Unapproved cinematic scene: "+scene);
- for(const type of ["mp4","webm"]){
-  if(typeof film[type]!=="string"||!MOTION_PATH.test(film[type])||!film[type].endsWith("."+type)){
-   throw new Error("Unverified cinematic URL: "+scene+" "+type);
-  }
+ const variants=scene==="hero"?["mp4","webm","mobileMp4","mobileWebm"]:["mp4","webm"];
+ if(!film.integrity||typeof film.integrity!=="object"||Array.isArray(film.integrity)||
+    Object.keys(film.integrity).length!==variants.length){
+   throw new Error("Missing cinematic integrity inventory: "+scene);
  }
- if(scene==="hero"){
-  for(const type of ["mp4","webm"]){
-   const mobile="mobile"+type.toUpperCase()[0]+type.slice(1);
-   if(typeof film[mobile]!=="string"||!MOTION_PATH.test(film[mobile])||!film[mobile].endsWith("."+type)){
-    throw new Error("Missing portrait cinematic master: "+scene);
-   }
+ const used=new Set();
+ for(const variant of variants){
+  const ext=variant==="mp4"||variant==="mobileMp4"?"mp4":"webm";
+  const path=film[variant],proof=film.integrity[variant];
+  if(typeof path!=="string"||!MOTION_PATH.test(path)||!path.endsWith("."+ext)||used.has(path)){
+   throw new Error("Unverified cinematic URL: "+scene+" "+variant);
   }
- }else if(own(film,"mobileMp4")||own(film,"mobileWebm")){
+  if(!proof||typeof proof!=="object"||Array.isArray(proof)||
+     !SHA256.test(proof.sha256)||!Number.isSafeInteger(proof.bytes)||
+     proof.bytes<16||proof.bytes>MAX_MEDIA_BYTES||
+     path.split("/").at(-1).slice(0,24)!==proof.sha256.slice(0,24)){
+   throw new Error("Unverified cinematic integrity: "+scene+" "+variant);
+  }
+  used.add(path);
+ }
+ if(scene!=="hero"&&(own(film,"mobileMp4")||own(film,"mobileWebm"))){
   throw new Error("Unreviewed destination mobile variant");
  }
  return film;
 }
+
+/**
+ * Server-authoritative allowlist. A matching filename alone never opens a
+ * storage object: exact scene approval and the full SHA-256 must also match.
+ */
+export function approvedCinematicAsset(pathname,registry=APPROVED_CINEMATIC_MOTION){
+ if(typeof pathname!=="string"||!MOTION_PATH.test(pathname))return null;
+ let result=null;
+ for(const scene of Object.keys(SCENE_POSTERS)){
+  const film=approvedCinematicScene(scene,registry);
+  if(!film)continue;
+  const variants=scene==="hero"?["mp4","webm","mobileMp4","mobileWebm"]:["mp4","webm"];
+  for(const variant of variants){
+   if(film[variant]!==pathname)continue;
+   if(result)throw new Error("Duplicate cinematic asset registration");
+   const {sha256,bytes}=film.integrity[variant];
+   const ext=pathname.endsWith(".mp4")?"mp4":"webm";
+   result=Object.freeze({
+    scene,variant,sha256,bytes,
+    contentType:ext==="mp4"?"video/mp4":"video/webm",
+    key:"cinema/"+sha256+"."+ext
+   });
+  }
+ }
+ return result;
+}
+
 export function hasApprovedCinematicMotion(registry=APPROVED_CINEMATIC_MOTION){
  return CINEMATIC_POSTER_SCENES.some(scene=>approvedCinematicScene(scene,registry)!==null);
 }
