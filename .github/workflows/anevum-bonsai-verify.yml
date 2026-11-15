@@ -32,6 +32,16 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Compile preview Worker without deploying
         run: npx --no-install wrangler deploy --config wrangler.anevum-bonsai-preview.jsonc --dry-run --outdir /tmp/anevum-bonsai-preview-build
+      - name: Verify real browser routes, responsive behavior and accessibility
+        run: node scripts/ops/verify-anevum-bonsai-browser.mjs
+      - name: Upload responsive browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bonsai-living-atlas-browser-${{ github.run_id }}
+          path: ${{ runner.temp }}/anevum-bonsai-*.png
+          retention-days: 14
+          if-no-files-found: warn
       - name: Verify preview deployment stays independent
         run: |
           node --input-type=module <<'NODE'
