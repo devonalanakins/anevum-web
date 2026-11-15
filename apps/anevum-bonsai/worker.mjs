@@ -70,19 +70,19 @@ function pageHero(section, title, intro) {
 
 function home() {
   const hero = '<section class="hero"><div class="scene" aria-hidden="true"><div class="ring"></div><div class="caption">Atmospheric study / not specimen imagery</div></div>' +
-    '<div class="shell hero-body"><p class="kicker">ANEVUM / A Living Atlas</p><h1>Time is<br>the medium.</h1>' +
+    '<div class="shell hero-body"><p class="kicker">ANEVUM / A Living Atlas</p><h1>Time is <br>the medium.</h1>' +
     '<p class="lede">A living atlas of trees, time, and the art of becoming.</p>' +
     '<div class="cta-row">' + action("/collection", "Enter the Collection") + action("/chronicle", "Explore the Chronicle", true) + '</div></div>' +
     '<div class="scroll-cue">Scroll to explore · 01 / 05</div></section>';
   const introduction = '<section class="chapter shell"><div class="chapter-head"><div>' + eyebrow("01 / A beginning") +
-    '<h2>Five lives.<br>One beginning.</h2></div>' +
+    '<h2>Five lives. <br>One beginning.</h2></div>' +
     '<p>Five red maples, raised from seed in 2026. Their story starts before they resemble finished bonsai. Nothing here needs to pretend that time has already passed.</p></div>' +
     '<div class="feature-specimen">' + placeholder("The first maple", "Tree 01 · actual photo pending") +
     '<div class="feature-copy">' + eyebrow("Specimen 01 / Acer rubrum") + '<h3>The first experiment.</h3>' +
     '<p>A seed-grown red maple and an emerging root-over-rock composition. Stone selection and root work remain future decisions.</p>' +
     action("/collection/tree-01", "Meet Tree 01") + '</div></div></section>';
   const chronicle = '<section class="paper"><div class="shell editorial-grid"><div>' + eyebrow("02 / The Chronicle") +
-    '<h2>A different kind<br>of calendar.</h2><p>Not a simulation of growth, but a record of real changes: dated observations, decisions, seasons, and the patience between them.</p>' +
+    '<h2>A different kind <br>of calendar.</h2><p>Not a simulation of growth, but a record of real changes: dated observations, decisions, seasons, and the patience between them.</p>' +
     action("/chronicle", "Follow the timeline") + '</div><div class="engraving" aria-hidden="true">2026</div></div></section>';
   const collection = '<section class="chapter shell">' + eyebrow("03 / The Collection") + '<div class="chapter-head"><h2>Individual worlds.</h2>' +
     '<p>Five seedlings, five records. Each specimen will acquire a character and history through authentic evidence rather than invented milestones.</p></div>' +
@@ -90,7 +90,7 @@ function home() {
       a("/collection/" + specimen.id,
         '<span class="kicker">' + esc(specimen.scientificName) + '</span><span class="big-number">' + String(specimen.number).padStart(2,"0") + '</span><div><h3>' + esc(specimen.title) + '</h3><p>' + esc(specimen.styling || "Individual history developing") + '</p></div>',
         "index-row")).join("") + '</div></section>';
-  const atelier = '<section class="paper"><div class="shell editorial-grid"><div>' + eyebrow("04 / The Living Atelier") + '<h2>Imagine.<br>Observe.<br>Then act.</h2><p>The first root-over-rock study exists as a design direction, not a completed intervention. Explore alternatives while the tree remains the authority.</p>' +
+  const atelier = '<section class="paper"><div class="shell editorial-grid"><div>' + eyebrow("04 / The Living Atelier") + '<h2>Imagine. <br>Observe. <br>Then act.</h2><p>The first root-over-rock study exists as a design direction, not a completed intervention. Explore alternatives while the tree remains the authority.</p>' +
     action("/atelier", "Enter the Atelier") + '</div>' + placeholder("A working study", "Proposed composition · no stone selected") + '</div></section>';
   return hero + introduction + chronicle + collection + atelier;
 }
@@ -140,9 +140,9 @@ function specimenPage(id) {
   return pageHero("The Collection / Specimen " + String(specimen.number).padStart(2,"0"), specimen.title,
     "Acer rubrum. Seed-grown in 2026. A living record, not a finished portrait.") +
     '<section class="shell chapter"><div class="specimen-stage">' + placeholder(specimen.title, "Documentary photograph pending", specimen) +
-    '<div class="stage-info">' + eyebrow("Specimen record") + '<h2>Becoming,<br>slowly.</h2>' + meta(specimen) +
+    '<div class="stage-info">' + eyebrow("Specimen record") + '<h2>Becoming, <br>slowly.</h2>' + meta(specimen) +
     action("/chronicle", "Explore recorded time") + '</div></div><div class="observations"><div>' +
-    eyebrow("The current record") + '<h2>What we<br>know.</h2><p>' + esc(specimen.notes) + '</p></div><div>' +
+    eyebrow("The current record") + '<h2>What we <br>know.</h2><p>' + esc(specimen.notes) + '</p></div><div>' +
     eyebrow("What remains open") + '<p>Exact germination dates, measurements, soil, pot, health assessments, and individual photographic histories are not established in this public record. These gaps are intentional.</p>' +
     (specimen.number === 1 ? action("/atelier", "Examine the design study") : "") + '</div></div></section>' +
     '<section class="paper"><div class="shell">' + eyebrow("Development record") + '<h2>Time, documented.</h2><p class="fine">Year-level records are not assigned invented calendar days.</p>' +
@@ -154,7 +154,7 @@ function chronicle() {
   return pageHero("The Chronicle / Recorded time","The years will speak.",
     "A growing timeline of observed facts, design intentions, and completed work. None of these categories is interchangeable.") +
     '<section class="shell chapter">' + eyebrow("Record / 2026 onward") + timeline(EVENTS) +
-    '<div class="editorial-grid"><div>' + eyebrow("Authentic comparison") + '<h2>Before and after<br>must be real.</h2>' +
+    '<div class="editorial-grid"><div>' + eyebrow("Authentic comparison") + '<h2>Before and after <br>must be real.</h2>' +
     '<p class="muted">Side-by-side comparison will be enabled when two owner-approved photographs of the same specimen have distinct verified capture dates.</p>' +
     action("/collection/tree-01", "Return to the first tree") + '</div>' + placeholder("Not yet photographed twice", "Comparison awaiting two dated originals") + '</div></section>';
 }
@@ -164,7 +164,7 @@ function atelier() {
   return pageHero("The Living Atelier / Design Study 001","Root over rock.",
     "An exploration of possible compositions for Tree 01. Nothing shown here represents completed root placement.") +
     '<section class="shell chapter"><div class="editorial-grid"><div>' + eyebrow("Tree 01 / Acer rubrum") +
-    '<h2>The stone<br>comes first.</h2><p class="lede">' + esc(study.known) + '</p>' +
+    '<h2>The stone <br>comes first.</h2><p class="lede">' + esc(study.known) + '</p>' +
     '<p class="muted">' + esc(study.unknown) + '</p><span class="tag">Planned · Not installed</span></div>' +
     placeholder("Composition study", "Proposal only · no selected stone") + '</div></section>' +
     '<section class="paper"><div class="shell">' + eyebrow("Three studies / No intervention") +
@@ -206,7 +206,7 @@ function about() {
   return pageHero("About / ANEVUM","An archive in the making.",
     "An independently maintained collection and botanical journal by Devon Alan Akins.") +
     '<section class="paper"><div class="shell editorial-grid"><div>' + eyebrow("Time is the medium.") +
-    '<h2>Not an exhibition<br>of finished trees.</h2><p>Five red maples grown from seed in 2026 are the beginning. Their records will evolve through actual photography, measured observations, careful interventions, and written reflection.</p>' +
+    '<h2>Not an exhibition <br>of finished trees.</h2><p>Five red maples grown from seed in 2026 are the beginning. Their records will evolve through actual photography, measured observations, careful interventions, and written reflection.</p>' +
     '<p>Earlier ANEVUM creative and software work is preserved separately; this botanical atlas is the current public direction.</p>' +
     action("/collection", "Explore the collection") + '</div><div class="engraving" aria-hidden="true">05</div></div></section>';
 }
