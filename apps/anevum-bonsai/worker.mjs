@@ -164,7 +164,7 @@ function atelier() {
 }
 
 function journal() {
-  return pageHero("Field Journal / 01","Notes from<br>the beginning.",
+  return pageHero("Field Journal / 01","Notes from the beginning.",
     "Original observations, decisions, and reflections. The archive grows with the trees.") +
     '<section class="shell chapter">' + JOURNAL.map(entry =>
       a("/journal/" + entry.slug,
@@ -192,7 +192,7 @@ function practice() {
 }
 
 function about() {
-  return pageHero("About / ANEVUM","An archive<br>in the making.",
+  return pageHero("About / ANEVUM","An archive in the making.",
     "An independently maintained collection and botanical journal by Devon Alan Akins.") +
     '<section class="paper"><div class="shell editorial-grid"><div>' + eyebrow("Time is the medium.") +
     '<h2>Not an exhibition<br>of finished trees.</h2><p>Five red maples grown from seed in 2026 are the beginning. Their records will evolve through actual photography, measured observations, careful interventions, and written reflection.</p>' +
