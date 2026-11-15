@@ -39,7 +39,7 @@ function navigation(path, mobile = false) {
     ["/atelier", "Atelier"], ["/journal", "Journal"], ["/practice", "Practice"], ["/about", "About"]
   ];
   return '<nav aria-label="' + (mobile ? "Mobile navigation" : "Primary navigation") + '">' +
-    items.map(([href,label]) => '<a href="' + href + '"' + (path === href ? ' aria-current="page"' : "") + '>' + label + '</a>').join("") +
+    items.map(([href,label]) => '<a href="' + href + '"' + (path === href || (href !== "/" && path.startsWith(href + "/")) ? ' aria-current="page"' : "") + '>' + label + '</a>').join("") +
     '</nav>';
 }
 
@@ -104,6 +104,17 @@ function collection() {
     "Each seed-grown red maple has its own record. Only documented measurements, photographs, and interventions become part of the archive.") + rows;
 }
 
+function specimenWayfinding(specimen) {
+  return '<section class="shell specimen-wayfinding"><nav aria-label="Browse specimen records">' +
+    eyebrow("Continue through the living collection") +
+    '<ol class="specimen-wayfinding-list">' +
+    SPECIMENS.map(item => '<li><a href="/collection/' + esc(item.id) + '"' +
+      (item.id === specimen.id ? ' aria-current="page"' : '') +
+      '><span class="specimen-index">' + String(item.number).padStart(2,"0") +
+      '</span><span class="specimen-wayfinding-name">' + esc(item.title) + '</span></a></li>').join("") +
+    '</ol></nav></section>';
+}
+
 function meta(specimen) {
   const fields = [
     ["Specimen ID",specimen.id],["Botanical name",specimen.scientificName],["Common name",specimen.commonName],
@@ -136,7 +147,7 @@ function specimenPage(id) {
     (specimen.number === 1 ? action("/atelier", "Examine the design study") : "") + '</div></div></section>' +
     '<section class="paper"><div class="shell">' + eyebrow("Development record") + '<h2>Time, documented.</h2><p class="fine">Year-level records are not assigned invented calendar days.</p>' +
     '<div class="metadata">' + ownEvents.map(e=>'<div><dt>' + esc(e.date) + '</dt><dd>' + esc(e.title) + ' · ' + esc(e.state) + '</dd></div>').join("") + '</div>' +
-    action("/collection", "Return to collection") + '</div></section>';
+    action("/collection", "Return to collection") + '</div></section>' + specimenWayfinding(specimen);
 }
 
 function chronicle() {
