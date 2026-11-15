@@ -1,0 +1,44 @@
+name: ANEVUM Bonsai Atlas Preview Verify
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/anevum-bonsai/**'
+      - 'tests/anevum-bonsai.test.mjs'
+      - 'wrangler.anevum-bonsai-preview.jsonc'
+      - '.github/workflows/anevum-bonsai-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-bonsai-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check source syntax and content boundaries
+        run: |
+          node --check apps/anevum-bonsai/records.mjs
+          node --check apps/anevum-bonsai/style.mjs
+          node --check apps/anevum-bonsai/worker.mjs
+          node --test tests/anevum-bonsai.test.mjs
+      - name: Install pinned repository dependencies
+        run: npm install --no-audit --no-fund
+      - name: Compile preview Worker without deploying
+        run: npx --no-install wrangler deploy --config wrangler.anevum-bonsai-preview.jsonc --dry-run --outdir /tmp/anevum-bonsai-preview-build
+      - name: Verify preview deployment stays independent
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          const c=JSON.parse(readFileSync('wrangler.anevum-bonsai-preview.jsonc','utf8'));
+          if(!c.name.endsWith('-preview') || c.main!=='./apps/anevum-bonsai/worker.mjs' || 'routes' in c || 'route' in c || 'd1_databases' in c || 'vars' in c || 'kv_namespaces' in c || 'r2_buckets' in c) {
+            throw Error('Bonsai preview attempted production routing or binding changes');
+          }
+          console.log('PREVIEW_BOUNDARY_PASS',c.name);
+          NODE
