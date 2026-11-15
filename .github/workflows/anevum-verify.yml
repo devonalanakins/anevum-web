@@ -105,6 +105,19 @@ jobs:
           node --test tests/anevum-public-studio.test.mjs
           node scripts/ops/verify-anevum-public-studio-browser.mjs
 
+      # Independent, route-free bonsai Worker: never infer this is a change to
+      # the V5/Command application or require its unrelated hosted Access IDs.
+      # An unrecognized/mixed runtime edit still triggers the guarded gate.
+      - name: Verify isolated bonsai preview and publication contracts
+        if: github.event_name == 'pull_request' && steps.scope.outputs.bonsai_required == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check apps/anevum-bonsai/records.mjs
+          node --check apps/anevum-bonsai/style.mjs
+          node --check apps/anevum-bonsai/worker.mjs
+          node --test tests/anevum-bonsai.test.mjs
+
       - name: Upload public studio screenshot evidence
         if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
         uses: actions/upload-artifact@v4
