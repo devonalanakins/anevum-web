@@ -115,3 +115,25 @@ test("Save-Data preference disables atmospheric motion without suppressing conte
  assert.doesNotMatch(saved,/<body class="motion-active">/);
  assert.match(saved,/Time is/);
 });
+
+test("all five specimens have explicit connected wayfinding and correct active public navigation",async()=>{
+  for(const specimen of SPECIMENS){
+    const html=await (await get("/collection/"+specimen.id)).text();
+    const nav=html.match(/<nav aria-label="Browse specimen records">([\s\S]*?)<\/nav>/)?.[1];
+    assert.ok(nav,"Missing specimen wayfinding for "+specimen.id);
+    assert.equal((nav.match(/<li>/g)||[]).length,5);
+    for(const item of SPECIMENS)assert.match(nav,new RegExp('href="/collection/'+item.id+'"'));
+    assert.equal((nav.match(/aria-current="page"/g)||[]).length,1);
+    assert.match(nav,new RegExp('href="/collection/'+specimen.id+'" aria-current="page"'));
+    assert.match(html,/<nav aria-label="Primary navigation">[\s\S]*?<a href="\/collection" aria-current="page">Collection<\/a>/);
+  }
+});
+
+test("editorial page headings render as semantic text, never escaped HTML fragments",async()=>{
+  for(const route of ["/journal","/about"]){
+    const html=await (await get(route)).text();
+    const h1=html.match(/<h1>([\s\S]*?)<\/h1>/)?.[1];
+    assert.ok(h1);
+    assert.doesNotMatch(h1,/&lt;br&gt;|<br\b/i);
+  }
+});
