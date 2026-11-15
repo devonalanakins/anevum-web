@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0c1410">
+<title>ANEVUM — A Living Bonsai Collection (Design Review)</title>
+<meta name="description" content="A personal living archive of seed-grown bonsai, experiments, observation, and the passage of time.">
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{color-scheme:dark;--bg:#0c1410;--panel:#15231c;--panel2:#1d2d24;--line:#4254488c;--ink:#f3efe4;--muted:#adbaab;--moss:#b2c48c;--amber:#c99b6a;--serif:Georgia,"Times New Roman",serif;--sans:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.62 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}a:focus-visible{outline:2px solid var(--moss);outline-offset:5px}::selection{background:var(--moss);color:var(--bg)}
+.skip{position:absolute;top:-100px;left:14px;padding:12px 18px;background:var(--ink);color:var(--bg);z-index:100}.skip:focus{top:12px}
+.wrap{width:min(1310px,calc(100% - 88px));margin-inline:auto}.overline{color:var(--moss);font-size:11px;letter-spacing:.23em;text-transform:uppercase;font-weight:650}
+.preview-note{padding:8px 16px;text-align:center;background:#d7bf98;color:#1b241c;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:800}
+.header{position:relative;z-index:5;border-bottom:1px solid var(--line);background:#101b15}.header-inner{min-height:90px;display:flex;justify-content:space-between;align-items:center;gap:30px}
+.brand{display:flex;align-items:center;gap:13px;font:26px/1 var(--serif);letter-spacing:.23em}.brand svg{width:35px;height:40px;color:var(--moss)}
+.nav{display:flex;gap:38px;align-items:center}.nav a{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#d4ddcd}.nav a:hover{color:var(--moss)}
+.hero{position:relative;overflow:hidden;min-height:690px;background:radial-gradient(ellipse at 80% 24%,#344d34 0,transparent 37%),radial-gradient(ellipse at 25% 100%,#242f1a 0,transparent 50%),#0c1410}
+.hero::after{content:"";position:absolute;inset:0;opacity:.24;pointer-events:none;background-image:linear-gradient(90deg,transparent calc(100% - 1px),#c0cfac26 100%),linear-gradient(0deg,transparent calc(100% - 1px),#c0cfac26 100%);background-size:110px 110px;mask-image:linear-gradient(90deg,transparent,#000 50%)}
+.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr .94fr;gap:7%;align-items:center;min-height:690px;padding:54px 0 72px}
+.hero-copy{max-width:610px}.hero h1{font:normal clamp(64px,7.2vw,112px)/.99 var(--serif);letter-spacing:-.068em;margin:25px 0 29px}.hero h1 em{font-weight:normal;color:#c5d4a4}.hero p{max-width:520px;color:#c1cdbf;font-size:17px;line-height:1.9;margin:0}
+.actions{display:flex;flex-wrap:wrap;gap:16px;margin-top:38px}.action{min-height:52px;display:inline-flex;align-items:center;justify-content:space-between;gap:40px;padding:0 21px;border:1px solid var(--moss);font-size:11px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;color:var(--bg);background:var(--moss)}
+.action.alt{background:transparent;color:var(--ink);border-color:#7f9278}.action:hover{filter:brightness(1.12)}
+.specimen{position:relative;min-height:570px;border:1px solid #81978060;background:radial-gradient(ellipse at 51% 54%,#445f4650 0,#18261ca8 40%,#0d1611 79%);box-shadow:0 30px 85px #0307058c;overflow:hidden}
+.specimen::before{content:"";position:absolute;inset:20px;border:1px solid #c2d1b226;pointer-events:none}
+.specimen .top{position:absolute;z-index:2;top:35px;left:35px;right:35px;display:flex;justify-content:space-between;gap:12px;font-size:10px;text-transform:uppercase;letter-spacing:.17em;color:#b8caa9}
+.specimen svg{display:block;position:absolute;inset:7% 0 4%;height:88%;width:100%;filter:drop-shadow(0 8px 18px #040604a3)}
+.specimen .bottom{position:absolute;bottom:26px;left:35px;right:35px;z-index:2;display:flex;justify-content:space-between;gap:16px;border-top:1px solid #d8dfc43d;padding-top:15px;font-size:10px;line-height:1.5;letter-spacing:.11em;text-transform:uppercase;color:#e5e8d8}
+.specimen .bottom span:last-child{text-align:right;color:#b6c6ae}
+.section{padding:108px 0 102px;scroll-margin-top:18px}.section-head{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:43px}.section h2{font:normal clamp(43px,5vw,68px)/1.07 var(--serif);letter-spacing:-.05em;margin:13px 0 0}.section-intro{max-width:430px;font-size:14px;line-height:1.85;color:var(--muted)}
+.collection{background:linear-gradient(#111d16,#15221a)}.collection-grid{display:grid;grid-template-columns:1.5fr repeat(2,1fr);grid-template-rows:repeat(2,230px);gap:15px}
+.tree-card{position:relative;overflow:hidden;border:1px solid #54654f;background:linear-gradient(155deg,#26392b,#101d15);padding:24px;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.tree-card::after{content:"";position:absolute;border-radius:50%;width:190px;height:190px;right:-65px;top:-40px;background:radial-gradient(circle,#6a87531c,transparent 72%);pointer-events:none}
+.tree-card.featured{grid-row:span 2;background:radial-gradient(circle at 65% 50%,#4d684637,transparent 60%),linear-gradient(145deg,#304533,#111e16)}
+.tree-card .num{font:normal 36px/1 var(--serif);letter-spacing:-.05em;color:#c2cfae}.tree-card.featured .num{font-size:64px}
+.tree-card h3{font:normal 31px/1.06 var(--serif);margin:0 0 8px}.tree-card p{font-size:12px;color:#b8c6b5;margin:0}.tree-card small{font-size:10px;text-transform:uppercase;letter-spacing:.17em;color:var(--moss)}
+.tree-card.featured .feature-mark{font:italic clamp(22px,3.4vw,43px)/1.2 var(--serif);color:#d7e0c4;max-width:280px}
+.meta-line{margin-top:28px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#9eae9c}
+.journal{border-top:1px solid var(--line)}.journal-layout{display:grid;grid-template-columns:1fr 1.35fr;gap:10%}.journal-entry{border-top:1px solid var(--line);padding:21px 0 27px;display:grid;grid-template-columns:150px 1fr;gap:20px}
+.journal-entry time{color:var(--moss);font-size:11px;text-transform:uppercase;letter-spacing:.11em}.journal-entry h3{font:normal 27px/1.2 var(--serif);margin:0 0 11px}.journal-entry p{color:var(--muted);font-size:13px;line-height:1.8;margin:0}
+.philosophy{padding:87px 0;border-block:1px solid var(--line);background:radial-gradient(ellipse at center,#2738287a,transparent 70%)}.philosophy p{font:italic clamp(29px,4.5vw,58px)/1.26 var(--serif);letter-spacing:-.025em;text-align:center;max-width:990px;margin:0 auto}.philosophy .overline{display:block;text-align:center;margin-bottom:23px}
+.about{display:grid;grid-template-columns:1fr 1fr;gap:10%;padding:92px 0 105px}.about h2{font:normal 45px/1.12 var(--serif);margin:11px 0}.about p{color:var(--muted);font-size:14px;line-height:1.9;max-width:510px}.about .outline{border:1px solid var(--line);padding:31px 36px;background:#17251c}.about .outline p{margin:6px 0 0}
+.footer{background:#0b110d;border-top:1px solid var(--line);padding:33px 0}.footer .wrap{display:flex;justify-content:space-between;gap:24px;align-items:center}.footer span{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#95a892}.footer strong{color:var(--ink);font:normal 24px var(--serif);letter-spacing:.17em}
+@media(max-width:1050px){.wrap{width:calc(100% - 55px)}.nav{gap:20px}.hero-grid{gap:4%;grid-template-columns:1.05fr .95fr}.specimen{min-height:500px}.collection-grid{grid-template-columns:1.1fr 1fr 1fr}}
+@media(max-width:740px){.wrap{width:calc(100% - 36px)}.header-inner{min-height:75px}.brand{font-size:20px}.nav{gap:13px}.nav a{font-size:9px;letter-spacing:.07em}.nav a:nth-child(3){display:none}.hero-grid{grid-template-columns:1fr;gap:37px;min-height:auto;padding:77px 0 62px}.hero h1{font-size:clamp(57px,12.5vw,84px);margin:18px 0 19px}.hero p{font-size:15px}.specimen{min-height:420px;max-width:550px;width:100%;margin-inline:auto}.hero .actions{margin-top:25px}.section{padding:72px 0}.section-head{display:block;margin-bottom:27px}.section-intro{margin-top:18px}.collection-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;gap:10px}.tree-card{min-height:178px;padding:18px}.tree-card.featured{grid-column:span 2;grid-row:span 1;min-height:290px}.tree-card.featured .num{font-size:52px}.tree-card h3{font-size:24px}.journal-layout,.about{grid-template-columns:1fr;gap:26px}.journal-entry{grid-template-columns:115px 1fr;gap:10px}.journal-entry h3{font-size:23px}.about{padding:72px 0}.philosophy{padding:70px 0}.footer .wrap{align-items:start;flex-direction:column;gap:9px}}
+@media(max-width:370px){.nav a:nth-child(2){display:none}.hero h1{font-size:56px}.journal-entry{grid-template-columns:1fr}.specimen .top,.specimen .bottom{left:22px;right:22px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="preview-note">ANEVUM botanical direction · design review only · not the public site</div>
+<header class="header"><div class="wrap header-inner">
+<a class="brand" href="#main" aria-label="ANEVUM home">
+<svg viewBox="0 0 36 42" fill="none" aria-hidden="true"><path d="M18 3V25m0-12C8 10 6 4 6 4m12 15C28 16 31 10 31 8M18 25c-4 7-10 6-13 13m13-13c1 7 8 9 12 13m-12-13v15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M17 9c-5-1-9-5-9-8M21 17c5-2 10-6 10-12" stroke="currentColor" stroke-width=".7"/></svg>
+<span>ANEVUM</span></a>
+<nav class="nav" aria-label="Primary navigation"><a href="#collection">The Trees</a><a href="#journal">Journal</a><a href="#approach">Approach</a></nav>
+</div></header>
+<main id="main">
+<section class="hero" aria-labelledby="hero-title"><div class="wrap hero-grid">
+<div class="hero-copy"><div class="overline">The living archive · Established 2026</div>
+<h1 id="hero-title">Time is<br>the <em>medium.</em></h1>
+<p>A personal record of trees raised from seed, shaped by intention, and changed by the seasons. Five red maples. One beginning. A lifetime to grow.</p>
+<div class="actions"><a class="action" href="#collection">Explore the collection <span aria-hidden="true">↗</span></a><a class="action alt" href="#journal">Read the field journal <span aria-hidden="true">↘</span></a></div>
+</div>
+<div class="specimen" aria-label="Decorative concept illustration of a young maple, rock, and roots; this is not a photograph of a real tree">
+<div class="top"><span>Study No. 001</span><span>Acer rubrum</span></div>
+<svg viewBox="0 0 540 610" role="img" aria-label="Illustrative planned root-over-rock maple composition">
+<defs><radialGradient id="glow"><stop stop-color="#728f65" stop-opacity=".43"/><stop offset="1" stop-color="#728f65" stop-opacity="0"/></radialGradient><linearGradient id="trunk" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9c7958"/><stop offset=".5" stop-color="#66513e"/><stop offset="1" stop-color="#c29b6a"/></linearGradient></defs>
+<ellipse cx="270" cy="245" rx="180" ry="205" fill="url(#glow)"/>
+<path d="M187 467Q243 380 307 438L365 480Q350 521 317 528L206 530Q171 517 187 467Z" fill="#455247" stroke="#8e9d82" stroke-width="2"/>
+<path d="M203 486Q273 461 344 491M224 517L262 458M291 522L318 477" stroke="#87927f" stroke-width="2" opacity=".5" fill="none"/>
+<path d="M264 454C257 423 248 394 257 358C267 313 292 283 279 240C277 222 264 207 262 190" stroke="url(#trunk)" stroke-width="22" fill="none" stroke-linecap="round"/>
+<path d="M264 453C235 463 231 494 219 528M272 444C287 462 302 490 314 530M259 432C261 471 251 512 241 546" fill="none" stroke="#9a7955" stroke-width="8" stroke-linecap="round"/>
+<path d="M280 241Q341 210 352 150M279 234Q231 210 200 150M267 198Q299 149 305 109M258 320Q217 286 196 246" stroke="#866846" stroke-width="9" fill="none" stroke-linecap="round"/>
+<g fill="#a4b68a" stroke="#7d9865" stroke-width="1.6">
+<path d="M353 156l-14-18-25 4 12-18-8-30 25 15 10-30 11 32 29-14-10 27 19 15-30-2-19 19Z"/>
+<path d="M202 156l-26-11-24 17 8-26-21-15 30-6-3-28 19 21 23-16-5 28 25 12-28 6Z"/>
+<path d="M307 116l-24-11-19 14 5-22-20-19 26-2-1-27 18 19 20-12-4 22 24 9-22 9Z"/>
+<path d="M196 249l-19-14-21 7 9-23-18-15 25-2 4-26 15 18 21-13-6 24 22 14-25 2Z"/>
+<path d="M261 197l-24-15-24 9 7-29-23-16 31-4 2-26 18 22 22-14-6 27 24 14-28 3Z"/>
+</g>
+<g fill="#ae7458" opacity=".78"><path d="M328 131l-7-14-12 3 7-11-2-14 14 8 8-12 3 15 12 3-12 9-11 13Z"/><path d="M219 174l-12-9-12 3 5-10-9-13 13 1 4-13 9 9 11-6-3 15 11 7-13 3Z"/></g>
+<ellipse cx="275" cy="545" rx="167" ry="13" fill="#060c07" opacity=".7"/>
+</svg>
+<div class="bottom"><span>Tree 01 / Red maple<br>Seed-grown 2026</span><span>Root-over-rock<br>Planned study · Illustration</span></div>
+</div></div></section>
+<section class="section collection" id="collection"><div class="wrap"><div class="section-head"><div><div class="overline">01 / The living collection</div><h2>Five beginnings.</h2></div><p class="section-intro">Each tree has its own trajectory. The collection will follow the real specimens through original photography and dated observations, not invented transformations.</p></div>
+<div class="collection-grid">
+<article class="tree-card featured"><div><div class="num">01</div><small>First experimental bonsai</small></div><div><p class="feature-mark">Roots and stone.<br>A future composition.</p><h3>Red maple No. 01</h3><p>Acer rubrum · Seed-grown 2026 · Root-over-rock design selected</p></div></article>
+<article class="tree-card"><div class="num">02</div><div><h3>Maple No. 02</h3><p>Acer rubrum · 2026 seed cohort</p></div></article>
+<article class="tree-card"><div class="num">03</div><div><h3>Maple No. 03</h3><p>Acer rubrum · 2026 seed cohort</p></div></article>
+<article class="tree-card"><div class="num">04</div><div><h3>Maple No. 04</h3><p>Acer rubrum · 2026 seed cohort</p></div></article>
+<article class="tree-card"><div class="num">05</div><div><h3>Maple No. 05</h3><p>Acer rubrum · 2026 seed cohort</p></div></article>
+</div><div class="meta-line"><span>Document actual changes / Not imagined maturity</span><span>Original tree photography pending</span></div></div></section>
+<section class="section journal" id="journal"><div class="wrap journal-layout">
+<div><div class="overline">02 / The field journal</div><h2>Slow work.<br>Visible history.</h2><p class="section-intro">The meaningful events are often quiet: new growth, a decision not to prune, a changing root system, a season observed.</p></div>
+<div class="entries"><article class="journal-entry"><time datetime="2026-11-15">15 Nov 2026</time><div><h3>The first direction: root-over-rock.</h3><p>For Red Maple No. 01, the design intention is to build an exposed-root composition over a natural stone. Initial work focuses on selecting and studying the rock, not prematurely positioning roots.</p></div></article>
+<article class="journal-entry"><span class="overline">Next suitable window</span><div><h3>Observe before intervening.</h3><p>Evaluate root placement at an appropriate future bud-swell repotting window. Record the actual work and observations when it happens.</p></div></article>
+<article class="journal-entry"><span class="overline">Always</span><div><h3>One photograph at a time.</h3><p>Each tree gets a consistent dated view so its history can eventually be explored as a visual timeline.</p></div></article></div>
+</div></section>
+<section class="philosophy" id="approach"><div class="wrap"><span class="overline">A note on the practice</span><p>“Not a finished object, but a relationship with something that keeps becoming.”</p></div></section>
+<div class="wrap about"><div><span class="overline">03 / About ANEVUM</span><h2>A garden of<br>ongoing work.</h2></div><div class="outline"><span class="overline">By Devon Akins</span><p>ANEVUM is a personal bonsai collection and study journal. It begins with five seed-grown red maples and makes room for future trees, techniques, experiments, and seasons.</p><p>This is a proposed design. The published site remains unchanged until a reviewed release is approved.</p></div></div>
+</main>
+<footer class="footer"><div class="wrap"><strong>ANEVUM</strong><span>A living bonsai collection · Concept review · 2026</span></div></footer>
+</body>
+</html>
