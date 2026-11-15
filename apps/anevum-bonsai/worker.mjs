@@ -43,7 +43,7 @@ function navigation(path, mobile = false) {
     '</nav>';
 }
 
-function shell(path, title, description, content) {
+function shell(path, title, description, content, saveData = false) {
   const nav = navigation(path);
   // No external JS, third-party fonts or connections. Text is accessible
   // before hydration because there is no hydration.
@@ -52,7 +52,7 @@ function shell(path, title, description, content) {
     '<meta name="description" content="' + esc(description) + '">' +
     '<meta property="og:site_name" content="ANEVUM"><meta property="og:title" content="' + esc(title) + '">' +
     '<meta property="og:description" content="' + esc(description) + '">' +
-    '<title>' + esc(title) + ' — ANEVUM, A Living Atlas</title><style>' + STYLES + '</style></head><body class="motion-active">' +
+    '<title>' + esc(title) + ' — ANEVUM, A Living Atlas</title><style>' + STYLES + '</style></head><body' + (saveData ? '' : ' class="motion-active"') + '>' +
     '<a class="skip" href="#main">Skip to content</a>' +
     '<header class="header"><div class="shell header-inner"><a href="/" class="identity" aria-label="ANEVUM, home"><strong>ANEVUM</strong><small>A Living Atlas</small></a>' +
     '<div class="top-nav">' + nav + '</div>' +
@@ -236,7 +236,7 @@ export default {
     const entry=render(url.pathname.replace(/\/+$/, "") || "/");
     if (!entry) return new Response("Not found", {status:404,headers:{"X-Robots-Tag":"noindex, nofollow, noarchive"}});
     const [title,description,body]=entry;
-    const html=shell(url.pathname,title,description,body);
+    const html=shell(url.pathname,title,description,body,request.headers.get("Save-Data")?.toLowerCase() === "on");
     return new Response(request.method === "HEAD" ? null : html, {status:200,headers:HEADERS});
   }
 };
