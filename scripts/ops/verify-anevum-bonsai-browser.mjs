@@ -64,8 +64,8 @@ async function checkRoute(pathname,width,height){
  await navigate(pathname,width,height);
  const state=await evaluate("(()=>{const d=document.documentElement,h=document.querySelector('main h1'),menu=document.querySelector('details.menu'),nav=document.querySelector('.top-nav nav'),first=document.querySelector('a.skip'),all=[...document.querySelectorAll('a[href]')];return {path:location.pathname,title:document.title,width:d.clientWidth,scrollWidth:d.scrollWidth,bodyWidth:document.body.scrollWidth,h1:document.querySelectorAll('h1').length,heading:h?.textContent.trim(),visibleHeading:!!h&&getComputedStyle(h).display!=='none',main:document.querySelectorAll('main#main').length,skip:first?.getAttribute('href'),robots:document.querySelector('meta[name=robots]')?.content,hasNav:!!nav,hasMenu:!!menu,mobileVisible:!!menu&&getComputedStyle(menu).display!=='none',external:all.filter(a=>a.href&&!a.href.startsWith(location.origin)).map(a=>a.href),badLink:all.filter(a=>!a.textContent.trim()&&!a.getAttribute('aria-label')).length}})()");
  const errors=[];
- if(state.width!==width)errors.push("wrong viewport");
- if(state.scrollWidth>width+1||state.bodyWidth>width+1)errors.push("horizontal overflow");
+ if(state.width>width||state.width<width-20)errors.push("wrong viewport including scrollbar");
+ if(state.scrollWidth>state.width+1||state.bodyWidth>state.width+1)errors.push("horizontal overflow");
  if(state.h1!==1||!state.visibleHeading||state.main!==1)errors.push("heading/landmark");
  if(state.skip!=="#main")errors.push("missing skip link");
  if(!state.robots?.includes("noindex"))errors.push("preview indexing guard");
