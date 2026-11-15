@@ -73,7 +73,7 @@ test("Chronicle distinguishes observed year precision and planned day precision"
 test("Atelier is an accessible, interactive, disclosed planning study",async()=>{
   const html=await (await get("/atelier")).text();
   assert.equal((html.match(/<details>/g)||[]).length,3);
-  assert.equal((html.match(/<summary>/g)||[]).length,3);
+  assert.equal((html.match(/<summary>/g)||[]).length,4); // Three studies plus the shared mobile navigation disclosure.
   assert.match(html,/Planned · Not installed/);
   assert.match(html,/no selected stone/i);
 });
