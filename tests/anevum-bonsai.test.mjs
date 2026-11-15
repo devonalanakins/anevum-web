@@ -106,3 +106,12 @@ test("all media states block unapproved or absent master footage",async()=>{
     assert.match(html,/pending|awaiting|recorded|time/i);
   }
 });
+
+test("Save-Data preference disables atmospheric motion without suppressing content",async()=>{
+ const normal=await (await get("/")).text();
+ const saved=await (await get("/",{headers:{"Save-Data":"on"}})).text();
+ assert.match(normal,/<body class="motion-active">/);
+ assert.match(saved,/<body>/);
+ assert.doesNotMatch(saved,/<body class="motion-active">/);
+ assert.match(saved,/Time is/);
+});
