@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {Script} from "node:vm";
 import {LAB_ART} from "../apps/anevum-public-studio/living-laboratory-art.mjs";
 import worker from "../apps/anevum-institute-preview/worker.mjs";
+import {CFP_101,validateCurriculum} from "../apps/anevum-institute-preview/curriculum.mjs";
 
 const BASE="https://anevum.com/institute-preview";
 const PATHS=["","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
@@ -35,6 +36,7 @@ test("six isolated pages have accurate titles, landmarks, and noindex headers",a
 test("every relative institute navigation link resolves within the preview",async()=>{
   const known=new Set(PATHS.map(path=>"/institute-preview"+path));
   known.add("/institute-preview/");
+  known.add("/institute-preview/curriculum/cfp-101.json");
   for(const path of PATHS){
     const html=await(await req(path)).text();
     const links=[...html.matchAll(/<a[^>]*\bhref="(\/institute-preview(?:\/[^"#]*)?)"/g)].map(m=>m[1]);
@@ -78,6 +80,37 @@ test("transistor switching lesson teaches ideal complementary inversion with acc
   assert.match(html,/real inverter has a continuous voltage-transfer characteristic/i);
   assert.match(html,/ocw\.mit\.edu\/courses\/6-012-/);
   assert.doesNotMatch(html,/measured [0-9]+ volts|accredited degree|real laboratory equipment/i);
+});
+
+test("versioned curriculum JSON is portable, accurate and fail-closed on invalid metadata",async()=>{
+  const response=await req("/curriculum/cfp-101.json");
+  assert.equal(response.status,200);
+  assert.equal(response.headers.get("Content-Type"),"application/json; charset=utf-8");
+  assert.match(response.headers.get("X-Robots-Tag"),/noindex/);
+  const manifest=JSON.parse(await response.text());
+  assert.deepEqual(manifest,CFP_101);
+  assert.equal(validateCurriculum(manifest).length,0);
+  assert.equal(manifest.schemaVersion,1);
+  assert.equal(manifest.editorialStatus,"draft");
+  assert.equal(manifest.accreditation,"none");
+  assert.equal(manifest.units.length,8);
+  assert.deepEqual(manifest.units.filter(unit=>unit.availability==="preview").map(unit=>unit.lessonPath),[
+    "/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates"
+  ]);
+  assert.equal(manifest.units.filter(unit=>unit.availability==="planned").length,6);
+  const manifestPage=await(await req("/academy/cfp-101")).text();
+  assert.match(manifestPage,/Download portable curriculum metadata/);
+  assert.match(manifestPage,/version 0\.2\.0/);
+  const invalid=structuredClone(manifest);
+  invalid.units[2].availability="preview";
+  assert.ok(validateCurriculum(invalid).some(error=>error.includes("Lesson availability mismatch")));
+  const badPrerequisite=structuredClone(manifest);
+  badPrerequisite.units[0].prerequisites=["CFP-101-U02"];
+  assert.ok(validateCurriculum(badPrerequisite).some(error=>error.includes("Prerequisites must name earlier units")));
+  const duplicate=structuredClone(manifest);
+  duplicate.units[1].lessonPath=duplicate.units[0].lessonPath;
+  assert.ok(validateCurriculum(duplicate).some(error=>error.includes("Duplicate lesson path")));
+  assert.ok(validateCurriculum({schemaVersion:1,id:"CFP-101",version:"0.2.0",status:"preview",units:[{availability:"preview"}]}).length>0);
 });
 
 test("logic laboratory exposes four correct truth-table rows and accessible controls",async()=>{
@@ -189,7 +222,7 @@ test("unowned routes, origins, methods and data endpoints are rejected",async()=
   const post=await req("",{method:"POST",body:"x"});
   assert.equal(post.status,405);
   assert.equal(post.headers.get("Allow"),"GET, HEAD");
-  for(const path of ["","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/styles.css","/client.js","/assets/lab-hero-v1.webp"]){
+  for(const path of ["","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/curriculum/cfp-101.json","/styles.css","/client.js","/assets/lab-hero-v1.webp"]){
     const get=await req(path),head=await req(path,{method:"HEAD"});
     assert.equal(head.status,200,path);
     assert.equal((await head.arrayBuffer()).byteLength,0);
