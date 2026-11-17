@@ -64,3 +64,59 @@ Passing isolated tests is **not** evidence of production readiness. Full reposit
 ## Next approved decision
 
 Review desktop/mobile screenshots and the functioning educational journey. If accepted, design the production route integration and content authoring workflow as a separate PR; preserve the existing isolated deployment and the earlier ANEVUM source and route boundaries until an explicit publication/cutover decision.
+
+## November 17 — Identity and experience redesign v2 (review candidate, not final brand approval)
+
+Session: `ANEVUM.WEB.DESIGN.2026-11-17.002.OPEN-APERTURE-IDENTITY-EXPERIENCE`
+
+### Strategic intent
+
+ANEVUM should be recognizable independently of any hero image, physical-building metaphor or software project. The open institute is an education-first product, not a simulated university with claims of a real campus. Deliver two deliberate modes: **Discovery** (architectural, atmospheric, cinematic) and **Study** (quiet editorial text, accurate calculations, precise controls, no visual interference).
+
+### Original vector mark
+
+`apps/anevum-institute-preview/mark.svg` defines the **Open Aperture** symbol:
+
+- Three rising tapered paths converge within an unfinished orbital arc, representing learning, experimentation and discovery that remains open to revision. It should remain legible at favicon scale and without accompanying text.
+- The asymmetrical open arc distinguishes it from the former generic circled-A placeholder; the shape is a distinctive proposal, not a claim of formal trademark clearance.
+- Paired wordmark: **ANEVUM** in an editorial serif, wide tracking. Descriptor: **THE OPEN INSTITUTE** in concise readable sans.
+- Suggested clear space: at least 25% of the mark's diameter on all sides. Minimum interactive target 44px. Do not crop the arc, rotate the mark to simulate activity, or distort its proportions.
+- Keep original SVG as editable master. The Worker serves this from a source-coupled `artwork.mjs` module on exact allowed paths. No remote images, font services or inline JavaScript inside SVG.
+- Monochrome, print, light-background, signage and 16/24/32px variants require separate visual acceptance; the color vector is **not yet final approved institutional branding**.
+
+### Design tokens and typography
+
+| Role | Proposed value | Usage |
+| --- | --- | --- |
+| Obsidian Midnight | `#071016` | Campus and reading/navigation shell |
+| Mineral Teal | `#315D61` | Laboratory scientific interfaces and secondary accents |
+| Antique Brass | `#D9B17A` | Primary actions and meaningful active states only |
+| Porcelain Paper | `#F4F1E8` | Long-form high-comfort reading canvas |
+| Living Sage | `#95B9AB` | Measured progress and explanatory annotations |
+| Dark Study Ink | `#1D3035` | Reading content on light paper |
+
+Display uses a refined serif fallback such as Georgia; general UI uses an accessible humanist/system sans; mathematics and experimental measurements use monospace. Asset licenses, font hosting, widths and text contrast must be reviewed before choosing any third-party font.
+
+### Experience and navigation
+
+- **Global navigation:** Institute, Academy, Laboratory. Everything in the navigation works in this preview. Course and Classroom are contextual destinations reached through the Academy, lesson breadcrumbs, and direct CTAs. Research, Commons and other subjects remain visibly proposed; do not create dead links or false enrollment screens.
+- **Entrance:** Original `observatory.svg` source depicts a conceptual dome, illuminated orbital instrument and science campus. It is **fictional interface artwork**, not an image of a real facility. Content must remain legible without motion or imagery.
+- **Academy:** A published course is visually distinct from future curricula. Show a clear syllabus, subject, level, availability and immediate reading action rather than fabricated enrollment numbers.
+- **Classroom:** Light ivory study surface inside a dark institute shell; anchored lesson outline, explicit evidence caveats, type at readable line lengths, intuitive self-test and a direct path into the lab. On phones, the lesson precedes optional outline furniture.
+- **Laboratory:** Dark instrument panel, real two-input model, four-row truth table, highlighted current state, observed output, reset and evidence-aware model explanation. No fake instrument readings, external uploads or implied transistor-level computation.
+- **Motion:** Only decor and spatial context may animate. Functional meaning cannot depend on 3D, pointer movement, parallax or video. Respect `prefers-reduced-motion`; never autoplay an educational step required for understanding.
+- **Privacy:** The prototype stores only two Boolean completion flags in device-local storage. No user accounts, tracking, server-side records, grades or published learner performance.
+
+### Implementation now in the isolated draft
+
+The five-page preview has a custom vector mark and favicon, new SVG observatory, more concise global nav, direct lesson CTA, explicit non-accreditation notice, dark campus / light classroom / dark lab contrast, mobile-responsive layout and exact static asset allowlists. Source files are in `apps/anevum-institute-preview/`, with no production route, authorization, database, DNS, Worker service or payment change.
+
+### Remaining genuine redesign work
+
+1. Review 320/390/768/1024/1440 screenshots and compare with the high-fidelity campus direction; iterate on hierarchy, copy, balance and dark/light contrast.
+2. Produce approved monochrome/small-format mark assets and a formal full trademark/copyright/asset license review before public branding.
+3. Expand Academy information architecture and author a complete first course; test against actual nontechnical learners.
+4. Build research/Commons workflows only when real moderation, governance, attribution and reproducibility infrastructure exists.
+5. Preserve PRs #813–815 and all botanical/fictional work. No automatic conversion of the new mark or conceptual visual into production branding.
+
+**Release gate remains NO-GO** pending owner visual acceptance, full CI reconciliation, authenticated route ownership/rollback review, production security checks and explicitly authorized publication.
