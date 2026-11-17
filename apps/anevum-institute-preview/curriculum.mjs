@@ -35,7 +35,7 @@ export function validateCurriculum(input){
   const seen=new Set(),paths=new Set();
   input.units.forEach((unit,index)=>{
     if(!unit||typeof unit!=="object"){errors.push("Invalid unit at "+index);return;}
-    if(!/^([A-Z]{2,5}-[0-9]{3})-U[0-9]{2}$/.test(String(unit.id||""))||!unit.id.startsWith(input.id+"-U"))errors.push("Invalid unit ID at "+index);
+    if(!/^([A-Z]{2,5}-[0-9]{3})-U[0-9]{2}$/.test(String(unit.id||""))||!String(unit.id||"").startsWith(input.id+"-U"))errors.push("Invalid unit ID at "+index);
     if(seen.has(unit.id))errors.push("Duplicate unit ID: "+unit.id);
     if(unit.number!==String(index+1).padStart(2,"0"))errors.push("Nonsequential unit number: "+unit.id);
     if(typeof unit.title!=="string"||unit.title.trim().length<5)errors.push("Missing unit title: "+unit.id);
