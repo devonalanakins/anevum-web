@@ -7,9 +7,9 @@ export const INSTITUTE_CLIENT = String.raw`
     try{
       var raw=localStorage.getItem(KEY);
       var obj=raw?JSON.parse(raw):{};
-      if(!obj||typeof obj!=="object"||Array.isArray(obj))return {};
-      return {lesson:obj.lesson===true,experiment:obj.experiment===true};
-    }catch(_){return {};}
+      if(!obj||typeof obj!=="object"||Array.isArray(obj))return {transistor:false,lesson:false,experiment:false};
+      return {transistor:obj.transistor===true,lesson:obj.lesson===true,experiment:obj.experiment===true};
+    }catch(_){return {transistor:false,lesson:false,experiment:false};}
   }
   function stateWrite(next){
     try{localStorage.setItem(KEY,JSON.stringify(next));return true;}catch(_){return false;}
@@ -17,9 +17,44 @@ export const INSTITUTE_CLIENT = String.raw`
   function updateStatus(){
     var result=stateRead();
     document.querySelectorAll("[data-local-progress]").forEach(function(el){
-      var count=Number(result.lesson)+Number(result.experiment);
-      el.textContent=count+" of 2 learning activities completed on this device";
+      var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
+      el.textContent=count+" of 3 learning activities completed on this device";
     });
+  }
+  // The inverter is an ideal Boolean model, not an analog circuit simulator.
+  var inverter=document.querySelector("[data-inverter-demo]");
+  if(inverter){
+    var inputHigh=false;
+    var toggle=inverter.querySelector("[data-inverter-toggle]");
+    var inValue=inverter.querySelector("[data-inverter-input]");
+    var outValue=inverter.querySelector("[data-inverter-output]");
+    var explanation=inverter.querySelector("[data-inverter-explanation]");
+    function renderInverter(){
+      if(toggle)toggle.setAttribute("aria-pressed",inputHigh?"true":"false");
+      if(inValue)inValue.textContent=inputHigh?"1":"0";
+      if(outValue)outValue.textContent=inputHigh?"0":"1";
+      if(explanation)explanation.textContent=inputHigh
+        ?"Input high: nMOS conducting, pMOS off; output low. Ideal steady-state model."
+        :"Input low: pMOS conducting, nMOS off; output high. Ideal steady-state model.";
+    }
+    if(toggle)toggle.addEventListener("click",function(){inputHigh=!inputHigh;renderInverter();});
+    var inverterAnswers=[].slice.call(document.querySelectorAll("[data-inverter-answer]"));
+    var inverterFeedback=document.getElementById("inverter-feedback");
+    inverterAnswers.forEach(function(button){
+      button.addEventListener("click",function(){
+        inverterAnswers.forEach(function(item){item.classList.remove("selected","correct");item.setAttribute("aria-pressed","false");});
+        button.classList.add("selected");
+        button.setAttribute("aria-pressed","true");
+        if(button.getAttribute("data-inverter-answer")==="low"){
+          button.classList.add("correct");
+          if(inverterFeedback)inverterFeedback.textContent="Correct. High input enables the nMOS pull-down path and disables the pMOS pull-up, producing a low output in this ideal model.";
+          var record=stateRead();record.transistor=true;stateWrite(record);updateStatus();
+        }else{
+          if(inverterFeedback)inverterFeedback.textContent="Revisit the complementary pull-up and pull-down paths, then try again.";
+        }
+      });
+    });
+    renderInverter();
   }
   var answers=[].slice.call(document.querySelectorAll("[data-answer]"));
   if(answers.length){
