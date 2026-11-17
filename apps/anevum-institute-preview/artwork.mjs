@@ -1,6 +1,6 @@
 // Portable source-coupled ANEVUM identity and observatory artwork.
 // Exported from the reviewed vector masters. No network fonts, scripts or external references.
-export const ANEVUM_MARK_SVG=String.raw`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+export const ANEVUM_MARK_SVG=String.raw`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-labelledby="title desc">
 <title id="title">ANEVUM open-aperture symbol</title>
 <desc id="desc">Three converging tapered pathways within an unfinished orbital circle: learning, experimentation, and collective discovery.</desc>
 <path d="M14 89C14 48 45 16 86 14C112 13 137 27 149 50" fill="none" stroke="#D8AE70" stroke-width="3.2" stroke-linecap="round"/>
@@ -11,7 +11,7 @@ export const ANEVUM_MARK_SVG=String.raw`<svg xmlns="http://www.w3.org/2000/svg" 
 <path d="M100 28L108 16" fill="none" stroke="#F1E7D5" stroke-width="2.4" stroke-linecap="round"/>
 <circle cx="149" cy="50" r="3.2" fill="#D8AE70"/>
 </svg>`;
-export const ANEVUM_OBSERVATORY_SVG=String.raw`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+export const ANEVUM_OBSERVATORY_SVG=String.raw`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-labelledby="title desc">
 <title id="title">The ANEVUM observatory</title>
 <desc id="desc">Conceptual glass scientific observatory at twilight, with a monumental illuminated armillary instrument, terraces, stone architecture, distant hills, and reflective water.</desc>
 <defs>
