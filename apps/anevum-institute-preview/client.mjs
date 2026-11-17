@@ -20,6 +20,20 @@ export const INSTITUTE_CLIENT = String.raw`
       var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
       el.textContent=count+" of 3 learning activities completed on this device";
     });
+    // Recognition preview: this is a browser-local practice trace, never an award.
+    document.querySelectorAll("[data-evidence-panel]").forEach(function(panel){
+      var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
+      var counter=panel.querySelector("[data-evidence-count]");
+      var caption=panel.querySelector("[data-evidence-label]");
+      if(counter)counter.textContent=count+" / 3";
+      if(caption)caption.textContent=count===0
+        ?"No completed preview activities were found on this device."
+        :count+" of 3 preview activities marked complete on this device. This is not independently verified.";
+      ["transistor","lesson","experiment"].forEach(function(key){
+        var row=panel.querySelector('[data-evidence-activity="'+key+'"]');
+        if(row)row.setAttribute("data-evidence-state",result[key]===true?"complete":"incomplete");
+      });
+    });
   }
   // The inverter is an ideal Boolean model, not an analog circuit simulator.
   var inverter=document.querySelector("[data-inverter-demo]");
