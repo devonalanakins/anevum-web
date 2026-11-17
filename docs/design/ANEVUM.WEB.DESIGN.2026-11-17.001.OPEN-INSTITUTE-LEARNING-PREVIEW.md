@@ -154,3 +154,13 @@ Session: `ANEVUM.WEB.BUILD.2026-11-17.003.OPEN-INSTITUTE-FULL-IMPLEMENTATION`.
 `validateCurriculum` checks course identity/version, unit count, sequence, unique IDs and paths, prereqs referring only to earlier units, and fail-closed lesson availability. The CI must test negative records: unlinked preview lesson, forward prerequisite, duplicate URL and missing unit ID.
 
 This establishes **only a portable metadata foundation**. It is not a complete education engine, course authoring interface, production route, enrollment system, or self-hosting acceptance. Missing lesson bodies and unreviewed content must remain unavailable until independently validated.
+
+## Device-local Learning Studio notes v6 — isolated draft, 2026-11-17
+
+Session: `ANEVUM.WEB.BUILD.2026-11-17.003.OPEN-INSTITUTE-FULL-IMPLEMENTATION`.
+
+Both preview lessons now embed the reusable `apps/anevum-institute-preview/study-tools.mjs` interface: keyed, independent notes and bookmarks in browser localStorage (`anevum.institute.study.v1.CFP-101-U01` and `CFP-101-U02`), explicit Save Notes, downloadable plain-text export, and **two-click** confirmation before removing saved local notes and bookmark. Notes are stored as text values, never inserted as HTML. Limits: 8,000 characters per lesson, no networking or server storage, and no claim of encryption, remote backup, access-controlled privacy, or learner accounts. The UI explicitly warns against entering sensitive personal information.
+
+Source and browser tests must verify note isolation between lessons, persistence across route reloads, bookmark restore, exported text content, confirmation-before-delete, and no stale records after deletion. Review appearance and navigation across 320–1440px in existing CI, with full-height desktop/mobile lesson captures.
+
+This work supports **only local notes and bookmarks in the first two prototype lessons**. It is not the requested full learner workspace, secure identity system, transcript, server progress, or editorial administration. All still require separate design/security/approval reviews and independent release tests.
