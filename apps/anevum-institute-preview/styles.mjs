@@ -248,6 +248,92 @@ body[data-area="laboratory"] .section h2{font-size:clamp(33px,3.3vw,46px)}
 .lesson-article .study-notes .study-status{font-size:12px;color:#476257;margin:16px 0 0}
 @media(max-width:470px){.study-actions .btn{flex:1 1 100%}.study-bookmark,.study-delete{flex:1 1 145px}}
 
+
+/* FRONTIER RESEARCH SOCIETY / discovery mode.
+   Working lessons retain their existing distraction-free paper surface.
+   No live 3D models: layered pre-rendered media, with static fallback. */
+body[data-area="society"],body[data-area="recognition"]{--bg:#070e13;--ink:#eaf1ec;--gold:#e6b979;background:#081017;color:#eaf1ec}
+body[data-area="society"] .mast,body[data-area="recognition"] .mast{background:#061017f7;border-color:#7b999144}
+.frontier-main{background:linear-gradient(180deg,#081219 0%,#09171c 47%,#071016 100%)}
+.frontier-hero{min-height:clamp(695px,84svh,950px);display:flex;align-items:stretch;background:#071016}
+.frontier-hero::before{display:none}
+.frontier-hero::after{inset:0;background:linear-gradient(90deg,#061017fd 0%,#071219f2 26%,#07171fcc 45%,#0818214c 74%,#0610162c 100%),linear-gradient(0deg,#071016 0%,transparent 30%,transparent 78%,#07121988);z-index:1;pointer-events:none}
+.frontier-media{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.frontier-art{position:absolute;inset:0;background:linear-gradient(95deg,#0710164d,transparent 55%),url("/institute-preview/assets/research-computation-v1.webp") 63% 52%/cover no-repeat;background-color:#0b1a21;filter:contrast(1.12) saturate(.82)}
+.frontier-atmosphere{position:absolute;inset:0;background:radial-gradient(ellipse at 84% 40%,#d9a56b33,transparent 39%),radial-gradient(ellipse at 52% 95%,#618e9f40,transparent 56%);opacity:.77;mix-blend-mode:screen;animation:frontier-atmosphere 15s ease-in-out infinite alternate}
+@keyframes frontier-atmosphere{from{transform:translate3d(-1.2%,0,0);opacity:.46}to{transform:translate3d(1.2%,-.7%,0);opacity:.82}}
+.frontier-hero-inner{z-index:2;max-width:var(--max);width:100%;padding-block:clamp(105px,15vh,175px) clamp(140px,17vh,205px)}
+.frontier-hero-inner .kicker{color:#b7cfcd;font-size:10px;letter-spacing:.17em;margin-top:35px}
+.frontier-index{font:650 10px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.16em;color:#e5c69c;display:flex;align-items:center;gap:16px}
+.frontier-index span{color:#adbfbe;font-size:9px;letter-spacing:.12em}
+.frontier-hero h1{max-width:890px;font-size:clamp(57px,7.4vw,108px);line-height:.99;letter-spacing:-.06em;text-wrap:balance;margin-block:23px 27px}
+.frontier-hero h1 em{color:#e8c494}
+.frontier-hero .hero-lead{max-width:615px;font-size:clamp(14px,1.4vw,17px);line-height:1.8;color:#d8e3df}
+.frontier-hero .btn.ghost{border-color:#8caca1a1;background:#0b2024c9}
+.frontier-commitment{font-size:11px!important;line-height:1.6;color:#bed0cc!important;max-width:600px;margin-top:23px;letter-spacing:.01em}
+.frontier-coordinate{position:absolute;z-index:2;right:5%;bottom:28px;text-align:right;pointer-events:none;color:#d9c6a8;font:600 10px/1.6 ui-monospace,Consolas,monospace;letter-spacing:.11em}
+.frontier-coordinate strong,.frontier-coordinate span{display:block}
+.frontier-coordinate span{font-size:8px;color:#a1b7b5}
+.frontier-rail{background:#10212a;border-color:#88a79a39}
+.frontier-rail .rail-inner{gap:13px;padding-block:24px}
+.frontier-rail .rail-inner span{font:650 11px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.03em;text-transform:none;color:#c6d6d4}
+.frontier-section-id{font:650 10px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.17em;color:#8faeac;border-top:1px solid #77918b50;padding-top:17px;margin-bottom:29px}
+.frontier-manifesto-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:clamp(40px,8vw,150px);align-items:start}
+.frontier-manifesto h2,.frontier-manifesto-grid h2{max-width:720px;font-size:clamp(45px,5.8vw,81px);line-height:1.02;letter-spacing:-.055em}
+.frontier-manifesto-copy{padding-top:19px}
+.frontier-manifesto-copy p{font-size:clamp(15px,1.5vw,18px);line-height:1.85;color:#c6d3d0}
+.frontier-manifesto-copy .text-link{display:inline-block;margin-top:19px}
+.frontier-operations{background:linear-gradient(135deg,#101f27,#0b171f 65%,#0b1c22);border-block:1px solid #5e7c774f}
+.frontier-operation-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.frontier-operation{position:relative;display:flex;flex-direction:column;min-height:340px;border:1px solid #809d954b;background:linear-gradient(155deg,#1d394087,#0c1a25df 62%),radial-gradient(circle at 78% 15%,#6ca0aa40,transparent 48%);padding:clamp(22px,3vw,34px);transition:border-color .25s,background .25s,transform .25s}
+.frontier-operation:hover{border-color:#deb78b;transform:translateY(-3px)}
+.frontier-operation:focus-visible{outline:3px solid #ffe4a9;outline-offset:4px}
+.frontier-operation-num{font:650 11px ui-monospace,Consolas,monospace;color:#c8ddda;letter-spacing:.11em}
+.frontier-operation-status{font:700 9px ui-monospace,Consolas,monospace;color:#d4b988;border:1px solid #d4b9886b;padding:7px 9px;letter-spacing:.08em;align-self:start;margin-top:14px}
+.frontier-operation h3{font:normal clamp(30px,3vw,44px)/1.12 Georgia,serif;letter-spacing:-.04em;margin:auto 0 10px}
+.frontier-operation p{font-size:14px;line-height:1.7;color:#bfcecb;margin:0 0 25px}
+.frontier-operation-action{font-size:11px;color:#edcb94;letter-spacing:.07em;font-weight:750;border-top:1px solid #77918b4e;padding-top:15px}
+.frontier-teaser-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:clamp(30px,7vw,115px);align-items:center}
+.frontier-teaser-grid h2{font-size:clamp(43px,5.3vw,73px);line-height:1.04;letter-spacing:-.055em}
+.frontier-teaser-grid>div>p{font-size:16px;line-height:1.8;color:#c6d3d0;max-width:620px}
+.frontier-proof-spec,.frontier-local-record{border:1px solid #9dbaaf77;background:linear-gradient(130deg,#162a32,#0b1820);padding:clamp(22px,3vw,38px);box-shadow:0 20px 65px #0003}
+.frontier-proof-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding-bottom:22px;border-bottom:1px solid #809a944c;font:650 10px ui-monospace,Consolas,monospace;letter-spacing:.1em;color:#b9d0ca}
+.frontier-proof-head span:last-child{color:#e5c08b}
+.frontier-proof-lines{display:grid;gap:0;padding-top:8px}
+.frontier-proof-lines>span{padding:15px 0;border-bottom:1px solid #7b959047;display:flex;flex-wrap:wrap;align-items:baseline;gap:18px}
+.frontier-proof-lines small{font:650 9px ui-monospace,Consolas,monospace;letter-spacing:.12em;color:#c7a876;min-width:110px}
+.frontier-proof-lines strong{font-weight:550;font-size:15px;color:#eff3ed}
+.frontier-proof-spec p{font-size:11px;color:#9eb2ae;line-height:1.6}
+.frontier-founding-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:40px}
+.frontier-founding-inner h2{font-size:clamp(35px,4.3vw,59px);max-width:920px}
+.frontier-founding-inner p{color:#bed1cb;max-width:700px;font-size:15px;line-height:1.75}
+.frontier-recognition-hero{padding-top:95px;padding-bottom:100px;background:linear-gradient(115deg,#071016,#132d35 70%,#0a151e)}
+.frontier-recognition-hero::before{background-image:linear-gradient(90deg,#071219,#0818216e),url("/institute-preview/assets/research-computation-v1.webp");background-size:cover;background-position:center;opacity:.3}
+.frontier-recognition-hero h1{font-size:clamp(51px,6vw,88px);max-width:970px}
+.frontier-caveat{font:650 11px/1.7 ui-monospace,Consolas,monospace!important;color:#e6bd87!important;margin-top:22px!important}
+.frontier-evidence-list{margin:35px 0 0;padding:0;list-style:none;border-top:1px solid #819d974c}
+.frontier-evidence-stage{display:grid;grid-template-columns:55px minmax(0,1fr) auto;gap:clamp(17px,3vw,45px);align-items:start;border-bottom:1px solid #819d974c;padding:30px 0}
+.evidence-step{font:500 24px ui-monospace,Consolas,monospace;color:#d6b889}
+.frontier-evidence-stage h3{font:normal clamp(27px,3vw,42px)/1.12 Georgia,serif;margin:0 0 7px}
+.frontier-evidence-stage p{color:#b8cac6;font-size:14px;line-height:1.65;max-width:760px;margin:0}
+.evidence-stage-status{font:650 10px ui-monospace,Consolas,monospace;letter-spacing:.12em;color:#c9b990;margin-top:8px}
+.frontier-policy-foot{font-size:12px;color:#b3c7c2;line-height:1.7;max-width:850px;margin-top:26px}
+.frontier-local-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(25px,7vw,105px);align-items:center}
+.frontier-local-grid h2{font-size:clamp(44px,5vw,75px)}
+.frontier-local-grid>div:first-child p{font-size:15px;line-height:1.8;color:#c6d3ce;max-width:530px}
+.frontier-evidence-total{display:block;font:500 clamp(64px,7vw,110px)/1.2 Georgia,serif;color:#e5bd84;margin-top:20px}
+.frontier-local-record>p{color:#bdd0cb;font-size:13px}
+.frontier-local-record ul{list-style:none;padding:0;margin:28px 0 16px}
+.frontier-local-record li{padding:10px 10px 10px 26px;border-bottom:1px solid #6c878044;position:relative;font-size:12px;color:#b0c3bc}
+.frontier-local-record li::before{content:"○";position:absolute;left:2px;color:#8da8a1}
+.frontier-local-record li[data-evidence-state="complete"]{color:#dceee2}
+.frontier-local-record li[data-evidence-state="complete"]::before{content:"●";color:#c7b182}
+.frontier-evidence-note{font-size:10px!important;color:#9daea9!important;line-height:1.65}
+@media(max-width:920px){.frontier-manifesto-grid,.frontier-teaser-grid,.frontier-local-grid{grid-template-columns:1fr;gap:25px}.frontier-operation-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.frontier-founding-inner{grid-template-columns:1fr;gap:15px}.frontier-manifesto-copy{padding-top:0}}
+@media(max-width:750px){.frontier-hero{min-height:675px}.frontier-hero-inner{padding-block:92px 100px}.frontier-index{display:block}.frontier-index span{display:block;margin-top:6px}.frontier-hero .hero-lead{font-size:14px}.frontier-hero h1{font-size:clamp(47px,9vw,74px);margin-block:21px 24px}.frontier-art{background-position:59% 50%;filter:brightness(.78) saturate(.82)}.frontier-coordinate{right:5%;bottom:15px}.frontier-operations .section,.frontier-manifesto,.frontier-recognition-teaser,.frontier-founding{padding-block:55px}}
+@media(max-width:560px){.frontier-operation-grid{grid-template-columns:1fr}.frontier-operation{min-height:260px}.frontier-operation h3{margin-top:55px}.frontier-hero{min-height:710px}.frontier-hero .hero-actions .btn{width:100%}.frontier-hero-inner{padding-top:75px;padding-bottom:105px}.frontier-coordinate{display:none}.frontier-manifesto h2,.frontier-teaser-grid h2{font-size:clamp(42px,10vw,55px)}.frontier-evidence-stage{grid-template-columns:40px 1fr}.evidence-stage-status{grid-column:2;margin-top:0}.frontier-proof-head{font-size:9px}.frontier-recognition-hero{padding-block:53px 63px}}
+@media(prefers-reduced-motion:reduce){.frontier-atmosphere{animation:none!important;transform:none!important}.frontier-operation{transition:none!important}.frontier-operation:hover{transform:none!important}}
+
 @media(prefers-reduced-motion:reduce){.space-card::before,.btn{transition:none!important;transform:none!important}}
 
 `;
