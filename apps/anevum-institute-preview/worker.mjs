@@ -186,7 +186,7 @@ function lab(){
 const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/laboratory/and-gate",lab]]);
 
 const ASSETS=new Map([
-  [BASE+"/curriculum/cfp-101.json",["application/json; charset=utf-8",JSON.stringify(CFP_101,null,2)+"\\n"]],
+  [BASE+"/curriculum/cfp-101.json",["application/json; charset=utf-8",JSON.stringify(CFP_101,null,2)+"\n"]],
   [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS]],
   [BASE+"/client.js",["text/javascript; charset=utf-8",INSTITUTE_CLIENT]],
   [BASE+"/mark.svg",["image/svg+xml; charset=utf-8",ANEVUM_MARK_SVG]],
