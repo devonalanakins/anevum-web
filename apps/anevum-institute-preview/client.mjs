@@ -44,6 +44,7 @@ export const INSTITUTE_CLIENT = String.raw`
   if(lab){
     var a=false,b=false;
     var visited=new Set();
+    var observations=[];
     var inputs=[].slice.call(lab.querySelectorAll("[data-input]"));
     var output=lab.querySelector("[data-output]");
     var aMark=lab.querySelector("[data-a-mark]");
@@ -51,10 +52,14 @@ export const INSTITUTE_CLIENT = String.raw`
     var progress=lab.querySelector("[data-lab-progress]");
     var meter=lab.querySelector("[data-lab-meter]");
     var note=lab.querySelector("[data-observation]");
+    var exportNotice=lab.querySelector("[data-export-status]");
     function render(){
       var result=a&&b?1:0;
       var bits=Number(a)+""+Number(b);
-      visited.add(bits);
+      if(!visited.has(bits)){
+        visited.add(bits);
+        observations.push({inputA:Number(a),inputB:Number(b),outputQ:result});
+      }
       inputs.forEach(function(el){
         var active=el.getAttribute("data-input")==="a"?a:b;
         el.setAttribute("aria-pressed",active?"true":"false");
@@ -83,7 +88,37 @@ export const INSTITUTE_CLIENT = String.raw`
       });
     });
     var reset=lab.querySelector("[data-reset]");
-    if(reset)reset.addEventListener("click",function(){a=false;b=false;visited=new Set();render();});
+    if(reset)reset.addEventListener("click",function(){
+      a=false;b=false;visited=new Set();observations=[];render();
+      if(exportNotice)exportNotice.textContent="Notebook reset. Only the initial 00 observation remains.";
+    });
+    var exporter=lab.querySelector("[data-export]");
+    if(exporter)exporter.addEventListener("click",function(){
+      // Exact values are simulated Boolean outputs, never physical measurements.
+      var record={
+        schemaVersion:1,
+        experimentId:"CFP-101-AND-001",
+        model:"ideal-two-input-boolean-and",
+        modelDefinition:"Q = A AND B",
+        provenance:"ANEVUM Open Institute design preview; generated in this browser session",
+        limitations:"Ideal logical states only; no analog voltage, propagation delay, transistor physics or uncertainty is modeled.",
+        observations:observations.map(function(row){return {
+          inputA:row.inputA,inputB:row.inputB,outputQ:row.outputQ
+        };}),
+        coverage:{observed:observations.length,possible:4,complete:observations.length===4}
+      };
+      var file=new Blob([JSON.stringify(record,null,2)+"\n"],{type:"application/json"});
+      var url=URL.createObjectURL(file);
+      var anchor=document.createElement("a");
+      anchor.href=url;
+      anchor.download="anevum-cfp101-and-001.json";
+      anchor.hidden=true;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(function(){URL.revokeObjectURL(url);},5000);
+      if(exportNotice)exportNotice.textContent="Download requested for "+observations.length+" simulated observation"+(observations.length===1?"":"s")+". Check browser download permissions if no file appears.";
+    });
     render();
   }
   updateStatus();
