@@ -38,4 +38,170 @@ img{max-width:100%;height:auto}.skip{position:absolute;left:16px;top:-90px;z-ind
 @media(max-width:470px){.space-grid{grid-template-columns:1fr}.space-card{min-height:235px}.rail-inner{display:grid;grid-template-columns:1fr 1fr}.hero h1{font-size:45px}.hero-lead{font-size:14px}.btn{width:100%}.course-card{padding:20px;display:block}.course-card h3{font-size:32px}.section{padding-block:44px}.lesson-article h2{font-size:33px}.lesson-article p{font-size:15px}.quiz,.panel{padding:18px}.data-table th,.data-table td{padding:10px 6px}.lab-layout{gap:13px}.site-main{overflow-wrap:anywhere}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
 @media(forced-colors:active){.btn,.answer,.switch,.space-card,.unit{border:1px solid ButtonText}.indicator{border:2px solid CanvasText}}
+
+
+/* ANEVUM OPEN APERTURE / AURORA SYSTEM — brand revision, 2026-11-17.
+   Deliberately additive over the v1 preview so that original route/test contracts remain intact. */
+:root{--bg:#071016;--ink:#f2eee6;--muted:#b6c6c6;--gold:#d9b17a;--gold-deep:#99764b;--sage:#95b9ab;--teal:#315d61;--surface:#101e28;--surface2:#20323b;--paper:#f4f1e8;--max:1510px;letter-spacing:-.008em}
+body{background:radial-gradient(ellipse at 85% 6%,#12303b 0,transparent 42%),linear-gradient(180deg,#08151a,#061018 66%,#09131b);font-family:Inter,"Helvetica Neue",ui-sans-serif,system-ui,sans-serif}
+.mast{background:#071219ed;border-bottom:1px solid #d3b88b2c;box-shadow:0 15px 30px #03101822}
+.mast-inner{min-height:86px;gap:22px}
+.identity{gap:15px}.identity-mark{display:block;width:59px;height:59px;object-fit:contain;border:0;border-radius:0;box-shadow:none;padding:3px;filter:drop-shadow(0 0 15px #e2b77b33)}
+.identity-text{font:normal clamp(20px,2vw,27px)/1.05 Georgia,"Times New Roman",serif;letter-spacing:.25em}
+.identity-caption{font-size:8px;letter-spacing:.32em;color:#a8bcb5}
+.desk-nav{gap:clamp(18px,2.4vw,40px)}.desk-nav a,.nav-menu a{font-size:11px;letter-spacing:.08em;text-transform:none;font-weight:650;padding:14px 0;color:#b8c6c7}
+.desk-nav a[aria-current=page]{color:#f1d4a3;border-bottom:2px solid var(--gold)}.desk-nav a:hover{color:#f4e7d4}
+.mast-meta{border:0;border-left:1px solid #ae966b88;padding:12px 0 12px 18px;color:#a9b5b3;text-transform:uppercase;letter-spacing:.14em}
+.mast-action{display:inline-flex;align-items:center;justify-content:center;gap:11px;background:#d9b17a;color:#101d23;min-height:40px;padding:0 19px;font-weight:800;font-size:11px;white-space:nowrap;border:1px solid #d9b17a}
+.mast-action:hover{background:#f2d3a0;color:#071018}
+.mobile-menu summary{border:1px solid #bfa5779c;border-radius:7px;min-width:76px;text-align:center;color:#f0e2cd}
+.nav-menu{border:1px solid #d3b88b5c;background:#0c1a24f5;border-radius:9px}
+.nav-menu a{font-size:14px;min-height:44px}
+.preview-ribbon{position:relative;z-index:5;border-bottom:1px solid #ab926047;background:#121d25;color:#c6d2cd;text-align:center;font-size:10px;letter-spacing:.08em;padding:8px 18px}
+.preview-ribbon strong{color:#e8c591;font-weight:700}
+.kicker{font-size:10px;color:#e2b882;letter-spacing:.21em}
+.serif{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.049em}
+.serif em{font-weight:400;color:#ebc58d}
+.hero{min-height:720px;background:#091820;isolation:isolate}
+.hero::before{z-index:-2;inset:0;background:url("/institute-preview/observatory.svg") right 50% center/cover no-repeat;opacity:1;filter:contrast(1.06) saturate(1.09)}
+.hero::after{z-index:-1;inset:0;background:linear-gradient(90deg,#061018 0%,#061018f2 22%,#081820d4 38%,#07161e8a 55%,#07161e26 78%,#0a151d24),linear-gradient(0deg,#061118 0%,transparent 24%,transparent 73%,#0a17202e)}
+.hero-inner{padding-top:143px;padding-bottom:130px}
+.hero .kicker{display:inline-flex;align-items:center;gap:15px;letter-spacing:.23em}
+.hero .kicker::before{content:"";width:25px;height:1px;background:#d4b27f}
+.hero h1{font-size:clamp(61px,7.2vw,108px);line-height:.98;max-width:760px;margin:28px 0 26px;letter-spacing:-.058em;text-wrap:balance;text-shadow:0 10px 35px #0008}
+.hero-lead{font-size:16px;line-height:1.8;max-width:515px;color:#d7e0dd}
+.hero-actions{margin-top:36px;gap:16px}
+.btn{border-radius:6px;border-color:#d6b07a;background:linear-gradient(135deg,#ebcb96,#ce9f61);min-height:54px;padding:14px 23px;color:#101819;letter-spacing:.105em;font-size:11px;box-shadow:0 9px 30px #020b0f33}
+.btn.ghost{background:#07161edc;color:#e5d3bb;border-color:#bdab8a91}
+.btn:hover{box-shadow:0 12px 34px #020b0f5c;transform:translateY(-2px)}
+.btn:focus-visible,.mast-action:focus-visible{outline:3px solid #fff4d8;outline-offset:3px}
+.hero .truth{font-size:11px;color:#b1c4bf;margin-top:22px}
+.hero-stamp{position:absolute;right:5%;bottom:23px;z-index:2;font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.16em;color:#d5bf92e6;text-align:right;text-transform:uppercase}
+.hero-stamp span{display:block;color:#c0cbc8;letter-spacing:.09em;font-size:10px;margin-top:6px}
+.hero-rail{background:#0d1b24;border-color:#c9b68b35}.rail-inner{padding-block:23px;gap:13px}.rail-inner span{font-size:11px;font-weight:650;color:#a9c0bc}.rail-inner strong{color:#d6ae79;font-family:Georgia,serif;font-size:18px;font-weight:normal;margin-right:10px}
+.section{padding-block:91px}
+.section-head .section-lead{line-height:1.8}
+.section h2{letter-spacing:-.047em}
+.space-grid{gap:16px}
+.space-card{border-radius:11px;min-height:350px;padding:27px;border:1px solid #80989e5a;background:#122733;box-shadow:0 15px 45px #030b112e}
+.space-card::before{opacity:.82;transition:opacity .25s,transform .45s}
+.space-card::after{background:linear-gradient(0deg,#071318 0%,#07131bea 30%,#08182635 100%)}
+.space-card h3{font-size:37px;letter-spacing:-.03em}
+.space-card p{font-size:13px;color:#d4e0dc}
+.space-card.library::before{background-image:url("/institute-preview/assets/lab-archive-v1.webp")}
+.space-card.lab::before{background-image:url("/institute-preview/assets/research-generation-v1.webp")}
+.space-card.research::before{background-image:url("/institute-preview/assets/research-computation-v1.webp")}
+.space-card.commons::before{background-image:url("/institute-preview/assets/research-worlds-v1.webp")}
+.space-status{font-size:10px;color:#e6bd84;margin-top:23px}
+.space-card:not(a){border-style:dashed;border-color:#70888b60}
+.course-feature{border-radius:13px;border-color:#bba37e80;background:linear-gradient(110deg,#172a33,#0f242d);min-height:340px}
+.course-feature::after{background:linear-gradient(90deg,#10242c 0%,transparent 64%),url("/institute-preview/assets/rhen-generative-v1.webp") center/cover no-repeat;opacity:.62}
+.course-feature-copy{padding:49px}
+.course-feature-copy h3{font-size:clamp(36px,3.5vw,54px);letter-spacing:-.032em}
+.course-feature-copy p{font-size:14px;max-width:610px;color:#d0d9d6}
+.course-steps li{color:#c5d9d6}
+.page-hero{background:linear-gradient(112deg,#08151e,#132c35);padding-top:96px;padding-bottom:102px}
+.page-hero::before{background:url("/institute-preview/observatory.svg") 65% 36%/cover no-repeat;opacity:.21;inset:0}
+.page-hero h1{font-size:clamp(48px,5.8vw,86px)}
+.page-hero p{color:#c7d9d5}
+.crumb{font-weight:750;color:#dab982}
+.catalog-layout{grid-template-columns:minmax(250px,285px) minmax(0,1fr);gap:20px}
+.aside-panel,.lesson-sidebar,.panel{background:linear-gradient(155deg,#14242c,#102029);border:1px solid #829d9d50;border-radius:11px;box-shadow:0 20px 45px #010a101c}
+.aside-panel h2{font-size:28px}
+.course-card{border-radius:12px;border-color:#bca98290;background:linear-gradient(120deg,#1a3038,#15252f);padding:36px;box-shadow:0 12px 30px #040f1526}
+.course-card h3{font-size:clamp(30px,3.6vw,52px);letter-spacing:-.04em}
+.course-card p{font-size:14px;line-height:1.8;color:#cbdbd8}
+.placeholder{border-radius:10px;border-color:#91a8a957}
+.program-grid{gap:17px}
+.unit{border-radius:10px;background:#13252e;border-color:#92a09c4e;padding:26px}
+.unit.current{background:linear-gradient(105deg,#20343b,#1d2c35);border-color:#d8b581}
+.unit .index{font-size:31px}
+.unit h3{font-size:17px}
+.unit p{font-size:13px}
+.unit a{color:#ebca97}
+.lesson-layout{grid-template-columns:235px minmax(0,1fr);align-items:start;gap:24px}
+.lesson-article{background:#f4f1e8;color:#1d3035;border-radius:12px;padding:clamp(27px,4.6vw,68px);max-width:none;border:1px solid #dfd3bb;box-shadow:0 26px 65px #020a1035}
+.lesson-article h2{font-size:clamp(34px,3vw,45px);color:#1b3037}
+.lesson-article h3{color:#1b3037}
+.lesson-article p{color:#34494a;font-size:16px}
+.lesson-article ul{color:#34494a}
+.lesson-article .kicker{color:#86633e}
+.lesson-article .callout{background:#e9e4d8;color:#283e3d;border-color:#987850;border-radius:0 9px 9px 0}
+.lesson-article .callout p{color:#34494a}
+.lesson-article .mathline{color:#2d5759!important;font-weight:650}
+.lesson-article .logic-box{background:radial-gradient(ellipse at 60% 40%,#1d3b45,#0c1a22 72%);border:1px solid #a8c4be5c;border-radius:12px}
+.lesson-article .data-table th{background:#dcd6c6;color:#34494a}
+.lesson-article .data-table td{border-color:#34494a38;color:#293b3b}
+.lesson-sidebar{order:-1;top:24px}
+.lesson-sidebar h2{font-size:27px}
+.lesson-sidebar li{margin-block:4px}
+.lesson-sidebar a{color:#dbe8de}
+.quiz{background:#eae4d6;border:1px solid #c6bba4;border-radius:11px}
+.quiz h3{color:#20383b}
+.quiz .answer{background:#f6f2e9;color:#1a333b;border-color:#8d9f9a;border-radius:6px}
+.quiz .answer:hover{border-color:#ad7e43;background:#fffaf0}
+.quiz .answer.selected{background:#e0dbc8;border-color:#9a6b3c}
+.quiz .answer.correct{background:#d5e2d8;border-color:#437d65}
+.lesson-article .feedback{color:#355549!important}
+.lesson-article .fine-print{color:#5b6b69!important}
+.lab-layout{grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:19px}
+.panel{padding:31px}
+.panel h2{font-size:33px;letter-spacing:-.03em}
+.panel p{color:#c4d5d3}
+.bench{background:radial-gradient(ellipse at center,#244c51,#0b1b24 70%);border-radius:9px;border:1px solid #63878960}
+.switch{border-radius:7px;border-color:#7095958d;background:#0c202b;font-weight:650}
+.switch:hover{border-color:#d3b17c}
+.switch[aria-pressed=true]{background:#50422e}
+.readout{border-radius:7px;border-color:#6f999481}
+.readout strong{color:#e6c28a}
+.progress-meter span{background:#b7d0ad}
+.footer{background:#08161e;border-color:#9b957447}
+.footer-brand{font-size:25px}
+.footer p{color:#aebebc}
+.preview-flag{color:#d6b27d}
+@media(max-width:1300px){.desk-nav{gap:16px}.mast-action{padding:0 14px}}
+@media(max-width:1100px){.mast-action{margin-left:auto}.mast-meta{display:none}.lesson-layout{grid-template-columns:220px minmax(0,1fr)}}
+@media(max-width:750px){
+ .mast-inner{min-height:77px}
+ .identity-mark{width:45px;height:45px}
+ .identity-text{font-size:22px}.identity-caption{letter-spacing:.25em}
+ .mast-action{display:none}.nav-menu{top:75px}
+ .hero{min-height:660px}.hero::before{inset:0;background-position:58% center;opacity:.8}
+ .hero::after{background:linear-gradient(90deg,#061018f7 0%,#061118d9 50%,#05101899),linear-gradient(0deg,#061118 0%,transparent 42%)}
+ .hero-inner{padding-top:92px;padding-bottom:100px}
+ .hero h1{font-size:clamp(51px,10vw,79px);line-height:1.02;max-width:550px}
+ .hero-lead{max-width:450px;font-size:15px}
+ .hero-stamp{right:5%;bottom:14px;font-size:8px}
+ .section{padding-block:60px}
+ .space-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .space-card{min-height:295px}
+ .course-feature-copy{padding:31px}
+ .page-hero{padding-top:59px;padding-bottom:64px}
+ .lesson-layout{grid-template-columns:1fr}
+ .lesson-sidebar{order:0;position:static}
+ .lesson-article{padding:clamp(25px,5vw,45px)}
+ .lab-layout{grid-template-columns:1fr}
+}
+@media(max-width:470px){
+ .hero{min-height:690px}
+ .hero h1{font-size:clamp(46px,11vw,58px)}
+ .hero-lead{font-size:14px}
+ .hero .kicker{font-size:9px;letter-spacing:.15em}
+ .hero .kicker::before{width:12px}
+ .hero-actions .btn{width:100%}
+ .hero-stamp{display:none}
+ .rail-inner{grid-template-columns:1fr 1fr}
+ .space-grid{grid-template-columns:1fr}
+ .space-card{min-height:245px}
+ .course-feature-copy{padding:23px}
+ .course-feature-copy h3{font-size:34px}
+ .page-hero h1{font-size:46px}
+ .lesson-article{padding:25px 20px}
+ .lesson-article h2{font-size:32px}
+ .lesson-article p{font-size:15px}
+ .panel{padding:22px}
+ .footer{padding-block:32px}
+}
+@media(prefers-reduced-motion:reduce){.space-card::before,.btn{transition:none!important;transform:none!important}}
+
 `;
