@@ -56,6 +56,99 @@ export const INSTITUTE_CLIENT = String.raw`
     });
     renderInverter();
   }
+  // Personal study notes are device-only and scoped to a versioned lesson ID.
+  document.querySelectorAll("[data-study-lesson]").forEach(function(panel){
+    var unitId=panel.getAttribute("data-study-lesson");
+    if(!/^CFP-101-U0[12]$/.test(unitId||""))return;
+    var key="anevum.institute.study.v1."+unitId;
+    var textarea=panel.querySelector("[data-study-text]");
+    var feedback=panel.querySelector("[data-study-status]");
+    var bookmark=panel.querySelector("[data-study-bookmark]");
+    var saveButton=panel.querySelector("[data-study-save]");
+    var exportButton=panel.querySelector("[data-study-download]");
+    var deleteButton=panel.querySelector("[data-study-clear]");
+    var pendingDeletion=false;
+    function report(message){if(feedback)feedback.textContent=message;}
+    function readNotes(){
+      try{
+        var raw=localStorage.getItem(key);
+        if(!raw)return {available:true,note:"",bookmark:false};
+        var data=JSON.parse(raw);
+        if(!data||typeof data!=="object"||Array.isArray(data))return {available:true,note:"",bookmark:false};
+        return {available:true,note:typeof data.note==="string"?data.note.slice(0,8000):"",bookmark:data.bookmark===true};
+      }catch(_){return {available:false,note:"",bookmark:false};}
+    }
+    function writeNotes(note,bookmarked){
+      try{
+        localStorage.setItem(key,JSON.stringify({version:1,note:note.slice(0,8000),bookmark:bookmarked}));
+        return true;
+      }catch(_){return false;}
+    }
+    function setBookmark(active){
+      bookmark.setAttribute("aria-pressed",active?"true":"false");
+      bookmark.textContent=active?"Bookmarked on this device":"Bookmark this lesson";
+    }
+    function resetDelete(){
+      pendingDeletion=false;
+      if(deleteButton)deleteButton.textContent="Delete saved notes";
+    }
+    var initial=readNotes();
+    if(textarea)textarea.value=initial.note;
+    if(bookmark)setBookmark(initial.bookmark);
+    report(initial.available?(initial.note||initial.bookmark?"Saved study notes loaded from this browser.":"No saved notes for this lesson."):"Browser storage is unavailable. Export your notes to keep a copy.");
+    if(saveButton)saveButton.addEventListener("click",function(){
+      resetDelete();
+      var current=textarea?textarea.value.slice(0,8000):"";
+      var starred=bookmark&&bookmark.getAttribute("aria-pressed")==="true";
+      report(writeNotes(current,!!starred)?"Notes saved in this browser profile.":"Save failed: browser storage unavailable. Use Export .txt instead.");
+    });
+    if(bookmark)bookmark.addEventListener("click",function(){
+      resetDelete();
+      var next=bookmark.getAttribute("aria-pressed")!=="true";
+      var saved=readNotes();
+      if(writeNotes(saved.note,next)){
+        setBookmark(next);
+        report(next?"Lesson bookmarked in this browser.":"Lesson bookmark removed from this browser.");
+      }else{
+        report("Bookmark could not be saved. Browser storage may be unavailable.");
+      }
+    });
+    if(exportButton)exportButton.addEventListener("click",function(){
+      resetDelete();
+      var content="ANEVUM Open Institute / "+unitId+" / Personal study notes\n"+
+        "Browser-local export; not an institutional transcript.\n\n"+
+        (textarea?textarea.value.slice(0,8000):"")+"\n";
+      var file=new Blob([content],{type:"text/plain;charset=utf-8"});
+      var url=URL.createObjectURL(file);
+      var link=document.createElement("a");
+      link.href=url;
+      link.download=panel.getAttribute("data-study-filename")||"anevum-study-notes.txt";
+      link.hidden=true;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function(){URL.revokeObjectURL(url);},5000);
+      report("Text export requested. Check browser download permissions if the file does not appear.");
+    });
+    if(deleteButton)deleteButton.addEventListener("click",function(){
+      if(!pendingDeletion){
+        pendingDeletion=true;
+        deleteButton.textContent="Confirm deletion";
+        report("Select Confirm deletion to remove this lesson's saved notes and bookmark from this browser.");
+        return;
+      }
+      try{
+        localStorage.removeItem(key);
+        if(textarea)textarea.value="";
+        if(bookmark)setBookmark(false);
+        resetDelete();
+        report("Saved notes and bookmark deleted from this browser profile.");
+      }catch(_){
+        resetDelete();
+        report("Deletion could not be confirmed; browser storage is unavailable.");
+      }
+    });
+  });
   var answers=[].slice.call(document.querySelectorAll("[data-answer]"));
   if(answers.length){
     var feedback=document.getElementById("answer-feedback");
