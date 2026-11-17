@@ -83,7 +83,7 @@ async function testPage(pathname,label,width,height){
   verify(link,"Skip link cannot receive keyboard focus",{label,width});
   if((width===390||width===1440)){
     await screenshot(label+"-"+width);
-    if(label==="home"||label==="laboratory")await screenshot(label+"-"+width+"-full",true);
+    if(label==="home"||label==="laboratory"||label==="lesson"||label==="transistor")await screenshot(label+"-"+width+"-full",true);
   }
   console.log("INSTITUTE_PAGE_QA_PASS",label,width,state.heading);
 }
@@ -110,6 +110,24 @@ async function interactions(){
   verify(assets.every(x=>x.width>100),"Same-origin artwork failed to decode",assets);
   const identityArt=await evaluate("Promise.all(['/institute-preview/mark.svg','/institute-preview/observatory.svg'].map(async url=>{const image=new Image();image.src=url;try{await image.decode();return {url,width:image.naturalWidth}}catch(error){return {url,width:0,error:String(error)}}}))");
   verify(identityArt.length===2&&identityArt[0].width===160&&identityArt[1].width===1600,"New SVG artwork does not decode",identityArt);
+  // Notes are scoped to a lesson and must survive navigation without leaking to others.
+  await navigate("/institute-preview/learn/cfp-101/transistor-switching");
+  const notesSaved=await evaluate("(()=>{const root=document.querySelector('[data-study-lesson]');const text=root.querySelector('[data-study-text]');text.value='Input high enables nMOS; in the ideal model Q=0.';root.querySelector('[data-study-save]').click();root.querySelector('[data-study-bookmark]').click();return {key:root.getAttribute('data-study-lesson'),note:JSON.parse(localStorage.getItem('anevum.institute.study.v1.CFP-101-U01')).note,bookmark:root.querySelector('[data-study-bookmark]').getAttribute('aria-pressed'),status:root.querySelector('[data-study-status]').textContent};})()");
+  verify(notesSaved.key==="CFP-101-U01"&&notesSaved.note.includes("nMOS")&&notesSaved.bookmark==="true"&&notesSaved.status.includes("bookmarked"),"Notebook save/bookmark did not persist",notesSaved);
+  await navigate("/institute-preview/learn/cfp-101/logic-gates");
+  const notesIsolation=await evaluate("(()=>({value:document.querySelector('[data-study-text]').value,key:document.querySelector('[data-study-lesson]').getAttribute('data-study-lesson'),stored:localStorage.getItem('anevum.institute.study.v1.CFP-101-U02')}))()");
+  verify(notesIsolation.key==="CFP-101-U02"&&notesIsolation.value===""&&notesIsolation.stored===null,"Study notes leaked across lessons",notesIsolation);
+  await navigate("/institute-preview/learn/cfp-101/transistor-switching");
+  const notesReloaded=await evaluate("(()=>({value:document.querySelector('[data-study-text]').value,bookmark:document.querySelector('[data-study-bookmark]').getAttribute('aria-pressed')}))()");
+  verify(notesReloaded.value===notesSaved.note&&notesReloaded.bookmark==="true","Saved notes did not survive a page reload",notesReloaded);
+  const notesExport=await evaluate(`(async()=>{let captured=null,filename="";const old=URL.createObjectURL;const prevent=e=>{if(e.target.matches('a[download]')){filename=e.target.download;e.preventDefault();}};document.addEventListener('click',prevent,true);URL.createObjectURL=blob=>{captured=blob;return 'blob:study-notes-qa';};try{document.querySelector('[data-study-download]').click();return {filename,body:await captured.text(),status:document.querySelector('[data-study-status]').textContent}}finally{URL.createObjectURL=old;document.removeEventListener('click',prevent,true);}})()`);
+  verify(notesExport.filename==="anevum-cfp101-u01-notes.txt"&&notesExport.body.includes(notesSaved.note)&&notesExport.body.includes("Browser-local export")&&notesExport.status.includes("Text export requested"),"Text notebook export failed",notesExport);
+  const notesDelete=await evaluate("(()=>{const btn=document.querySelector('[data-study-clear]');const key='anevum.institute.study.v1.CFP-101-U01';btn.click();const pending={label:btn.textContent,exists:localStorage.getItem(key)!==null};btn.click();return {pending,stored:localStorage.getItem(key),text:document.querySelector('[data-study-text]').value,bookmark:document.querySelector('[data-study-bookmark]').getAttribute('aria-pressed'),status:document.querySelector('[data-study-status]').textContent};})()");
+  verify(notesDelete.pending.label==="Confirm deletion"&&notesDelete.pending.exists&&notesDelete.stored===null&&notesDelete.text===""&&notesDelete.bookmark==="false"&&notesDelete.status.includes("deleted"),"Two-step delete must remove notes only after confirmation",notesDelete);
+  await navigate("/institute-preview/learn/cfp-101/transistor-switching");
+  const notesEmpty=await evaluate("(()=>({value:document.querySelector('[data-study-text]').value,bookmark:document.querySelector('[data-study-bookmark]').getAttribute('aria-pressed')}))()");
+  verify(notesEmpty.value===""&&notesEmpty.bookmark==="false","Deleted notes unexpectedly reappeared",notesEmpty);
+  console.log("INSTITUTE_STUDY_NOTES_QA_PASS",JSON.stringify({saved:notesSaved,isolated:notesIsolation.key,exportFilename:notesExport.filename,deleted:notesDelete.stored===null}));
   console.log("INSTITUTE_INTERACTION_QA_PASS",JSON.stringify({inverter,quiz,lab,assets}));
 }
 try{
