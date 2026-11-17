@@ -40,7 +40,7 @@ function layout(title,active,body){
 <meta name="description" content="ANEVUM Open Institute design preview: free, self-directed computing education and a working digital logic experiment.">
 <title>${title} — ANEVUM Open Institute (Design Preview)</title>
 <link rel="stylesheet" href="${BASE}/styles.css"><script defer src="${BASE}/client.js"></script>
-</head><body>${navigation(active)}<div class="preview-ribbon"><strong>Design review:</strong> ANEVUM is an independent, non-accredited open education project. Only the first lesson and experiment are implemented.</div>${body}${footer()}</body></html>`;
+</head><body data-area="${active.toLowerCase()}">${navigation(active)}<div class="preview-ribbon"><strong>Design review:</strong> ANEVUM is an independent, non-accredited open education project. Only the first lesson and experiment are implemented.</div>${body}${footer()}</body></html>`;
 }
 
 function home(){
