@@ -7,6 +7,7 @@ import {INSTITUTE_CSS} from "./styles.mjs";
 import {INSTITUTE_CLIENT} from "./client.mjs";
 import {TRANSISTOR_LESSON_HTML} from "./transistor-lesson.mjs";
 import {CFP_101} from "./curriculum.mjs";
+import {studyToolsHtml} from "./study-tools.mjs";
 import {ANEVUM_MARK_SVG, ANEVUM_OBSERVATORY_SVG} from "./artwork.mjs";
 import {LAB_ART} from "../anevum-public-studio/living-laboratory-art.mjs";
 
@@ -105,7 +106,7 @@ function program(){
 }
 
 function transistorLesson(){
-  return layout("Lesson — Transistor Switching","Classroom",TRANSISTOR_LESSON_HTML);
+  return layout("Lesson — Transistor Switching","Classroom",TRANSISTOR_LESSON_HTML.replace("</article>",studyToolsHtml("CFP-101-U01")+"</article>"));
 }
 
 function gateFigure(){
@@ -151,6 +152,7 @@ function lesson(){
       </div>
       <h2 id="next">5. Verify it yourself</h2><p>In the laboratory, you will change both inputs, observe the output, and reproduce all four truth-table rows. This is an ideal Boolean model, not a transistor-level SPICE simulation.</p>
       <a class="btn" href="${BASE}/laboratory/and-gate">Open AND-gate experiment →</a>
+      ${studyToolsHtml("CFP-101-U02")}
     </article>
     <aside class="lesson-sidebar" aria-label="Lesson index"><div class="kicker">Lesson 02 / Index</div><h2>Inside this lesson</h2><ul><li><a href="#bits">From voltage to a bit</a></li><li><a href="#rule">Boolean definition</a></li><li><a href="#physical">Transistor implementation</a></li><li><a href="#check">Knowledge check</a></li><li><a href="#next">Laboratory exercise</a></li></ul><p>Estimated reading: 7–10 minutes. No account required.</p><p><a href="${BASE}/learn/cfp-101/transistor-switching">← Previous: Transistors</a></p><p><a href="${BASE}/academy/cfp-101">Full course outline ↗</a></p></aside>
    </div></section>
