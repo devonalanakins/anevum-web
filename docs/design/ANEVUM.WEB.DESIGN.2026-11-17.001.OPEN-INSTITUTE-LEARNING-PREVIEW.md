@@ -22,6 +22,7 @@ ANEVUM is described truthfully as an independent, non-accredited open educationa
 | `/institute-preview/learn/cfp-101/transistor-switching` | Introductory transistor/CMOS inverter explanation, interactive ideal inverter, knowledge check and original references |
 | `/institute-preview/learn/cfp-101/logic-gates` | Introduction to Boolean AND, CMOS distinction, truth table, interactive assessment (preserved URL) |
 | `/institute-preview/laboratory/and-gate` | Deterministic two-input model, all four truth-table combinations, reset and feedback |
+| `/institute-preview/curriculum/cfp-101.json` | Portable versioned curriculum manifest: 8 proposed units, 2 currently available lessons, explicit prerequisites and editorial states |
 
 Assets: allowlisted, same-origin `/institute-preview/assets/*.webp` from already-reviewed and versioned `apps/anevum-public-studio/living-laboratory-art.mjs`. Images are visual concepts, not real scientific measurements or evidence.
 
@@ -143,3 +144,13 @@ The eight-unit syllabus now begins with **semiconductors and transistor switchin
 **Lesson 02** retains the `logic-gates` URL and its AND-gate assessment; the lab retains exact Boolean outcomes and offline JSON notebook export. In the device-only preview, the existing `anevum.institute.cfp101.preview.v1` localStorage key is retained and extended with a third Boolean flag (`transistor`), preserving previously recorded `lesson` and `experiment` values. All three activities remain independent; there are no grades, enrollment or server-side records.
 
 **Verification scope:** source parse, six preview routes × five viewport widths, inverter high/low simulation and assessment, AND-gate all four states, JSON export/reset, preservation of prior URLs, no horizontal overflow, keyboard/nav controls, noindex/CSP and fail-closed origin/method/route behavior. Formal subject-matter editorial review, external content-license review, iPhone Safari, self-hosting, persistence and production integration remain required before release. No production or Cloudflare changes are made in this draft.
+
+## Source-controlled curriculum manifest v5 — review-only, 2026-11-17
+
+Session: `ANEVUM.WEB.BUILD.2026-11-17.003.OPEN-INSTITUTE-FULL-IMPLEMENTATION`.
+
+`apps/anevum-institute-preview/curriculum.mjs` now owns a single versioned CFP-101 curriculum metadata model (`schemaVersion=1`, `version=0.2.0`, `editorialStatus=draft`, `status=preview`, `accreditation=none`). Its eight units have stable IDs, sequential indices, availability, lesson-path ownership and prerequisite dependencies. The syllabus view is rendered from this data instead of a second hardcoded unit list. The Worker additionally serves the exact, allowlisted path `/institute-preview/curriculum/cfp-101.json` as an offline-readable/downloadable JSON representation with the existing CSP/noindex/HEAD restrictions.
+
+`validateCurriculum` checks course identity/version, unit count, sequence, unique IDs and paths, prereqs referring only to earlier units, and fail-closed lesson availability. The CI must test negative records: unlinked preview lesson, forward prerequisite, duplicate URL and missing unit ID.
+
+This establishes **only a portable metadata foundation**. It is not a complete education engine, course authoring interface, production route, enrollment system, or self-hosting acceptance. Missing lesson bodies and unreviewed content must remain unavailable until independently validated.
