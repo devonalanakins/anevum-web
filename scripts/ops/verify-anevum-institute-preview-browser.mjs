@@ -66,6 +66,14 @@ async function testPage(pathname,label,width,height){
   verify(state.robots.includes("noindex")&&state.scriptCount===1,"Unexpected indexing or scripts",{label,width,state});
   verify(state.width>=width-20&&state.width<=width&&state.scrollWidth<=state.width+1&&state.bodyWidth<=state.width+1,"Horizontal overflow",{label,width,state});
   verify((width<=1100)===state.mobileVisible,"Wrong mobile navigation breakpoint",{label,width,state});
+  if(label==="academy"&&width===390){
+    const layout=await evaluate("(()=>({courseTop:document.querySelector('.course-card')?.getBoundingClientRect().top,schoolsTop:document.querySelector('.catalog-layout>.aside-panel')?.getBoundingClientRect().top}))()");
+    verify(layout.courseTop<layout.schoolsTop&&layout.courseTop<height,"Mobile Academy must show the published learning opportunity before planned schools",{width,layout});
+  }
+  if((label==="lesson"||label==="laboratory")&&(width===390||width===1440)){
+    const workTop=await evaluate("(()=>{const el=document.querySelector('.lesson-article')||document.querySelector('[data-and-lab]');return el?.getBoundingClientRect().top??9999})()");
+    verify(workTop<height-30,"Study task is pushed below the initial viewport",{label,width,height,workTop});
+  }
   if(width===390){
     const opened=await evaluate("(()=>{const menu=document.querySelector('details.mobile-menu');menu.querySelector('summary').click();const opened=menu.open;menu.querySelector('summary').click();return opened&&!menu.open;})()");
     verify(opened,"Mobile menu does not open and close",{label,width});
