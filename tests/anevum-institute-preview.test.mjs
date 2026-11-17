@@ -66,7 +66,7 @@ test("logic laboratory exposes four correct truth-table rows and accessible cont
   const html=await(await req("/laboratory/and-gate")).text();
   const rows=[...html.matchAll(/<tr data-bits="([01]{2})"><td>([01])<\/td><td>([01])<\/td><td>([01])<\/td><\/tr>/g)];
   assert.deepEqual(rows.map(m=>[m[1],Number(m[2]),Number(m[3]),Number(m[4])]),[
-    ["00",0,0,0],["01",0,1,0],["10",1,0],["11",1,1]
+    ["00",0,0,0],["01",0,1,0],["10",1,0,0],["11",1,1,1]
   ]);
   assert.match(html,/data-and-lab/);
   assert.match(html,/data-input="a" aria-pressed="false"/);
