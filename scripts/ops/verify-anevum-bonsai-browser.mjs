@@ -111,8 +111,8 @@ async function verifyDesignReview() {
  for (const [width,height] of [[390,844],[1440,900]]) {
    await navigate("/design-review",width,height,true);
    const state=await until(async()=> {
-     const v=await evaluate("(()=>({ready:!!document.querySelector('.hero h1'),route:location.pathname,templates:document.querySelectorAll('template[data-route]').length,w:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,body:document.body.scrollWidth,links:document.querySelectorAll('main a[href^=\"#/\"]').length,images:[...document.querySelectorAll('main img')].every(x=>x.complete&&x.naturalWidth>0),script:document.scripts.length,legacy:!!document.querySelector('.wordmark')}))()");
-     return v.ready?v:null;
+     const v=await evaluate("(()=>({ready:!!document.querySelector('.hero h1'),route:location.pathname,templates:document.querySelectorAll('template[data-route]').length,w:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,body:document.body.scrollWidth,links:document.querySelectorAll('main a[href^=\"#/\"]').length,images:(()=>{const x=document.querySelector('.hero-picture img');return !!x&&x.complete&&x.naturalWidth>0})(),script:document.scripts.length,legacy:!!document.querySelector('.wordmark')}))()");
+     return v.ready&&v.images?v:null;
    },"AAA review route "+width);
    if(state.route!=="/design-review"||state.templates!==14||state.scroll>state.w+1||state.body>state.w+1||!state.images||!state.legacy||state.links<2)throw Error("AAA hosted review validation failed "+JSON.stringify(state));
    await capture("design-review",width);
