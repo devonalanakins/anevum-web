@@ -107,6 +107,26 @@ async function interactions() {
  console.log("BONSAI_BROWSER_INTERACTIONS_PASS");
 }
 
+async function verifyDesignReview() {
+ for (const [width,height] of [[390,844],[1440,900]]) {
+   await navigate("/design-review",width,height,true);
+   const state=await until(async()=> {
+     const v=await evaluate("(()=>({ready:!!document.querySelector('.hero h1'),route:location.pathname,templates:document.querySelectorAll('template[data-route]').length,w:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,body:document.body.scrollWidth,links:document.querySelectorAll('main a[href^=\"#/\"]').length,images:[...document.querySelectorAll('main img')].every(x=>x.complete&&x.naturalWidth>0),script:document.scripts.length,legacy:!!document.querySelector('.wordmark')}))()");
+     return v.ready?v:null;
+   },"AAA review route "+width);
+   if(state.route!=="/design-review"||state.templates!==14||state.scroll>state.w+1||state.body>state.w+1||!state.images||!state.legacy||state.links<2)throw Error("AAA hosted review validation failed "+JSON.stringify(state));
+   await capture("design-review",width);
+   await evaluate("document.querySelector('main a[href=\"#/collection\"]').click()");
+   const collection=await until(async()=>await evaluate("location.hash==='#/collection'&&!!document.querySelector('.collection-row')"),"AAA collection virtual navigation");
+   if(!collection)throw Error("Design review Collection is not navigable");
+   await evaluate("document.querySelector('.desktop-nav a[href=\"#/atelier\"]').click()");
+   await until(async()=>await evaluate("location.hash==='#/atelier'&&document.querySelectorAll('[data-study]').length===3"),"AAA Atelier virtual navigation");
+   const choice=await evaluate("(()=>{const b=document.querySelector('[data-study=\"shelter\"]');b?.click();return {pressed:b?.getAttribute('aria-pressed'),note:document.querySelector('#study-note')?.textContent}})()");
+   if(choice.pressed!=="true"||!choice.note?.includes("Sheltered contour"))throw Error("AAA Atelier interaction failed "+JSON.stringify(choice));
+   console.log("BONSAI_BROWSER_AAA_DESIGN_PASS",width);
+ }
+}
+
 try {
  server=spawn(process.execPath,["scripts/ops/anevum-bonsai-preview-test-server.mjs"],{stdio:["ignore","pipe","pipe"]});
  let serverLog="";
@@ -155,6 +175,7 @@ try {
   }
  }
  await interactions();
+ await verifyDesignReview();
  console.log("BONSAI_BROWSER_QA_PASS",JSON.stringify({routes:routes.length,viewports:sizes.length}));
 } finally {
  for(const item of pending.values()){clearTimeout(item.timer);item.reject(Error("Browser ended"));}
