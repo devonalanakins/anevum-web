@@ -252,11 +252,10 @@ export default {
     if (url.pathname.replace(/\/+$/, "") === "/design-review") {
       const reviewHeaders = {
         ...HEADERS,
-        "Content-Encoding": "gzip",
         "Content-Security-Policy": "default-src 'none'; script-src 'sha256-" + REVIEW_SCRIPT_SHA256 + "'; style-src 'unsafe-inline'; img-src data:; font-src 'none'; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
         "X-Anevum-Design-Review": "illustrative-only"
       };
-      return new Response(request.method === "HEAD" ? null : REVIEW_GZIP, {status:200,headers:reviewHeaders});
+      return new Response(request.method === "HEAD" ? null : new Blob([REVIEW_GZIP]).stream().pipeThrough(new DecompressionStream("gzip")), {status:200,headers:reviewHeaders});
     }
     const entry=render(url.pathname.replace(/\/+$/, "") || "/");
     if (!entry) return new Response("Not found", {status:404,headers:{"X-Robots-Tag":"noindex, nofollow, noarchive"}});
