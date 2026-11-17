@@ -5,6 +5,7 @@
 import {INSTITUTE_CSS} from "./styles.mjs";
 
 import {INSTITUTE_CLIENT} from "./client.mjs";
+import {LAB_ART} from "../anevum-public-studio/living-laboratory-art.mjs";
 
 const BASE="/institute-preview";
 
@@ -104,7 +105,7 @@ function program(){
     <h1 class="serif">Computing from <em>first principles.</em></h1><p>From elementary logic through the design of real computational systems. The complete program is a planned syllabus; one verified introductory lesson and experiment form this first design slice.</p></div></section>
    <section class="shell section"><div class="section-head"><div><div class="kicker">The learning path</div><h2 class="serif">Eight proposed units.</h2></div><a class="text-link" href="${BASE}/learn/cfp-101/logic-gates">Begin available lesson ↗</a></div>
     <div class="program-grid">${cards}</div>
-    <div class="aside-panel" style="margin-top:24px"><h2>What completing the course should mean</h2><p>Derive digital logic from explicit assumptions; construct and verify circuits; explain how memory, processing, and instructions fit together; produce an independently inspectable computing artifact. No academic credit or degree is awarded. Prerequisites: comfortable arithmetic and willingness to learn basic algebra.</p><p>Content status: design preview, not a completed 30–40 hour course.</p></div>
+    <div class="aside-panel institution-side"><h2>What completing the course should mean</h2><p>Derive digital logic from explicit assumptions; construct and verify circuits; explain how memory, processing, and instructions fit together; produce an independently inspectable computing artifact. No academic credit or degree is awarded. Prerequisites: comfortable arithmetic and willingness to learn basic algebra.</p><p>Content status: design preview, not a completed 30–40 hour course.</p></div>
    </section>
   </main>`);
 }
@@ -171,7 +172,7 @@ function lab(){
           <p class="fine-print">Both switches off is the starting case. Toggle either switch to explore all other combinations. There is no real-world electrical voltage model in this preview.</p>
         </section>
         <section class="panel" aria-labelledby="lab-truth"><div class="panel-label">Recorded observations</div><h2 id="lab-truth">Truth table</h2>${truthTable(true)}
-          <div class="panel-label">Experiment coverage</div><p data-lab-progress aria-live="polite">1 of 4 input combinations tested</p><div class="progress-meter" aria-hidden="true"><span data-lab-meter style="width:25%"></span></div>
+          <div class="panel-label">Experiment coverage</div><p data-lab-progress aria-live="polite">1 of 4 input combinations tested</p><div class="progress-meter" aria-hidden="true"><span data-lab-meter></span></div>
           <p data-observation role="status" aria-live="polite">Predict the output, then change the input switches.</p><button class="btn ghost small" type="button" data-reset>Restart experiment</button>
           <p class="fine-print" data-local-progress>Progress is stored only on this device.</p>
         </section>
@@ -185,6 +186,7 @@ const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE
 
 const ASSETS=new Map([[BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS]],[BASE+"/client.js",["text/javascript; charset=utf-8",INSTITUTE_CLIENT]]]);
 
+const IMAGE_ASSETS=new Set(["lab-hero-v1.webp","lab-archive-v1.webp","research-generation-v1.webp","research-computation-v1.webp","research-worlds-v1.webp","rhen-generative-v1.webp"]);
 const SECURITY={"Content-Security-Policy":"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'","X-Frame-Options":"DENY","X-Content-Type-Options":"nosniff","Referrer-Policy":"no-referrer","X-Robots-Tag":"noindex, nofollow, noarchive","Cache-Control":"no-store","X-Anevum-Surface":"open-institute-design-review-v1"};
 
 export default {async fetch(request){
@@ -192,8 +194,12 @@ export default {async fetch(request){
   if(url.protocol!=="https:"||url.hostname!=="anevum.com"||url.port||url.search){return new Response("Not found",{status:404});}
   const page=PAGES.get(url.pathname);
   const asset=ASSETS.get(url.pathname);
-  if(!page&&!asset)return new Response("Not found",{status:404});
+  const mediaName=url.pathname.startsWith(BASE+"/assets/")?url.pathname.slice((BASE+"/assets/").length):null;
+  const media=mediaName&&IMAGE_ASSETS.has(mediaName)&&Object.hasOwn(LAB_ART,mediaName)?LAB_ART[mediaName]:null;
+  if(!page&&!asset&&!media)return new Response("Not found",{status:404});
   if(request.method!=="GET"&&request.method!=="HEAD")return new Response(null,{status:405,headers:{...SECURITY,Allow:"GET, HEAD"}});
-  const isAsset=!!asset,body=isAsset?asset[1]:page();
-  return new Response(request.method==="HEAD"?null:body,{status:200,headers:{...SECURITY,"Content-Type":isAsset?asset[0]:"text/html; charset=utf-8"}});
+  const isAsset=!!asset;
+  const isMedia=!!media;
+  const body=isMedia?Uint8Array.from(atob(media),c=>c.charCodeAt(0)):isAsset?asset[1]:page();
+  return new Response(request.method==="HEAD"?null:body,{status:200,headers:{...SECURITY,"Content-Type":isMedia?"image/webp":isAsset?asset[0]:"text/html; charset=utf-8"}});
 }};
