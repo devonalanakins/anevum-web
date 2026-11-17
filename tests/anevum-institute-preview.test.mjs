@@ -5,10 +5,10 @@ import {LAB_ART} from "../apps/anevum-public-studio/living-laboratory-art.mjs";
 import worker from "../apps/anevum-institute-preview/worker.mjs";
 
 const BASE="https://anevum.com/institute-preview";
-const PATHS=["","/academy","/academy/cfp-101","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
+const PATHS=["","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
 const req=(path="",init={})=>worker.fetch(new Request(BASE+path,init));
 
-test("five isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
+test("six isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
   for(const path of PATHS){
     const response=await req(path);
     assert.equal(response.status,200,path);
@@ -49,10 +49,11 @@ test("course availability and educational boundaries are explicit",async()=>{
   const catalog=await(await req("/academy")).text();
   const course=await(await req("/academy/cfp-101")).text();
   const lesson=await(await req("/learn/cfp-101/logic-gates")).text();
-  assert.match(catalog,/The first unit includes a complete explanation/i);
+  assert.match(catalog,/Explore transistor switching and digital logic/i);
   assert.match(catalog,/not operational faculties/i);
   assert.match(course,/curriculum in development/i);
-  assert.equal((course.match(/Study this lesson/g)||[]).length,1);
+  assert.equal((course.match(/Study this lesson/g)||[]).length,2);
+  assert.ok(course.indexOf("Semiconductors and transistor switching")<course.indexOf("Binary logic and gates"),"Transistors-first syllabus order");
   assert.match(lesson,/Q = A ∧ B/);
   assert.match(lesson,/2² = 4/);
   assert.match(lesson,/N = NOT\(A AND B\)/);
@@ -60,6 +61,23 @@ test("course availability and educational boundaries are explicit",async()=>{
   assert.match(lesson,/data-answer="and"/);
   assert.match(lesson,/data-local-progress/);
   assert.match(lesson,/not a transistor-level SPICE simulation/);
+});
+
+test("transistor switching lesson teaches ideal complementary inversion with accessible active controls",async()=>{
+  const response=await req("/learn/cfp-101/transistor-switching");
+  assert.equal(response.status,200);
+  const html=await response.text();
+  assert.match(html,/From matter to <em>switching\.<\/em>/);
+  assert.match(html,/Q = NOT\(A\)/);
+  assert.match(html,/pMOS pull-up/);
+  assert.match(html,/nMOS pull-down/);
+  assert.match(html,/data-inverter-demo/);
+  assert.match(html,/data-inverter-toggle/);
+  assert.match(html,/data-inverter-answer="low"/);
+  assert.match(html,/id="inverter-feedback" role="status" aria-live="polite"/);
+  assert.match(html,/real inverter has a continuous voltage-transfer characteristic/i);
+  assert.match(html,/ocw\.mit\.edu\/courses\/6-012-/);
+  assert.doesNotMatch(html,/measured [0-9]+ volts|accredited degree|real laboratory equipment/i);
 });
 
 test("logic laboratory exposes four correct truth-table rows and accessible controls",async()=>{
@@ -92,6 +110,9 @@ test("preview client parses, and uses only local browser state",async()=>{
   assert.match(source,/URL\.createObjectURL/);
   assert.match(source,/URL\.revokeObjectURL/);
   assert.match(source,/observations\.push/);
+  assert.match(source,/data-inverter-toggle/);
+  assert.match(source,/record\.transistor=true/);
+  assert.match(source,/Number\(result\.transistor\)/);
   assert.match(source,/no analog voltage|analog voltage/i);
   assert.doesNotMatch(source,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.serviceWorker/);
 });
@@ -168,7 +189,7 @@ test("unowned routes, origins, methods and data endpoints are rejected",async()=
   const post=await req("",{method:"POST",body:"x"});
   assert.equal(post.status,405);
   assert.equal(post.headers.get("Allow"),"GET, HEAD");
-  for(const path of ["","/academy","/academy/cfp-101","/learn/cfp-101/logic-gates","/laboratory/and-gate","/styles.css","/client.js","/assets/lab-hero-v1.webp"]){
+  for(const path of ["","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/styles.css","/client.js","/assets/lab-hero-v1.webp"]){
     const get=await req(path),head=await req(path,{method:"HEAD"});
     assert.equal(head.status,200,path);
     assert.equal((await head.arrayBuffer()).byteLength,0);
