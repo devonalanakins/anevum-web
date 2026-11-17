@@ -8,9 +8,9 @@ Source: `apps/anevum-institute-preview/`
 
 ## Purpose
 
-Preserve the cinematic Living Laboratory direction and demonstrate a real educational journey: Institute -> Academy -> CFP-101 -> Boolean logic lesson -> working AND-gate experiment. This proposal supersedes the previous bonsai-as-apex *direction* for future consideration, but does **not** delete the bonsai implementation, botanical records, or protected original-works releases.
+Preserve the cinematic Living Laboratory direction and demonstrate a real educational journey: Institute -> Academy -> CFP-101 -> transistor lesson -> Boolean logic lesson -> working AND-gate experiment. This proposal supersedes the previous bonsai-as-apex *direction* for future consideration, but does **not** delete the bonsai implementation, botanical records, or protected original-works releases.
 
-ANEVUM is described truthfully as an independent, non-accredited open educational and research project. The first lesson and experiment are prototype content. Remaining schools, academic programs, Commons, research and learner accounts are *not* implemented or live.
+ANEVUM is described truthfully as an independent, non-accredited open educational and research project. The lessons and experiment are prototype content. Remaining schools, academic programs, Commons, research and learner accounts are *not* implemented or live.
 
 ## Routes, isolated prefix only
 
@@ -19,7 +19,8 @@ ANEVUM is described truthfully as an independent, non-accredited open educationa
 | `/institute-preview` | Cinematic institute entrance, destinations, founding course |
 | `/institute-preview/academy` | School overview and truthful catalog |
 | `/institute-preview/academy/cfp-101` | Course syllabus with one linked published preview lesson, seven roadmap units |
-| `/institute-preview/learn/cfp-101/logic-gates` | Introduction to Boolean AND, CMOS distinction, truth table, interactive assessment |
+| `/institute-preview/learn/cfp-101/transistor-switching` | Introductory transistor/CMOS inverter explanation, interactive ideal inverter, knowledge check and original references |
+| `/institute-preview/learn/cfp-101/logic-gates` | Introduction to Boolean AND, CMOS distinction, truth table, interactive assessment (preserved URL) |
 | `/institute-preview/laboratory/and-gate` | Deterministic two-input model, all four truth-table combinations, reset and feedback |
 
 Assets: allowlisted, same-origin `/institute-preview/assets/*.webp` from already-reviewed and versioned `apps/anevum-public-studio/living-laboratory-art.mjs`. Images are visual concepts, not real scientific measurements or evidence.
@@ -31,7 +32,7 @@ The server-only Worker module accepts `GET`/`HEAD` on exact routes on `https://a
 - The AND truth table is exact: 00 -> 0, 01 -> 0, 10 -> 0, 11 -> 1.
 - A simple quiz provides feedback for incorrect and correct answers.
 - Experiments track which of the four input configurations has been visited, with reset.
-- Minimal learning progress is recorded **only in device-local storage**, not in a server database, transcript, user account or externally shared account. When storage is unavailable, learning still functions but persistence is not guaranteed.
+- Minimal three-activity learning progress is recorded **only in device-local storage**, not in a server database, transcript, user account or externally shared account. When storage is unavailable, learning still functions but persistence is not guaranteed.
 - The ideal Boolean simulation is **not a transistor-level electronic simulation**.
 - Course enrollment, certificates, learner identities, community contributions, research publication and accreditation are not claimed.
 
@@ -130,3 +131,15 @@ The isolated Boolean AND laboratory now records each distinct input pair encount
 The initial `00` state is an observation. Input switches reveal the other three states, and Restart discards the session notebook and creates a fresh initial `00` record. Locally stored lesson/experiment completion remains a separate device-only preview flag, not a durable laboratory record. The notebook export is not research evidence from physical devices, does not record measured voltages, and does not imply certified assessment or institutional publication.
 
 Verification requirement: dedicated Node contract tests, Chromium export/JSON/coverage/reset journey at representative phone viewport, UI overflow at all five existing widths, review of exact-head GitHub Actions checks. The existing owner-only Cloudflare preview gate must remain fail-closed; **no production route changes, external deployment, brand-publication decision or user account changes** are made by this increment.
+
+## CFP-101 transistors-first curricular integration v4 — preview-only, 2026-11-17
+
+Session: `ANEVUM.WEB.BUILD.2026-11-17.003.OPEN-INSTITUTE-FULL-IMPLEMENTATION`
+
+The eight-unit syllabus now begins with **semiconductors and transistor switching**, followed by **binary logic and gates**. Two original introductory lessons are available in the isolated preview; the remaining six units remain explicitly unimplemented. The original Boolean lesson and working AND-gate laboratory URLs are preserved unchanged. Institute, Academy and syllabus entrypoints now point to the transistor-first beginning.
+
+**Lesson 01** (`/institute-preview/learn/cfp-101/transistor-switching`): physical-vs-digital model distinctions, MOSFET channel control, conceptual CMOS inverter functional diagram, steady-state `Q=NOT(A)` truth table, interactive input toggle, correct/incorrect feedback, worked reasoning, limitations, source attribution and extension exercises. This is an ideal steady-state model, not SPICE, device physics calculation or an electrical measurement. Scientific background: MIT OpenCourseWare 6.012, *Microelectronic Devices and Circuits*, MOSFET and CMOS lecture notes, https://ocw.mit.edu/courses/6-012-microelectronic-devices-and-circuits-spring-2009/pages/lecture-notes/ . The explanation and figure were authored for this project and do not reproduce course material.
+
+**Lesson 02** retains the `logic-gates` URL and its AND-gate assessment; the lab retains exact Boolean outcomes and offline JSON notebook export. In the device-only preview, the existing `anevum.institute.cfp101.preview.v1` localStorage key is retained and extended with a third Boolean flag (`transistor`), preserving previously recorded `lesson` and `experiment` values. All three activities remain independent; there are no grades, enrollment or server-side records.
+
+**Verification scope:** source parse, six preview routes × five viewport widths, inverter high/low simulation and assessment, AND-gate all four states, JSON export/reset, preservation of prior URLs, no horizontal overflow, keyboard/nav controls, noindex/CSP and fail-closed origin/method/route behavior. Formal subject-matter editorial review, external content-license review, iPhone Safari, self-hosting, persistence and production integration remain required before release. No production or Cloudflare changes are made in this draft.
