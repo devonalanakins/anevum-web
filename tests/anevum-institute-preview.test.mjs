@@ -4,6 +4,7 @@ import {Script} from "node:vm";
 import {LAB_ART} from "../apps/anevum-public-studio/living-laboratory-art.mjs";
 import worker from "../apps/anevum-institute-preview/worker.mjs";
 import {CFP_101,validateCurriculum} from "../apps/anevum-institute-preview/curriculum.mjs";
+import {studyToolsHtml} from "../apps/anevum-institute-preview/study-tools.mjs";
 
 const BASE="https://anevum.com/institute-preview";
 const PATHS=["","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
@@ -113,6 +114,25 @@ test("versioned curriculum JSON is portable, accurate and fail-closed on invalid
   assert.ok(validateCurriculum({schemaVersion:1,id:"CFP-101",version:"0.2.0",status:"preview",units:[{availability:"preview"}]}).length>0);
 });
 
+test("Learning Studio exposes independently keyed, accessible local notebooks for both lessons",async()=>{
+  assert.throws(()=>studyToolsHtml("CFP-101-U03"),/Unsupported or unreviewed/);
+  const a=await (await req("/learn/cfp-101/transistor-switching")).text();
+  const b=await (await req("/learn/cfp-101/logic-gates")).text();
+  for(const [html,key] of [[a,"CFP-101-U01"],[b,"CFP-101-U02"]]){
+    assert.match(html,new RegExp('data-study-lesson="'+key+'"'));
+    assert.match(html,/data-study-save/);
+    assert.match(html,/data-study-download/);
+    assert.match(html,/data-study-bookmark aria-pressed="false"/);
+    assert.match(html,/data-study-clear/);
+    assert.match(html,/data-study-status role="status" aria-live="polite"/);
+    assert.match(html,/not encrypted or synced/);
+    assert.match(html,/maxlength="8000"/);
+    assert.equal((html.match(/class="study-notes"/g)||[]).length,1,"A lesson must have exactly one local notebook");
+  }
+  assert.doesNotMatch(a,/data-study-lesson="CFP-101-U02"/);
+  assert.doesNotMatch(b,/data-study-lesson="CFP-101-U01"/);
+});
+
 test("logic laboratory exposes four correct truth-table rows and accessible controls",async()=>{
   const html=await(await req("/laboratory/and-gate")).text();
   const rows=[...html.matchAll(/<tr data-bits="([01]{2})"><td>([01])<\/td><td>([01])<\/td><td>([01])<\/td><\/tr>/g)];
@@ -146,6 +166,10 @@ test("preview client parses, and uses only local browser state",async()=>{
   assert.match(source,/data-inverter-toggle/);
   assert.match(source,/record\.transistor=true/);
   assert.match(source,/Number\(result\.transistor\)/);
+  assert.match(source,/anevum\.institute\.study\.v1\./);
+  assert.match(source,/localStorage\.removeItem/);
+  assert.match(source,/data-study-download/);
+  assert.match(source,/pendingDeletion/);
   assert.match(source,/no analog voltage|analog voltage/i);
   assert.doesNotMatch(source,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.serviceWorker/);
 });
@@ -159,6 +183,8 @@ test("styles are complete, mobile responsive and reduced-motion safe",async()=>{
   assert.match(css,/@media\(max-width:470px\)/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
   assert.match(css,/a:focus-visible/);
+  assert.match(css,/\.study-notes textarea:focus-visible/);
+  assert.match(css,/\.study-actions/);
   assert.match(css,/\/institute-preview\/assets\/lab-hero-v1\.webp/);
   assert.doesNotMatch(css,/https?:\/\//);
 });
