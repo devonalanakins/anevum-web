@@ -1,0 +1,60 @@
+{
+  "specimens": [
+    {
+      "id": "tree-01",
+      "number": 1,
+      "title": "Tree 01",
+      "species": "Acer rubrum",
+      "origin": "Seed-grown · 2026",
+      "status": "Design study / planned",
+      "description": "The owner's first bonsai experiment, with a proposed root-over-rock direction. Stone selection, repotting, and root placement remain future work."
+    },
+    {
+      "id": "tree-02",
+      "number": 2,
+      "title": "Tree 02",
+      "species": "Acer rubrum",
+      "origin": "Seed-grown · 2026",
+      "status": "Early cultivation / observation",
+      "description": "A separate seed-grown red maple. Its measurements, photographic history, and styling direction have not yet been documented."
+    },
+    {
+      "id": "tree-03",
+      "number": 3,
+      "title": "Tree 03",
+      "species": "Acer rubrum",
+      "origin": "Seed-grown · 2026",
+      "status": "Early cultivation / observation",
+      "description": "A separate seed-grown red maple. Its measurements, photographic history, and styling direction have not yet been documented."
+    },
+    {
+      "id": "tree-04",
+      "number": 4,
+      "title": "Tree 04",
+      "species": "Acer rubrum",
+      "origin": "Seed-grown · 2026",
+      "status": "Early cultivation / observation",
+      "description": "A separate seed-grown red maple. Its measurements, photographic history, and styling direction have not yet been documented."
+    },
+    {
+      "id": "tree-05",
+      "number": 5,
+      "title": "Tree 05",
+      "species": "Acer rubrum",
+      "origin": "Seed-grown · 2026",
+      "status": "Early cultivation / observation",
+      "description": "A separate seed-grown red maple. Its measurements, photographic history, and styling direction have not yet been documented."
+    }
+  ],
+  "provisional": [
+    {
+      "name": "the acorn",
+      "species": "unknown (oak suspected)",
+      "status": "transplanted / establishment unverified",
+      "date": "2026-11-15"
+    }
+  ],
+  "source": "User firsthand description, November 15–16 2026",
+  "media_kind": "illustrative",
+  "documentary_images": 0
+}
