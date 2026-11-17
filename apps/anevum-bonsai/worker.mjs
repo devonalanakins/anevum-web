@@ -1,5 +1,6 @@
 import {SPECIMENS, SPECIES, EVENTS, JOURNAL, MEDIA, STUDIES, specimenById, visibleMedia, assertContentIntegrity} from "./records.mjs";
 import {STYLES} from "./style.mjs";
+import {REVIEW_GZIP_BASE64, REVIEW_SCRIPT_SHA256} from "./review-packed.mjs";
 
 /**
  * ANEVUM — The Living Atlas.
@@ -10,6 +11,9 @@ import {STYLES} from "./style.mjs";
 const SITE = "https://anevum.com";
 const SURFACE = "anevum-bonsai-living-atlas-review-v1";
 const PATHS = ["", "collection", "chronicle", "journal", "atelier", "practice", "about"];
+// The separate full-fidelity review is portable and entirely illustrative.
+// Compressed once at build time. It does not expose private APIs or services.
+const REVIEW_GZIP = Uint8Array.from(atob(REVIEW_GZIP_BASE64), c => c.charCodeAt(0));
 const HEADERS = Object.freeze({
   "Content-Type": "text/html; charset=utf-8",
   "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; media-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests",
@@ -243,6 +247,16 @@ export default {
     if (url.search || url.hash) {
       // Hash anchors are client side and are not normally sent to a server.
       if (url.search) return new Response("Not found", {status:404});
+    }
+    // Separate, self-contained visual acceptance route. Never used as the root.
+    if (url.pathname.replace(/\\/+$/, "") === "/design-review") {
+      const reviewHeaders = {
+        ...HEADERS,
+        "Content-Encoding": "gzip",
+        "Content-Security-Policy": "default-src 'none'; script-src 'sha256-" + REVIEW_SCRIPT_SHA256 + "'; style-src 'unsafe-inline'; img-src data:; font-src 'none'; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+        "X-Anevum-Design-Review": "illustrative-only"
+      };
+      return new Response(request.method === "HEAD" ? null : REVIEW_GZIP, {status:200,headers:reviewHeaders});
     }
     const entry=render(url.pathname.replace(/\/+$/, "") || "/");
     if (!entry) return new Response("Not found", {status:404,headers:{"X-Robots-Tag":"noindex, nofollow, noarchive"}});
