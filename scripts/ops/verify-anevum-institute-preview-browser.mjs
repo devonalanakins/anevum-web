@@ -12,6 +12,7 @@ const pages=[
   ["/institute-preview","home"],
   ["/institute-preview/academy","academy"],
   ["/institute-preview/academy/cfp-101","course"],
+  ["/institute-preview/learn/cfp-101/transistor-switching","transistor"],
   ["/institute-preview/learn/cfp-101/logic-gates","lesson"],
   ["/institute-preview/laboratory/and-gate","laboratory"]
 ];
@@ -61,7 +62,7 @@ async function testPage(pathname,label,width,height){
   const state=await evaluate("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('main h1')?.textContent.trim(),mainCount:document.querySelectorAll('main').length,h1Count:document.querySelectorAll('h1').length,skip:!!document.querySelector('a.skip[href=\"#main\"]'),desktop:!!document.querySelector('nav.desk-nav[aria-label=\"Primary navigation\"]'),mobile:!!document.querySelector('details.mobile-menu'),mobileVisible:getComputedStyle(document.querySelector('details.mobile-menu')).display!=='none',width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,robots:document.querySelector('meta[name=\"robots\"]')?.content,scriptCount:document.scripts.length,allLinksLabelled:[...document.querySelectorAll('a[href]')].every(a=>!!(a.textContent.trim()||a.getAttribute('aria-label'))),scriptsLoaded:!!document.querySelector('script[src=\"/institute-preview/client.js\"]')}))()");
   const identity=await evaluate("(()=>{const mark=document.querySelector('img.identity-mark');const scene=document.querySelector('.hero');const reader=document.querySelector('.lesson-article');return {markLoaded:!!mark&&mark.complete&&mark.naturalWidth===160,sceneCorrect:!scene||getComputedStyle(scene,'::before').backgroundImage.includes('/institute-preview/observatory.svg'),readerBackground:reader?getComputedStyle(reader).backgroundColor:null,navSize:document.querySelectorAll('nav.desk-nav a').length}})()");
   verify(identity.markLoaded&&identity.sceneCorrect&&identity.navSize===3,"New identity, scene or navigation is missing",{label,width,identity});
-  if(label==="lesson")verify(identity.readerBackground==="rgb(244, 241, 232)","Editorial study surface is missing",{label,width,identity});
+  if(label==="lesson"||label==="transistor")verify(identity.readerBackground==="rgb(244, 241, 232)","Editorial study surface is missing",{label,width,identity});
   verify(state.mainCount===1&&state.h1Count===1&&state.skip&&state.desktop&&state.mobile&&state.scriptsLoaded&&state.allLinksLabelled,"Accessible landmarks or navigation missing",{label,width,state});
   verify(state.robots.includes("noindex")&&state.scriptCount===1,"Unexpected indexing or scripts",{label,width,state});
   verify(state.width>=width-20&&state.width<=width&&state.scrollWidth<=state.width+1&&state.bodyWidth<=state.width+1,"Horizontal overflow",{label,width,state});
@@ -70,7 +71,7 @@ async function testPage(pathname,label,width,height){
     const layout=await evaluate("(()=>({courseTop:document.querySelector('.course-card')?.getBoundingClientRect().top,schoolsTop:document.querySelector('.catalog-layout>.aside-panel')?.getBoundingClientRect().top}))()");
     verify(layout.courseTop<layout.schoolsTop&&layout.courseTop<height,"Mobile Academy must show the published learning opportunity before planned schools",{width,layout});
   }
-  if((label==="lesson"||label==="laboratory")&&(width===390||width===1440)){
+  if((label==="lesson"||label==="transistor"||label==="laboratory")&&(width===390||width===1440)){
     const workTop=await evaluate("(()=>{const el=document.querySelector('.lesson-article')||document.querySelector('[data-and-lab]');return el?.getBoundingClientRect().top??9999})()");
     verify(workTop<height-30,"Study task is pushed below the initial viewport",{label,width,height,workTop});
   }
@@ -88,13 +89,18 @@ async function testPage(pathname,label,width,height){
 }
 async function interactions(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await navigate("/institute-preview/learn/cfp-101/transistor-switching");
+  const inverter=await evaluate("(()=>{const root=document.querySelector('[data-inverter-demo]');const t=root.querySelector('[data-inverter-toggle]');const a=root.querySelector('[data-inverter-input]');const q=root.querySelector('[data-inverter-output]');const states=[];const snapshot=()=>states.push([a.textContent,q.textContent]);snapshot();t.click();snapshot();const high=t.getAttribute('aria-pressed');t.click();snapshot();const wrong=document.querySelector('[data-inverter-answer=high]');wrong.click();const incorrect=document.querySelector('#inverter-feedback').textContent;const correct=document.querySelector('[data-inverter-answer=low]');correct.click();return {states,high,incorrect,feedback:document.querySelector('#inverter-feedback').textContent,progress:document.querySelector('[data-local-progress]').textContent,completed:JSON.parse(localStorage.getItem('anevum.institute.cfp101.preview.v1')).transistor};})()");
+  verify(JSON.stringify(inverter.states)===JSON.stringify([["0","1"],["1","0"],["0","1"]])&&inverter.high==="true","Ideal inverter toggle or truth table invalid",inverter);
+  verify(inverter.incorrect.startsWith("Revisit")&&inverter.feedback.startsWith("Correct.")&&inverter.progress.includes("1 of 3")&&inverter.completed===true,"Inverter assessment/feedback/progress broken",inverter);
+  console.log("INSTITUTE_INVERTER_QA_PASS",JSON.stringify(inverter));
   await navigate("/institute-preview/learn/cfp-101/logic-gates");
   const quiz=await evaluate("(()=>{const buttons=[...document.querySelectorAll('[data-answer]')];const correct=buttons.find(b=>b.dataset.answer==='and');correct.click();const feedback=document.querySelector('#answer-feedback').textContent;return {feedback,correct:correct.getAttribute('aria-pressed'),progress:document.querySelector('[data-local-progress]').textContent}})()");
-  verify(quiz.feedback.startsWith("Correct.")&&quiz.correct==="true"&&quiz.progress.includes("1 of 2"),"Quiz feedback or progress broken",quiz);
+  verify(quiz.feedback.startsWith("Correct.")&&quiz.correct==="true"&&quiz.progress.includes("2 of 3"),"Quiz feedback or progress broken",quiz);
   await navigate("/institute-preview/laboratory/and-gate");
   const lab=await evaluate("(()=>{const root=document.querySelector('[data-and-lab]');const toggle=x=>root.querySelector('[data-input=\"'+x+'\"]').click();const states=[];const snapshot=()=>states.push([root.querySelector('[data-a-mark]').textContent,root.querySelector('[data-b-mark]').textContent,root.querySelector('[data-output]').textContent]);snapshot();toggle('b');snapshot();toggle('a');snapshot();toggle('b');snapshot();const p=root.querySelector('[data-lab-progress]').textContent;const local=JSON.parse(localStorage.getItem('anevum.institute.cfp101.preview.v1'));return {states,progress:p,local,note:root.querySelector('[data-observation]').textContent}})()");
   verify(JSON.stringify(lab.states)===JSON.stringify([["0","0","0"],["0","1","0"],["1","1","1"],["1","0","0"]]),"AND-gate input/output behavior incorrect",lab);
-  verify(lab.progress.startsWith("4 of 4")&&lab.local.lesson===true&&lab.local.experiment===true&&lab.note.includes("Experiment completed"),"Experiment completion or storage broken",lab);
+  verify(lab.progress.startsWith("4 of 4")&&lab.local.transistor===true&&lab.local.lesson===true&&lab.local.experiment===true&&lab.note.includes("Experiment completed"),"Experiment completion or storage broken",lab);
   const notebook=await evaluate(`(async()=>{const root=document.querySelector('[data-and-lab]');let captured=null,filename='';const originalCreate=URL.createObjectURL;const stop=e=>{if(e.target.matches('a[download]')){filename=e.target.download;e.preventDefault();}};document.addEventListener('click',stop,true);URL.createObjectURL=blob=>{captured=blob;return 'blob:anevum-qa';};try{root.querySelector('[data-export]').click();const full=JSON.parse(await captured.text());const statusFull=root.querySelector('[data-export-status]').textContent;root.querySelector('[data-reset]').click();root.querySelector('[data-export]').click();const reset=JSON.parse(await captured.text());return {filename,full,statusFull,reset,statusReset:root.querySelector('[data-export-status]').textContent};}finally{URL.createObjectURL=originalCreate;document.removeEventListener('click',stop,true);}})()`);
   verify(notebook.filename==="anevum-cfp101-and-001.json"&&notebook.full.schemaVersion===1&&notebook.full.experimentId==="CFP-101-AND-001"&&notebook.full.model==="ideal-two-input-boolean-and","Notebook metadata or browser download is invalid",notebook);
   verify(JSON.stringify(notebook.full.observations)===JSON.stringify([{inputA:0,inputB:0,outputQ:0},{inputA:0,inputB:1,outputQ:0},{inputA:1,inputB:1,outputQ:1},{inputA:1,inputB:0,outputQ:0}])&&notebook.full.coverage.complete===true,"Notebook does not capture four reproducible logical states",notebook);
@@ -104,7 +110,7 @@ async function interactions(){
   verify(assets.every(x=>x.width>100),"Same-origin artwork failed to decode",assets);
   const identityArt=await evaluate("Promise.all(['/institute-preview/mark.svg','/institute-preview/observatory.svg'].map(async url=>{const image=new Image();image.src=url;try{await image.decode();return {url,width:image.naturalWidth}}catch(error){return {url,width:0,error:String(error)}}}))");
   verify(identityArt.length===2&&identityArt[0].width===160&&identityArt[1].width===1600,"New SVG artwork does not decode",identityArt);
-  console.log("INSTITUTE_INTERACTION_QA_PASS",JSON.stringify({quiz,lab,assets}));
+  console.log("INSTITUTE_INTERACTION_QA_PASS",JSON.stringify({inverter,quiz,lab,assets}));
 }
 try{
   await waitFor(async()=>{
