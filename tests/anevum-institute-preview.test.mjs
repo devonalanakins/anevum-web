@@ -114,6 +114,42 @@ test("reviewed same-origin images decode and all other binary assets fail closed
   assert.equal((await req("/assets/private.webp")).status,404);
 });
 
+
+test("new institute identity is an original isolated vector system",async()=>{
+  const home=await (await req("")).text();
+  const lesson=await (await req("/learn/cfp-101/logic-gates")).text();
+  assert.match(home,/src="\/institute-preview\/mark\.svg"/);
+  assert.match(home,/rel="icon" type="image\/svg\+xml"/);
+  assert.match(home,/An open institute for <em>curious minds\.<\/em>/);
+  assert.match(home,/A conceptual institute, not a physical campus/);
+  assert.match(home,/Research program \/ proposed/);
+  assert.match(home,/Community platform \/ proposed/);
+  assert.match(home,/Design review:/);
+  assert.match(lesson,/class="lesson-article"/);
+  const nav=home.match(/<nav class="desk-nav" aria-label="Primary navigation">([\s\S]*?)<\/nav>/)?.[1]||"";
+  assert.equal((nav.match(/<a /g)||[]).length,3);
+  assert.match(nav,/Institute/);
+  assert.match(nav,/Academy/);
+  assert.match(nav,/Laboratory/);
+  for(const [name,part] of [["mark.svg","Three converging tapered pathways"],["observatory.svg","The ANEVUM observatory"]]){
+    const response=await req("/"+name);
+    assert.equal(response.status,200,name);
+    assert.match(response.headers.get("Content-Type"),/image\/svg\+xml/);
+    assert.match(response.headers.get("X-Robots-Tag"),/noindex/);
+    const svg=await response.text();
+    assert.match(svg,/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+    assert.ok(svg.includes(part),name);
+    assert.doesNotMatch(svg,/<(?:script|foreignObject|iframe)\b|xlink:href="https?:|<image[^>]+https?:/i);
+    const head=await req("/"+name,{method:"HEAD"});
+    assert.equal(head.status,200);
+    assert.equal(await head.text(),"");
+  }
+  const css=await (await req("/styles.css")).text();
+  assert.match(css,/background:url\("\/institute-preview\/observatory\.svg"\)/);
+  assert.match(css,/\.lesson-article\{background:#f4f1e8/);
+  assert.match(css,/\.identity-mark\{display:block/);
+});
+
 test("unowned routes, origins, methods and data endpoints are rejected",async()=>{
   for(const path of ["/staff","/command","/api","/about","/archive","/../../staff","/assets/private.webp"]){
     assert.equal((await req(path)).status,404,path);
