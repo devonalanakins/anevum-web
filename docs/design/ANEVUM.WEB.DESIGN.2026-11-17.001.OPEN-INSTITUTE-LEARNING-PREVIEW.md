@@ -120,3 +120,13 @@ The five-page preview has a custom vector mark and favicon, new SVG observatory,
 5. Preserve PRs #813–815 and all botanical/fictional work. No automatic conversion of the new mark or conceptual visual into production branding.
 
 **Release gate remains NO-GO** pending owner visual acceptance, full CI reconciliation, authenticated route ownership/rollback review, production security checks and explicitly authorized publication.
+
+## Experimental notebook v3 — preview-only, 2026-11-17
+
+Session: `ANEVUM.WEB.BUILD.2026-11-17.003.OPEN-INSTITUTE-FULL-IMPLEMENTATION`
+
+The isolated Boolean AND laboratory now records each distinct input pair encountered during a session in a deterministic, in-memory observation list and offers **Export notebook (JSON)**. The export schema uses `schemaVersion: 1`, `experimentId: CFP-101-AND-001`, the exact ideal Boolean model identifier, ordered `inputA`, `inputB`, `outputQ` records, coverage metadata and explicit simulation limitations. No account, network upload, API or database is involved. Export occurs only after the learner clicks the button; the browser handles the download.
+
+The initial `00` state is an observation. Input switches reveal the other three states, and Restart discards the session notebook and creates a fresh initial `00` record. Locally stored lesson/experiment completion remains a separate device-only preview flag, not a durable laboratory record. The notebook export is not research evidence from physical devices, does not record measured voltages, and does not imply certified assessment or institutional publication.
+
+Verification requirement: dedicated Node contract tests, Chromium export/JSON/coverage/reset journey at representative phone viewport, UI overflow at all five existing widths, review of exact-head GitHub Actions checks. The existing owner-only Cloudflare preview gate must remain fail-closed; **no production route changes, external deployment, brand-publication decision or user account changes** are made by this increment.
