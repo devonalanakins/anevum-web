@@ -229,6 +229,25 @@ body[data-area="laboratory"] .section h2{font-size:clamp(33px,3.3vw,46px)}
   .catalog-layout>div{order:1}
 }
 
+
+/* Shared Learning Studio notes. Intentional paper surface, not a cloud account. */
+.study-notes{margin:45px 0 8px;padding:clamp(20px,3vw,32px);border:1px solid #c4bca9;border-radius:11px;background:#eae6dc}
+.study-notes-header h2{font-size:clamp(29px,3vw,39px);margin:8px 0 6px;line-height:1.16}
+.lesson-article .study-notes p{font-size:13px;line-height:1.65;max-width:75ch}
+.lesson-article .study-notes .study-notes-subtitle{font-weight:650;color:#516963;margin:0 0 12px}
+.study-notes label{display:block;margin:22px 0 9px;color:#294046;font-size:13px;font-weight:750}
+.study-notes textarea{display:block;resize:vertical;width:100%;min-width:0;min-height:145px;line-height:1.6;font:15px/1.6 ui-sans-serif,system-ui,sans-serif;border:1px solid #9fa99e;border-radius:7px;padding:15px 17px;color:#20383b;background:#fffdf7}
+.study-notes textarea:focus-visible{outline:3px solid #ae7844;outline-offset:3px}
+.study-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.study-actions .btn{font-size:10px;min-height:43px}
+.study-actions.secondary{margin-top:12px;gap:15px}
+.study-bookmark,.study-delete{font:650 12px ui-sans-serif,system-ui,sans-serif;min-height:44px;cursor:pointer;background:transparent;border:1px solid #9aa99e;color:#284947;border-radius:6px;padding:10px 13px}
+.study-bookmark[aria-pressed=true]{border-color:#587e65;background:#d2e0d3;color:#1d4635}
+.study-delete{border-color:#ab9181;color:#674d43}
+.study-bookmark:hover,.study-delete:hover{background:#faf7ed}
+.lesson-article .study-notes .study-status{font-size:12px;color:#476257;margin:16px 0 0}
+@media(max-width:470px){.study-actions .btn{flex:1 1 100%}.study-bookmark,.study-delete{flex:1 1 145px}}
+
 @media(prefers-reduced-motion:reduce){.space-card::before,.btn{transition:none!important;transform:none!important}}
 
 `;
