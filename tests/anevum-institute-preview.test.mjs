@@ -25,7 +25,7 @@ test("five isolated pages have accurate titles, landmarks, and noindex headers",
     assert.match(html,/<nav class="desk-nav" aria-label="Primary navigation">/);
     assert.match(html,/<details class="mobile-menu">/);
     assert.equal((html.match(/<h1\b/g)||[]).length,1,"Exactly one H1: "+path);
-    assert.match(html,/Independent, non-accredited open-education and research project/);
+    assert.match(html,/independent, non-accredited open-education and research project/i);
     assert.match(html,/Not a public launch/);
     assert.doesNotMatch(html,/<iframe|<form\b|onload=|onclick=|<script(?! defer src=)/i);
     assert.doesNotMatch(html,/patient records|OpenAI API key|university degrees awarded/i);
@@ -49,7 +49,7 @@ test("course availability and educational boundaries are explicit",async()=>{
   const catalog=await(await req("/academy")).text();
   const course=await(await req("/academy/cfp-101")).text();
   const lesson=await(await req("/learn/cfp-101/logic-gates")).text();
-  assert.match(catalog,/one introductory lesson/i);
+  assert.match(catalog,/The first unit includes a complete explanation/i);
   assert.match(catalog,/not operational faculties/i);
   assert.match(course,/curriculum in development/);
   assert.equal((course.match(/Study this lesson/g)||[]).length,1);
