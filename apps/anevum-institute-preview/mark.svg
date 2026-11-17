@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+<title id="title">ANEVUM open-aperture symbol</title>
+<desc id="desc">Three converging tapered pathways within an unfinished orbital circle: learning, experimentation, and collective discovery.</desc>
+<path d="M14 89C14 48 45 16 86 14C112 13 137 27 149 50" fill="none" stroke="#D8AE70" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M146 99C139 127 113 146 84 146" fill="none" stroke="#6B978E" stroke-width="2.4" stroke-linecap="round" opacity=".86"/>
+<path d="M14 127L81 36L95 36L48 127Z" fill="#F1E7D5"/>
+<path d="M59 127L104 59L112 88L89 127Z" fill="#D6AA70"/>
+<path d="M106 127L124 99L146 127Z" fill="#A3BEB6"/>
+<path d="M100 28L108 16" fill="none" stroke="#F1E7D5" stroke-width="2.4" stroke-linecap="round"/>
+<circle cx="149" cy="50" r="3.2" fill="#D8AE70"/>
+</svg>
