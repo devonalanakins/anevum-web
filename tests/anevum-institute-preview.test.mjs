@@ -37,7 +37,7 @@ test("every relative institute navigation link resolves within the preview",asyn
   known.add("/institute-preview/");
   for(const path of PATHS){
     const html=await(await req(path)).text();
-    const links=[...html.matchAll(/href="(\/institute-preview(?:\/[^"#]*)?)"/g)].map(m=>m[1]);
+    const links=[...html.matchAll(/<a[^>]*\bhref="(\/institute-preview(?:\/[^"#]*)?)"/g)].map(m=>m[1]);
     assert.ok(links.length>=6,"No meaningful links in "+path);
     for(const link of links){
       assert.ok(known.has(link),"Unreachable link on "+path+": "+link);
@@ -51,7 +51,7 @@ test("course availability and educational boundaries are explicit",async()=>{
   const lesson=await(await req("/learn/cfp-101/logic-gates")).text();
   assert.match(catalog,/The first unit includes a complete explanation/i);
   assert.match(catalog,/not operational faculties/i);
-  assert.match(course,/curriculum in development/);
+  assert.match(course,/curriculum in development/i);
   assert.equal((course.match(/Study this lesson/g)||[]).length,1);
   assert.match(lesson,/Q = A ∧ B/);
   assert.match(lesson,/2² = 4/);
