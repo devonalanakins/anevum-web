@@ -74,6 +74,8 @@ test("logic laboratory exposes four correct truth-table rows and accessible cont
   assert.match(html,/aria-live="polite"/);
   assert.match(html,/data-lab-progress/);
   assert.match(html,/data-reset/);
+  assert.match(html,/data-export/);
+  assert.match(html,/data-export-status/);
   assert.match(html,/browser simulation evaluates the ideal Boolean function/);
 });
 
@@ -85,6 +87,12 @@ test("preview client parses, and uses only local browser state",async()=>{
   assert.doesNotThrow(()=>new Script(source));
   assert.match(source,/localStorage\.setItem/);
   assert.match(source,/visited\.size===4/);
+  assert.match(source,/experimentId:"CFP-101-AND-001"/);
+  assert.match(source,/schemaVersion:1/);
+  assert.match(source,/URL\.createObjectURL/);
+  assert.match(source,/URL\.revokeObjectURL/);
+  assert.match(source,/observations\.push/);
+  assert.match(source,/no analog voltage|analog voltage/i);
   assert.doesNotMatch(source,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.serviceWorker/);
 });
 
