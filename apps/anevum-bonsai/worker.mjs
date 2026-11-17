@@ -249,7 +249,7 @@ export default {
       if (url.search) return new Response("Not found", {status:404});
     }
     // Separate, self-contained visual acceptance route. Never used as the root.
-    if (url.pathname.replace(/\\/+$/, "") === "/design-review") {
+    if (url.pathname.replace(/\/+$/, "") === "/design-review") {
       const reviewHeaders = {
         ...HEADERS,
         "Content-Encoding": "gzip",
