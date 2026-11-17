@@ -5,6 +5,7 @@
 import {INSTITUTE_CSS} from "./styles.mjs";
 
 import {INSTITUTE_CLIENT} from "./client.mjs";
+import {ANEVUM_MARK_SVG, ANEVUM_OBSERVATORY_SVG} from "./artwork.mjs";
 import {LAB_ART} from "../anevum-public-studio/living-laboratory-art.mjs";
 
 const BASE="/institute-preview";
@@ -13,23 +14,21 @@ function navigation(active){
   const links=[
     ["Institute",BASE],
     ["Academy",BASE+"/academy"],
-    ["Course",BASE+"/academy/cfp-101"],
-    ["Classroom",BASE+"/learn/cfp-101/logic-gates"],
     ["Laboratory",BASE+"/laboratory/and-gate"]
   ];
-  const makeLinks=()=>links.map(([name,href])=>`<a href="${href}"${name===active?' aria-current="page"':''}>${name}</a>`).join("");
+  const makeLinks=()=>links.map(([name,href])=>`<a href="${href}"${(name===active||active==="Course"&&name==="Academy"||active==="Classroom"&&name==="Academy")?' aria-current="page"':''}>${name}</a>`).join("");
   return `<a class="skip" href="#main">Skip to main content</a>
   <header class="mast"><div class="mast-inner">
-    <a class="identity" href="${BASE}" aria-label="ANEVUM Open Institute, home"><span class="identity-mark" aria-hidden="true">A</span><span><span class="identity-text">ANEVUM</span><span class="identity-caption">The Open Institute</span></span></a>
+    <a class="identity" href="${BASE}" aria-label="ANEVUM Open Institute, home"><img class="identity-mark" src="${BASE}/mark.svg" width="59" height="59" alt="" decoding="async"><span><span class="identity-text">ANEVUM</span><span class="identity-caption">The Open Institute</span></span></a>
     <nav class="desk-nav" aria-label="Primary navigation">${makeLinks()}</nav>
-    <span class="mast-meta">Open education / Design preview</span>
+    <a class="mast-action" href="${BASE}/learn/cfp-101/logic-gates">Start learning <span aria-hidden="true">→</span></a>
     <details class="mobile-menu"><summary>Menu</summary><nav class="nav-menu" aria-label="Mobile navigation">${makeLinks()}</nav></details>
   </div></header>`;
 }
 
 function footer(){
   return `<footer class="footer"><div class="shell footer-inner">
-    <div><div class="footer-brand">ANEVUM</div><p>An independent, non-accredited open-education and research project. No degrees or academic credit are offered. Free educational material; no sign-in required for this preview.</p></div>
+    <div><div class="footer-brand">ANEVUM <span style="font-family:system-ui,sans-serif;letter-spacing:.09em;font-size:10px;color:#b6c6c6">THE OPEN INSTITUTE</span></div><p>An independent, non-accredited open-education and research project. No degrees or academic credit are offered. Free educational material; no sign-in required for this preview.</p></div>
     <div><div class="preview-flag">Isolated design review / Not a public launch</div><p>The Academy has one introductory lesson and one simulation. Other spaces and courses are proposed, not yet available.</p><p><a href="/original-works/archive">Visit the existing ANEVUM archive</a> · <a href="${BASE}">Return to Institute</a></p></div>
   </div></footer>`;
 }
@@ -37,22 +36,22 @@ function footer(){
 function layout(title,active,body){
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow,noarchive"><meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="color-scheme" content="dark"><link rel="icon" type="image/svg+xml" href="${BASE}/mark.svg">
 <meta name="description" content="ANEVUM Open Institute design preview: free, self-directed computing education and a working digital logic experiment.">
 <title>${title} — ANEVUM Open Institute (Design Preview)</title>
 <link rel="stylesheet" href="${BASE}/styles.css"><script defer src="${BASE}/client.js"></script>
-</head><body>${navigation(active)}${body}${footer()}</body></html>`;
+</head><body>${navigation(active)}<div class="preview-ribbon"><strong>Design review:</strong> ANEVUM is an independent, non-accredited open education project. Only the first lesson and experiment are implemented.</div>${body}${footer()}</body></html>`;
 }
 
 function home(){
   return layout("Institute","Institute",`<main id="main" tabindex="-1" class="site-main">
     <section class="hero" aria-labelledby="home-title"><div class="shell hero-inner">
       <div class="kicker">Independent education · Open inquiry · Collective knowledge</div>
-      <h1 id="home-title" class="serif">A university<br>without the <em>barriers.</em></h1>
+      <h1 id="home-title" class="serif">An open institute for <em>curious minds.</em></h1>
       <p class="hero-lead">A living open institute for independent minds. Study scientific foundations, perform real experiments, and contribute to an evolving body of knowledge—freely, on your own time.</p>
       <div class="hero-actions"><a class="btn" href="${BASE}/academy">Explore the Academy <span aria-hidden="true">↗</span></a><a class="btn ghost" href="${BASE}/learn/cfp-101/logic-gates">Start a free lesson <span aria-hidden="true">→</span></a></div>
-      <p class="truth">Independent project · Non-accredited · The first course is in development</p>
-    </div></section>
+      <p class="truth">Freely accessible · Independently paced · Evidence before claims</p>
+    </div><div class="hero-stamp" aria-hidden="true">ANEVUM / OBSERVATORY 001<span>A conceptual institute, not a physical campus</span></div></section>
     <div class="hero-rail"><div class="shell rail-inner"><span><strong>01</strong>Study independently</span><span><strong>02</strong>Experiment directly</span><span><strong>03</strong>Review the evidence</span><span><strong>04</strong>Improve knowledge openly</span></div></div>
     <section class="shell section" aria-labelledby="spaces"><div class="section-head"><div><div class="kicker">Explore the institute</div><h2 id="spaces" class="serif">Four connected worlds of inquiry.</h2></div><p class="section-lead">The architecture invites curiosity. The workspaces make it useful. Some departments are still being designed, and are clearly marked as such.</p></div>
       <div class="space-grid">
@@ -184,7 +183,12 @@ function lab(){
 
 const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/laboratory/and-gate",lab]]);
 
-const ASSETS=new Map([[BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS]],[BASE+"/client.js",["text/javascript; charset=utf-8",INSTITUTE_CLIENT]]]);
+const ASSETS=new Map([
+  [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS]],
+  [BASE+"/client.js",["text/javascript; charset=utf-8",INSTITUTE_CLIENT]],
+  [BASE+"/mark.svg",["image/svg+xml; charset=utf-8",ANEVUM_MARK_SVG]],
+  [BASE+"/observatory.svg",["image/svg+xml; charset=utf-8",ANEVUM_OBSERVATORY_SVG]]
+]);
 
 const IMAGE_ASSETS=new Set(["lab-hero-v1.webp","lab-archive-v1.webp","research-generation-v1.webp","research-computation-v1.webp","research-worlds-v1.webp","rhen-generative-v1.webp"]);
 const SECURITY={"Content-Security-Policy":"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'","X-Frame-Options":"DENY","X-Content-Type-Options":"nosniff","Referrer-Policy":"no-referrer","X-Robots-Tag":"noindex, nofollow, noarchive","Cache-Control":"no-store","X-Anevum-Surface":"open-institute-design-review-v1"};
