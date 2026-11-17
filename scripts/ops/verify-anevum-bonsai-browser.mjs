@@ -108,14 +108,14 @@ async function interactions() {
 }
 
 async function verifyDesignReview() {
- for (const [width,height] of [[390,844],[1440,900]]) {
+ for (const [width,height] of [[320,760],[390,844],[768,1024],[1440,900],[1920,1080]]) {
    await navigate("/design-review",width,height,true);
    const state=await until(async()=> {
      const v=await evaluate("(()=>({ready:!!document.querySelector('.hero h1'),route:location.pathname,templates:document.querySelectorAll('template[data-route]').length,w:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,body:document.body.scrollWidth,links:document.querySelectorAll('main a[href^=\"#/\"]').length,images:(()=>{const x=document.querySelector('.hero-picture img');return !!x&&x.complete&&x.naturalWidth>0})(),script:document.scripts.length,legacy:!!document.querySelector('.wordmark')}))()");
      return v.ready&&v.images?v:null;
    },"AAA review route "+width);
    if(state.route!=="/design-review"||state.templates!==14||state.scroll>state.w+1||state.body>state.w+1||!state.images||!state.legacy||state.links<2)throw Error("AAA hosted review validation failed "+JSON.stringify(state));
-   await capture("design-review",width);
+   if ([390,1440].includes(width)) await capture("design-review",width);
    await evaluate("document.querySelector('main a[href=\"#/collection\"]').click()");
    const collection=await until(async()=>await evaluate("location.hash==='#/collection'&&!!document.querySelector('.collection-row')"),"AAA collection virtual navigation");
    if(!collection)throw Error("Design review Collection is not navigable");
