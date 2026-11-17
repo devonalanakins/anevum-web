@@ -116,7 +116,7 @@ jobs:
           node --check apps/anevum-bonsai/records.mjs
           node --check apps/anevum-bonsai/style.mjs
           node --check apps/anevum-bonsai/worker.mjs
-          node --test tests/anevum-bonsai.test.mjs
+          node --test tests/anevum-bonsai.test.mjs tests/anevum-bonsai-review.test.mjs
 
       - name: Upload public studio screenshot evidence
         if: github.event_name == 'pull_request' && steps.scope.outputs.public_studio_required == 'true'
