@@ -28,6 +28,9 @@ jobs:
           node --check apps/anevum-institute-preview/worker.mjs
           node --check apps/anevum-institute-preview/styles.mjs
           node --check apps/anevum-institute-preview/client.mjs
+          node --check apps/anevum-institute-preview/curriculum.mjs
+          node --check apps/anevum-institute-preview/transistor-lesson.mjs
+          node --check apps/anevum-institute-preview/study-tools.mjs
           node --check scripts/ops/anevum-institute-preview-server.mjs
           node --check scripts/ops/verify-anevum-institute-preview-browser.mjs
       - name: Verify isolated educational content and route contracts
