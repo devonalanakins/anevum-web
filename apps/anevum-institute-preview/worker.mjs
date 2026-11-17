@@ -5,6 +5,7 @@
 import {INSTITUTE_CSS} from "./styles.mjs";
 
 import {INSTITUTE_CLIENT} from "./client.mjs";
+import {TRANSISTOR_LESSON_HTML} from "./transistor-lesson.mjs";
 import {ANEVUM_MARK_SVG, ANEVUM_OBSERVATORY_SVG} from "./artwork.mjs";
 import {LAB_ART} from "../anevum-public-studio/living-laboratory-art.mjs";
 
@@ -21,7 +22,7 @@ function navigation(active){
   <header class="mast"><div class="mast-inner">
     <a class="identity" href="${BASE}" aria-label="ANEVUM Open Institute, home"><img class="identity-mark" src="${BASE}/mark.svg" width="59" height="59" alt="" decoding="async"><span><span class="identity-text">ANEVUM</span><span class="identity-caption">The Open Institute</span></span></a>
     <nav class="desk-nav" aria-label="Primary navigation">${makeLinks()}</nav>
-    <a class="mast-action" href="${BASE}/learn/cfp-101/logic-gates">Start learning <span aria-hidden="true">→</span></a>
+    <a class="mast-action" href="${BASE}/learn/cfp-101/transistor-switching">Start learning <span aria-hidden="true">→</span></a>
     <details class="mobile-menu"><summary>Menu</summary><nav class="nav-menu" aria-label="Mobile navigation">${makeLinks()}</nav></details>
   </div></header>`;
 }
@@ -29,7 +30,7 @@ function navigation(active){
 function footer(){
   return `<footer class="footer"><div class="shell footer-inner">
     <div><div class="footer-brand">ANEVUM <span style="font-family:system-ui,sans-serif;letter-spacing:.09em;font-size:10px;color:#b6c6c6">THE OPEN INSTITUTE</span></div><p>An independent, non-accredited open-education and research project. No degrees or academic credit are offered. Free educational material; no sign-in required for this preview.</p></div>
-    <div><div class="preview-flag">Isolated design review / Not a public launch</div><p>The Academy has one introductory lesson and one simulation. Other spaces and courses are proposed, not yet available.</p><p><a href="/original-works/archive">Visit the existing ANEVUM archive</a> · <a href="${BASE}">Return to Institute</a></p></div>
+    <div><div class="preview-flag">Isolated design review / Not a public launch</div><p>The Academy currently contains two preview lessons and a Boolean laboratory. Other spaces and courses remain proposed.</p><p><a href="/original-works/archive">Visit the existing ANEVUM archive</a> · <a href="${BASE}">Return to Institute</a></p></div>
   </div></footer>`;
 }
 
@@ -40,7 +41,7 @@ function layout(title,active,body){
 <meta name="description" content="ANEVUM Open Institute design preview: free, self-directed computing education and a working digital logic experiment.">
 <title>${title} — ANEVUM Open Institute (Design Preview)</title>
 <link rel="stylesheet" href="${BASE}/styles.css"><script defer src="${BASE}/client.js"></script>
-</head><body data-area="${active.toLowerCase()}">${navigation(active)}<div class="preview-ribbon"><strong>Design review:</strong> ANEVUM is an independent, non-accredited open education project. Only the first lesson and experiment are implemented.</div>${body}${footer()}</body></html>`;
+</head><body data-area="${active.toLowerCase()}">${navigation(active)}<div class="preview-ribbon"><strong>Design review:</strong> ANEVUM is an independent, non-accredited open education project. Only two introductory lessons and the Boolean laboratory are implemented.</div>${body}${footer()}</body></html>`;
 }
 
 function home(){
@@ -49,7 +50,7 @@ function home(){
       <div class="kicker">Independent education · Open inquiry · Collective knowledge</div>
       <h1 id="home-title" class="serif">An open institute for <em>curious minds.</em></h1>
       <p class="hero-lead">A living open institute for independent minds. Study scientific foundations, perform real experiments, and contribute to an evolving body of knowledge—freely, on your own time.</p>
-      <div class="hero-actions"><a class="btn" href="${BASE}/academy">Explore the Academy <span aria-hidden="true">↗</span></a><a class="btn ghost" href="${BASE}/learn/cfp-101/logic-gates">Start a free lesson <span aria-hidden="true">→</span></a></div>
+      <div class="hero-actions"><a class="btn" href="${BASE}/academy">Explore the Academy <span aria-hidden="true">↗</span></a><a class="btn ghost" href="${BASE}/learn/cfp-101/transistor-switching">Start a free lesson <span aria-hidden="true">→</span></a></div>
       <p class="truth">Freely accessible · Independently paced · Evidence before claims</p>
     </div><div class="hero-stamp" aria-hidden="true">ANEVUM / OBSERVATORY 001<span>A conceptual institute, not a physical campus</span></div></section>
     <div class="hero-rail"><div class="shell rail-inner"><span><strong>01</strong>Study independently</span><span><strong>02</strong>Experiment directly</span><span><strong>03</strong>Review the evidence</span><span><strong>04</strong>Improve knowledge openly</span></div></div>
@@ -63,7 +64,7 @@ function home(){
     </section>
     <section class="shell section" aria-labelledby="featured"><div class="section-head"><div><div class="kicker">The founding course</div><h2 id="featured" class="serif">Begin at the foundations.</h2></div></div>
       <div class="course-feature"><div class="course-feature-copy"><span class="chip">CFP-101 / School of Computing</span><h3>Computing From First Principles</h3>
-       <p>Follow the reasoning from bits and logic toward real computing systems. The first introductory lesson is available now in this isolated preview; the rest of the proposed course is not yet published.</p>
+       <p>Follow the reasoning from bits and logic toward real computing systems. Two introductory lessons and one lab are available in this isolated preview; the remainder of the course is not yet published.</p>
        <ol class="course-steps"><li>Transistors</li><li>Logic</li><li>Circuits</li><li>Architecture</li><li>Software</li><li>AI</li></ol>
        <a class="btn small" href="${BASE}/academy/cfp-101">View the syllabus ↗</a></div></div>
     </section>
@@ -78,7 +79,7 @@ function academy(){
       <aside class="aside-panel"><div class="kicker">Schools / proposed</div><h2>Fields of study</h2><ul><li>Computing &amp; artificial intelligence</li><li>Mathematics</li><li>Physics</li><li>Neuroscience &amp; living systems</li><li>Scientific methods</li></ul><p>These are planned academic groupings—not operational faculties or degree programs.</p></aside>
       <div><div class="kicker">Available instructional preview / 001</div>
         <article class="course-card"><div><div class="course-meta"><span>CFP-101</span><span>Foundational</span><span>Free / Self-paced</span></div>
-          <h3>Computing From First Principles</h3><p>Understand why digital logic works. The first unit includes a complete explanation, knowledge check, and interactive experiment. Remaining units are being developed.</p>
+          <h3>Computing From First Principles</h3><p>Explore transistor switching and digital logic with two original introductory lessons, self-assessments, an inverter demonstration, and a Boolean AND laboratory. The full course is not complete.</p>
           <a class="btn small" href="${BASE}/academy/cfp-101">Open course ↗</a>
         </div></article>
         <div class="placeholder"><strong>More disciplines are being prepared.</strong>Rather than display fictitious course inventory, ANEVUM will add a subject only when its lessons, sources, exercises and review status are ready.</div>
@@ -89,8 +90,8 @@ function academy(){
 
 function program(){
   const units=[
-    ["01","Binary logic and gates","Introductory lesson available","/learn/cfp-101/logic-gates"],
-    ["02","Semiconductors and transistors","Curriculum in development",null],
+    ["01","Semiconductors and transistor switching","Introductory lesson available","/learn/cfp-101/transistor-switching"],
+    ["02","Binary logic and gates","Introductory lesson and laboratory available","/learn/cfp-101/logic-gates"],
     ["03","Combinational circuits and adders","Curriculum in development",null],
     ["04","Sequential circuits and registers","Curriculum in development",null],
     ["05","Memory and instruction architecture","Curriculum in development",null],
@@ -101,12 +102,16 @@ function program(){
   const cards=units.map(([number,name,state,href])=>`<article class="unit${href?' current':''}"><div class="index">${number}</div><div><h3>${name}</h3><p>${state}</p><div class="mark">${href?`<a href="${BASE}${href}">Study this lesson →</a>`:"Planned / Not yet published"}</div></div></article>`).join("");
   return layout("CFP-101 Course","Course",`<main id="main" tabindex="-1" class="site-main">
    <section class="page-hero"><div class="shell"><div class="crumb"><a href="${BASE}/academy">Academy</a> / School of Computing / CFP-101</div><div class="kicker">Founding course / 001</div>
-    <h1 class="serif">Computing from <em>first principles.</em></h1><p>From elementary logic through the design of real computational systems. The complete program is a planned syllabus; one verified introductory lesson and experiment form this first design slice.</p></div></section>
-   <section class="shell section"><div class="section-head"><div><div class="kicker">The learning path</div><h2 class="serif">Eight proposed units.</h2></div><a class="text-link" href="${BASE}/learn/cfp-101/logic-gates">Begin available lesson ↗</a></div>
+    <h1 class="serif">Computing from <em>first principles.</em></h1><p>From semiconductors and switching through digital logic and computer architecture. The eight-unit program is a planned syllabus; two introductory preview lessons and one laboratory are currently implemented.</p></div></section>
+   <section class="shell section"><div class="section-head"><div><div class="kicker">The learning path</div><h2 class="serif">Eight units. Two lessons available.</h2></div><a class="text-link" href="${BASE}/learn/cfp-101/transistor-switching">Begin available lesson ↗</a></div>
     <div class="program-grid">${cards}</div>
     <div class="aside-panel institution-side"><h2>What completing the course should mean</h2><p>Derive digital logic from explicit assumptions; construct and verify circuits; explain how memory, processing, and instructions fit together; produce an independently inspectable computing artifact. No academic credit or degree is awarded. Prerequisites: comfortable arithmetic and willingness to learn basic algebra.</p><p>Content status: design preview, not a completed 30–40 hour course.</p></div>
    </section>
   </main>`);
+}
+
+function transistorLesson(){
+  return layout("Lesson — Transistor Switching","Classroom",TRANSISTOR_LESSON_HTML);
 }
 
 function gateFigure(){
@@ -125,8 +130,8 @@ function truthTable(attrs=false){
 
 function lesson(){
   return layout("Lesson — AND Gates","Classroom",`<main id="main" tabindex="-1" class="site-main">
-   <section class="page-hero"><div class="shell"><div class="crumb"><a href="${BASE}/academy">Academy</a> / <a href="${BASE}/academy/cfp-101">CFP-101</a> / Lesson 01</div>
-    <div class="kicker">School of Computing / Lesson 01 / Open access</div><h1 class="serif">What makes an <em>AND gate</em> work?</h1><p>A rigorous introduction to Boolean logic, digital computation, and the physical assumptions behind switching circuits.</p></div></section>
+   <section class="page-hero"><div class="shell"><div class="crumb"><a href="${BASE}/academy">Academy</a> / <a href="${BASE}/academy/cfp-101">CFP-101</a> / Lesson 02</div>
+    <div class="kicker">School of Computing / Lesson 02 / Open access</div><h1 class="serif">What makes an <em>AND gate</em> work?</h1><p>A rigorous introduction to Boolean logic, digital computation, and the physical assumptions behind switching circuits.</p></div></section>
    <section class="shell section"><div class="lesson-layout">
     <article class="lesson-article">
       <div class="kicker">Learning outcome</div><p>After this lesson, you should be able to write the Boolean expression for AND, predict every output, explain the relationship between the logical circuit and a CMOS implementation, and verify your reasoning experimentally.</p>
@@ -153,14 +158,14 @@ function lesson(){
       <h2 id="next">5. Verify it yourself</h2><p>In the laboratory, you will change both inputs, observe the output, and reproduce all four truth-table rows. This is an ideal Boolean model, not a transistor-level SPICE simulation.</p>
       <a class="btn" href="${BASE}/laboratory/and-gate">Open AND-gate experiment →</a>
     </article>
-    <aside class="lesson-sidebar" aria-label="Lesson index"><div class="kicker">Lesson 01 / Index</div><h2>Inside this lesson</h2><ul><li><a href="#bits">From voltage to a bit</a></li><li><a href="#rule">Boolean definition</a></li><li><a href="#physical">Transistor implementation</a></li><li><a href="#check">Knowledge check</a></li><li><a href="#next">Laboratory exercise</a></li></ul><p>Estimated reading: 7–10 minutes. No account required.</p><p><a href="${BASE}/academy/cfp-101">Full course outline ↗</a></p></aside>
+    <aside class="lesson-sidebar" aria-label="Lesson index"><div class="kicker">Lesson 02 / Index</div><h2>Inside this lesson</h2><ul><li><a href="#bits">From voltage to a bit</a></li><li><a href="#rule">Boolean definition</a></li><li><a href="#physical">Transistor implementation</a></li><li><a href="#check">Knowledge check</a></li><li><a href="#next">Laboratory exercise</a></li></ul><p>Estimated reading: 7–10 minutes. No account required.</p><p><a href="${BASE}/learn/cfp-101/transistor-switching">← Previous: Transistors</a></p><p><a href="${BASE}/academy/cfp-101">Full course outline ↗</a></p></aside>
    </div></section>
   </main>`);
 }
 
 function lab(){
   return layout("AND Gate Laboratory","Laboratory",`<main id="main" tabindex="-1" class="site-main">
-    <section class="page-hero"><div class="shell"><div class="crumb"><a href="${BASE}/learn/cfp-101/logic-gates">Lesson 01</a> / Laboratory 001</div><div class="kicker">Laboratory / Digital systems / Experiment 001</div>
+    <section class="page-hero"><div class="shell"><div class="crumb"><a href="${BASE}/learn/cfp-101/logic-gates">Lesson 02</a> / Laboratory 001</div><div class="kicker">Laboratory / Digital systems / Experiment 001</div>
       <h1 class="serif">Make logic <em>visible.</em></h1><p>Change two binary inputs, predict what should happen, and verify the complete truth table of an ideal AND gate. This simulation makes no network requests.</p></div></section>
     <section class="shell section"><div class="section-head"><div><div class="kicker">Interactive model / Two Boolean inputs</div><h2 class="serif">AND gate: Q = A ∧ B</h2></div><a class="text-link" href="${BASE}/learn/cfp-101/logic-gates">Read the lesson ↗</a></div>
       <div class="lab-layout" data-and-lab>
@@ -184,7 +189,7 @@ function lab(){
   </main>`);
 }
 
-const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/laboratory/and-gate",lab]]);
+const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/laboratory/and-gate",lab]]);
 
 const ASSETS=new Map([
   [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS]],
