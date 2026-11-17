@@ -6,6 +6,7 @@ import {INSTITUTE_CSS} from "./styles.mjs";
 
 import {INSTITUTE_CLIENT} from "./client.mjs";
 import {TRANSISTOR_LESSON_HTML} from "./transistor-lesson.mjs";
+import {CFP_101} from "./curriculum.mjs";
 import {ANEVUM_MARK_SVG, ANEVUM_OBSERVATORY_SVG} from "./artwork.mjs";
 import {LAB_ART} from "../anevum-public-studio/living-laboratory-art.mjs";
 
@@ -89,23 +90,16 @@ function academy(){
 }
 
 function program(){
-  const units=[
-    ["01","Semiconductors and transistor switching","Introductory lesson available","/learn/cfp-101/transistor-switching"],
-    ["02","Binary logic and gates","Introductory lesson and laboratory available","/learn/cfp-101/logic-gates"],
-    ["03","Combinational circuits and adders","Curriculum in development",null],
-    ["04","Sequential circuits and registers","Curriculum in development",null],
-    ["05","Memory and instruction architecture","Curriculum in development",null],
-    ["06","Machine code and assembly","Curriculum in development",null],
-    ["07","Computer systems and software","Curriculum in development",null],
-    ["08","Simulated 8-bit computer capstone","Curriculum in development",null]
-  ];
+  const units=CFP_101.units.map(unit=>[
+    unit.number,unit.title,unit.displayStatus,unit.lessonPath
+  ]);
   const cards=units.map(([number,name,state,href])=>`<article class="unit${href?' current':''}"><div class="index">${number}</div><div><h3>${name}</h3><p>${state}</p><div class="mark">${href?`<a href="${BASE}${href}">Study this lesson →</a>`:"Planned / Not yet published"}</div></div></article>`).join("");
   return layout("CFP-101 Course","Course",`<main id="main" tabindex="-1" class="site-main">
    <section class="page-hero"><div class="shell"><div class="crumb"><a href="${BASE}/academy">Academy</a> / School of Computing / CFP-101</div><div class="kicker">Founding course / 001</div>
     <h1 class="serif">Computing from <em>first principles.</em></h1><p>From semiconductors and switching through digital logic and computer architecture. The eight-unit program is a planned syllabus; two introductory preview lessons and one laboratory are currently implemented.</p></div></section>
    <section class="shell section"><div class="section-head"><div><div class="kicker">The learning path</div><h2 class="serif">Eight units. Two lessons available.</h2></div><a class="text-link" href="${BASE}/learn/cfp-101/transistor-switching">Begin available lesson ↗</a></div>
     <div class="program-grid">${cards}</div>
-    <div class="aside-panel institution-side"><h2>What completing the course should mean</h2><p>Derive digital logic from explicit assumptions; construct and verify circuits; explain how memory, processing, and instructions fit together; produce an independently inspectable computing artifact. No academic credit or degree is awarded. Prerequisites: comfortable arithmetic and willingness to learn basic algebra.</p><p>Content status: design preview, not a completed 30–40 hour course.</p></div>
+    <div class="aside-panel institution-side"><h2>What completing the course should mean</h2><p>Derive digital logic from explicit assumptions; construct and verify circuits; explain how memory, processing, and instructions fit together; produce an independently inspectable computing artifact. No academic credit or degree is awarded. Prerequisites: comfortable arithmetic and willingness to learn basic algebra.</p><p>Content status: draft syllabus, version ${CFP_101.version}. This is not a completed 30–40 hour course, and no academic credit is offered.</p><p><a href="${BASE}/curriculum/cfp-101.json" download="anevum-cfp-101-curriculum.json">Download portable curriculum metadata (JSON) ↗</a></p></div>
    </section>
   </main>`);
 }
@@ -192,6 +186,7 @@ function lab(){
 const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/laboratory/and-gate",lab]]);
 
 const ASSETS=new Map([
+  [BASE+"/curriculum/cfp-101.json",["application/json; charset=utf-8",JSON.stringify(CFP_101,null,2)+"\\n"]],
   [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS]],
   [BASE+"/client.js",["text/javascript; charset=utf-8",INSTITUTE_CLIENT]],
   [BASE+"/mark.svg",["image/svg+xml; charset=utf-8",ANEVUM_MARK_SVG]],
