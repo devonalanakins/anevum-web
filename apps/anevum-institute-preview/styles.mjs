@@ -202,6 +202,7 @@ body{background:radial-gradient(ellipse at 85% 6%,#12303b 0,transparent 42%),lin
  .panel{padding:22px}
  .footer{padding-block:32px}
 }
+@media(max-width:750px){.catalog-layout{grid-template-columns:minmax(0,1fr)}.catalog-layout>*,.course-card{min-width:0}}
 @media(prefers-reduced-motion:reduce){.space-card::before,.btn{transition:none!important;transform:none!important}}
 
 `;
