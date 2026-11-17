@@ -203,6 +203,31 @@ body{background:radial-gradient(ellipse at 85% 6%,#12303b 0,transparent 42%),lin
  .footer{padding-block:32px}
 }
 @media(max-width:750px){.catalog-layout{grid-template-columns:minmax(0,1fr)}.catalog-layout>*,.course-card{min-width:0}}
+
+/* Focused study: compress the decorative zone so a learner reaches the task sooner. */
+body[data-area="academy"] .page-hero,body[data-area="course"] .page-hero{padding-top:62px;padding-bottom:66px}
+body[data-area="classroom"] .page-hero,body[data-area="laboratory"] .page-hero{
+  padding-top:32px;padding-bottom:40px;
+  background:linear-gradient(112deg,#0a1820,#142a31);
+}
+body[data-area="classroom"] .page-hero::before,body[data-area="laboratory"] .page-hero::before{opacity:.09}
+body[data-area="classroom"] .page-hero h1,body[data-area="laboratory"] .page-hero h1{
+  font-size:clamp(36px,4.2vw,58px);max-width:850px;line-height:1.09;margin-block:12px 14px;
+}
+body[data-area="classroom"] .page-hero p,body[data-area="laboratory"] .page-hero p{font-size:14px;line-height:1.65;max-width:840px}
+body[data-area="classroom"] .page-hero .crumb,body[data-area="laboratory"] .page-hero .crumb{margin-bottom:14px}
+body[data-area="classroom"] .section,body[data-area="laboratory"] .section{padding-top:33px}
+body[data-area="laboratory"] .section-head{margin-bottom:19px}
+body[data-area="laboratory"] .section h2{font-size:clamp(33px,3.3vw,46px)}
+@media(max-width:750px){
+  body[data-area="academy"] .page-hero,body[data-area="course"] .page-hero{padding-top:43px;padding-bottom:46px}
+  body[data-area="classroom"] .page-hero,body[data-area="laboratory"] .page-hero{padding-top:24px;padding-bottom:31px}
+  body[data-area="classroom"] .page-hero h1,body[data-area="laboratory"] .page-hero h1{font-size:clamp(33px,7.6vw,49px)}
+  body[data-area="classroom"] .section,body[data-area="laboratory"] .section{padding-top:19px}
+  .catalog-layout>.aside-panel{order:2}
+  .catalog-layout>div{order:1}
+}
+
 @media(prefers-reduced-motion:reduce){.space-card::before,.btn{transition:none!important;transform:none!important}}
 
 `;
