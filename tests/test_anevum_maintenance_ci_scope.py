@@ -147,7 +147,7 @@ class ScopeTests(unittest.TestCase):
 
     def test_bonsai_isolated_worker_uses_exact_own_browser_gate(self):
         paths = list(scope.ISOLATED_BONSAI_PATHS)
-        self.assertEqual(len(paths), 10)
+        self.assertEqual(len(paths), 41)
         self.assertFalse(scope.app_preview_required(paths))
         self.assertTrue(scope.bonsai_required(paths))
         self.assertFalse(scope.public_studio_required(paths))
