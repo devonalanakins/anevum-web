@@ -160,6 +160,7 @@ function lab(){
           <div class="lab-actions"><button class="btn ghost small" type="button" data-reset>Restart experiment</button>
             <button class="btn ghost small" type="button" data-export>Export notebook (JSON)</button></div>
           <p class="fine-print" role="status" aria-live="polite" data-export-status>Export the simulated observations from this session. No data is sent to ANEVUM.</p>
+          <p class="fine-print">To document your experiment, download the notebook above, then <a href="${BASE}/dossier">open Research Desk</a> and import the simulation JSON. This is not an externally reviewed result.</p>
           <p class="fine-print" data-local-progress>Progress is stored only on this device.</p>
         </section>
       </div>
