@@ -129,6 +129,64 @@ async function studyNoteBookmark(page){
       restoredAfterReload:true,twoStepDeletion:true}));
 }
 
+async function studyNotePortability(page){
+  const route="/institute-preview/learn/cfp-101/logic-gates";
+  const key="anevum.institute.study.v1.CFP-101-U02";
+  await visit(page,route);
+  await page.evaluate(key=>localStorage.removeItem(key),key);
+  await page.reload({waitUntil:"load"});
+  const note=page.locator("[data-study-text]");
+  const save=page.locator("[data-study-save]");
+  const file=page.locator("[data-study-import]");
+  const apply=page.locator("[data-study-import-apply]");
+  const feedback=page.locator("[data-study-status]");
+  await note.fill("Previously saved text on this device.");
+  await save.click();
+  const original=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).note,key);
+  await note.fill("New unsaved text already in editor.");
+  const temporary=await note.inputValue();
+  const restored="From exported notes, with a new line.\nRestored through file picker.";
+  const format=(id,text)=>"ANEVUM Open Institute / "+id+
+    " / Personal study notes\nBrowser-local export; not an institutional transcript.\n\n"+text+"\n";
+  await file.setInputFiles({name:"anevum-cfp101-u02-notes.txt",mimeType:"text/plain",
+    buffer:Buffer.from(format("CFP-101-U02",restored),"utf8")});
+  await apply.waitFor({state:"visible",timeout:10000});
+  check((await note.inputValue())===temporary
+      &&(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).note,key))===original,
+    "Importing a file must not overwrite editor or saved note");
+  check((await feedback.textContent()).includes("format checked"),
+    "Per-lesson export format was not validated");
+  await apply.click();
+  check((await note.inputValue())===restored
+      &&(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).note,key))===original
+      &&(await feedback.textContent()).includes("not saved"),
+    "Apply must require a separate Save");
+  await save.click();
+  await page.reload({waitUntil:"load"});
+  check((await note.inputValue())===restored
+      &&(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).note,key))===restored,
+    "Imported notes failed to survive a reload after explicit Save");
+  await file.setInputFiles({name:"anevum-cfp101-u01-notes.txt",mimeType:"text/plain",
+    buffer:Buffer.from(format("CFP-101-U01","wrong lesson"),"utf8")});
+  await page.waitForFunction(()=>document.querySelector("[data-study-status]")?.textContent.startsWith("Notes import rejected"));
+  check(await apply.isHidden()&&(await note.inputValue())===restored
+      &&(await feedback.textContent()).includes("this exact lesson"),
+    "Foreign lesson notes should be rejected without overwriting anything");
+  await file.setInputFiles({name:"huge.txt",mimeType:"text/plain",
+    buffer:Buffer.from("x".repeat(41000),"utf8")});
+  await page.waitForFunction(()=>document.querySelector("[data-study-status]")?.textContent.includes("40 KiB limit"));
+  check(await apply.isHidden()&&(await note.inputValue())===restored,
+    "Oversized import must be rejected and leave text intact");
+  await page.locator("[data-study-clear]").click();
+  await page.locator("[data-study-clear]").click();
+  check(await page.evaluate(key=>localStorage.getItem(key)===null,key),
+    "Synthetic imported note data must be deleted");
+  console.log("ANEVUM_WEBKIT_PORTABLE_STUDY_IMPORT_PASS",JSON.stringify({
+    filePicker:true,stagedOnly:true,explicitApply:true,explicitSave:true,
+    recoveredAfterReload:true,wrongLessonRejected:true,oversizedRejected:true
+  }));
+}
+
 async function halfAdder(page){
   await visit(page,"/institute-preview/learn/cfp-101/half-adders");
   await page.evaluate(()=>{
@@ -195,6 +253,7 @@ try{
   await screenshot(phone,"academy-mobile");
   await mobileMenu(phone);
   await studyNoteBookmark(phone);
+  await studyNotePortability(phone);
   await halfAdder(phone);
   await visit(phone,"/institute-preview/dossier");
   await screenshot(phone,"research-desk-mobile");
@@ -209,7 +268,7 @@ try{
   await desktopContext.close();
   check(errors.length===0,"Unhandled WebKit page errors",errors);
   console.log("ANEVUM_INSTITUTE_WEBKIT_PREFLIGHT_PASS",
-    JSON.stringify({routes:28,touchMenu:true,studyNotesPreserved:true,halfAdderHandoff:true,
+    JSON.stringify({routes:28,touchMenu:true,studyNotesPreserved:true,portableNoteImport:true,halfAdderHandoff:true,
       ownerSafariAcceptance:false,publicDeployment:false}));
 }finally{
   if(browser)await browser.close();
