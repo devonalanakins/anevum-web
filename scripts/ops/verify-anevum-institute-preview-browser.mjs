@@ -18,6 +18,7 @@ const pages=[
   ["/institute-preview/academy/cfp-101","course"],
   ["/institute-preview/learn/cfp-101/transistor-switching","transistor"],
   ["/institute-preview/learn/cfp-101/logic-gates","lesson"],
+  ["/institute-preview/learn/cfp-101/half-adders","adder"],
   ["/institute-preview/laboratory/and-gate","laboratory"]
 ];
 mkdirSync(output,{recursive:true});
@@ -68,7 +69,7 @@ async function testPage(pathname,label,width,height){
   const state=await evaluate("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('main h1')?.textContent.trim(),mainCount:document.querySelectorAll('main').length,h1Count:document.querySelectorAll('h1').length,skip:!!document.querySelector('a.skip[href=\"#main\"]'),desktop:!!document.querySelector('nav.desk-nav[aria-label=\"Primary navigation\"]'),mobile:!!document.querySelector('details.mobile-menu'),mobileVisible:getComputedStyle(document.querySelector('details.mobile-menu')).display!=='none',width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,robots:document.querySelector('meta[name=\"robots\"]')?.content,scriptCount:document.scripts.length,allLinksLabelled:[...document.querySelectorAll('a[href]')].every(a=>!!(a.textContent.trim()||a.getAttribute('aria-label'))),scriptsLoaded:!!document.querySelector('script[src=\"/institute-preview/client.js\"]')}))()");
   const identity=await evaluate("(()=>{const mark=document.querySelector('img.identity-mark');const scene=document.querySelector('.hero');const frontier=document.querySelector('.frontier-facility-art');const reader=document.querySelector('.lesson-article');return {markLoaded:!!mark&&mark.complete&&mark.naturalWidth===160&&mark.currentSrc.includes('/institute-preview/mark.svg'),iconHref:document.querySelector('link[rel=icon]')?.getAttribute('href'),sceneCorrect:!scene||(!!frontier&&getComputedStyle(frontier).backgroundImage.includes('gradient')&&!!document.querySelector('.facility-poster')),readerBackground:reader?getComputedStyle(reader).backgroundColor:null,navSize:document.querySelectorAll('nav.desk-nav a').length}})()");
   verify(identity.markLoaded&&identity.iconHref==='/institute-preview/mark-small.svg'&&identity.sceneCorrect&&identity.navSize===5,"New identity, scene or navigation is missing",{label,width,identity});
-  if(label==="lesson"||label==="transistor")verify(identity.readerBackground==="rgb(244, 241, 232)","Editorial study surface is missing",{label,width,identity});
+  if(label==="lesson"||label==="transistor"||label==="adder")verify(identity.readerBackground==="rgb(244, 241, 232)","Editorial study surface is missing",{label,width,identity});
   verify(state.mainCount===1&&state.h1Count===1&&state.skip&&state.desktop&&state.mobile&&state.scriptsLoaded&&state.allLinksLabelled,"Accessible landmarks or navigation missing",{label,width,state});
   verify(state.robots.includes("noindex")&&state.scriptCount===1,"Unexpected indexing or scripts",{label,width,state});
   verify(state.width>=width-20&&state.width<=width&&state.scrollWidth<=state.width+1&&state.bodyWidth<=state.width+1,"Horizontal overflow",{label,width,state});
@@ -101,7 +102,7 @@ async function testPage(pathname,label,width,height){
     const firstField=await evaluate("document.querySelector('[data-evidence-field=title]').getBoundingClientRect().top");
     verify(firstField<height-30,"Personal research activity must be visible in first viewport",{width,height,firstField});
   }
-  if((label==="lesson"||label==="transistor"||label==="laboratory")&&(width===390||width===1440)){
+  if((label==="lesson"||label==="transistor"||label==="adder"||label==="laboratory")&&(width===390||width===1440)){
     const workTop=await evaluate("(()=>{const el=document.querySelector('.lesson-article')||document.querySelector('[data-and-lab]');return el?.getBoundingClientRect().top??9999})()");
     verify(workTop<height-30,"Study task is pushed below the initial viewport",{label,width,height,workTop});
   }
@@ -113,7 +114,7 @@ async function testPage(pathname,label,width,height){
   verify(link,"Skip link cannot receive keyboard focus",{label,width});
   if((width===390||width===1440)){
     await screenshot(label+"-"+width);
-    if(label==="home"||label==="recognition"||label==="dossier"||label==="laboratory"||label==="lesson"||label==="transistor")await screenshot(label+"-"+width+"-full",true);
+    if(label==="home"||label==="recognition"||label==="dossier"||label==="laboratory"||label==="lesson"||label==="transistor"||label==="adder")await screenshot(label+"-"+width+"-full",true);
   }
   console.log("INSTITUTE_PAGE_QA_PASS",label,width,state.heading);
 }
@@ -122,7 +123,7 @@ async function compactShellQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await navigate("/institute-preview/academy");
   const open=await evaluate("(()=>{const trigger=document.querySelector('[data-search-open]');trigger.click();const d=document.querySelector('[data-command-dialog]');return {modal:d.open,focused:document.activeElement===d.querySelector('[data-command-query]'),count:d.querySelectorAll('.command-result').length};})()");
-  verify(open.modal&&open.focused&&open.count===10,"Compact palette did not open with actual routes",open);
+  verify(open.modal&&open.focused&&open.count===11,"Compact palette did not open with actual routes",open);
   const search=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');const q=d.querySelector('[data-command-query]');q.value='transistor';q.dispatchEvent(new Event('input',{bubbles:true}));return [...d.querySelectorAll('.command-result')].map(a=>a.getAttribute('href'));})()");
   verify(search.includes("/institute-preview/learn/cfp-101/transistor-switching")&&search.every(url=>url.startsWith("/institute-preview/")),"Search did not resolve the existing lesson",search);
   const closed=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');d.querySelector('[data-command-close]').click();return !d.open;})()");
@@ -146,7 +147,7 @@ async function compactCourseUsabilityQA(){
     [{transistor:false,lesson:false,experiment:false},"/learn/cfp-101/transistor-switching","Begin lesson 01"],
     [{transistor:true,lesson:false,experiment:false},"/learn/cfp-101/logic-gates","Continue lesson 02"],
     [{transistor:true,lesson:true,experiment:false},"/laboratory/and-gate","Run AND laboratory"],
-    [{transistor:true,lesson:true,experiment:true},"/dossier","Open Research Desk"]
+    [{transistor:true,lesson:true,experiment:true},"/learn/cfp-101/half-adders","Explore lesson 03"]
   ];
   for(const entry of stages){
     await evaluate("localStorage.setItem('anevum.institute.cfp101.preview.v1',"+JSON.stringify(JSON.stringify(entry[0]))+")");
@@ -155,13 +156,13 @@ async function compactCourseUsabilityQA(){
     verify(academy.href==="/institute-preview"+entry[1]&&academy.text.includes(entry[2])&&academy.status.includes("No academic credit"),"Academy next step is inconsistent with saved local practice",{stage:entry[0],academy});
     await navigate("/institute-preview/academy/cfp-101");
     const course=await evaluate("(()=>{const a=document.querySelector('[data-course-resume]');return {href:a?.getAttribute('href'),text:a?.textContent,display:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,planned:document.querySelectorAll('[data-unit-availability=planned]').length};})()");
-    verify(course.href==="/institute-preview"+entry[1]&&course.text.includes(entry[2])&&course.display===8&&course.planned===6,"Course syllabus continuation or availability incorrect",{stage:entry[0],course});
+    verify(course.href==="/institute-preview"+entry[1]&&course.text.includes(entry[2])&&course.display===8&&course.planned===5,"Course syllabus continuation or availability incorrect",{stage:entry[0],course});
   }
   const toggled=await evaluate("(()=>{const b=document.querySelector('[data-unit-filter=available]');b.click();return {pressed:b.getAttribute('aria-pressed'),shown:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,hidden:document.querySelectorAll('[data-unit-availability][hidden]').length,status:document.querySelector('[data-unit-filter-status]').textContent};})()");
-  verify(toggled.pressed==="true"&&toggled.shown===2&&toggled.hidden===6&&toggled.status.includes("hidden, not removed"),"Available-only course filtering is inaccurate",toggled);
+  verify(toggled.pressed==="true"&&toggled.shown===3&&toggled.hidden===5&&toggled.status.includes("hidden, not removed"),"Available-only course filtering is inaccurate",toggled);
   const restored=await evaluate("(()=>{document.querySelector('[data-unit-filter=all]').click();return {shown:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,selected:document.querySelector('[data-unit-filter=all]').getAttribute('aria-pressed')};})()");
   verify(restored.shown===8&&restored.selected==="true","All-units filter did not restore full syllabus",restored);
-  for(const p of ["/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"]){
+  for(const p of ["/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/laboratory/and-gate"]){
     await navigate("/institute-preview"+p);
     const legible=await evaluate("(()=>{const el=document.querySelector('.page-hero');const bg=getComputedStyle(el,'::before');return {bg:el&&getComputedStyle(el).backgroundImage,deco:bg.content,overlay:bg.backgroundImage};})()");
     verify(legible.deco==="none"&&legible.overlay==="none","Mobile study hero remains obscured by decorative diagram",{p,legible});
@@ -169,6 +170,27 @@ async function compactCourseUsabilityQA(){
   // Restore the original browser test's expected fresh-visitor state.
   await evaluate("localStorage.removeItem('anevum.institute.cfp101.preview.v1')");
   console.log("ANEVUM_COMPACT_COURSE_USABILITY_QA_PASS");
+}
+
+
+async function halfAdderBrowserQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await navigate("/institute-preview/learn/cfp-101/half-adders");
+  const result=await evaluate("(()=>{const root=document.querySelector('[data-half-adder]');const a=root.querySelector('[data-half-input=a]');const b=root.querySelector('[data-half-input=b]');const snap=()=>({a:a.getAttribute('aria-pressed'),b:b.getAttribute('aria-pressed'),sum:root.querySelector('[data-half-sum]').textContent,carry:root.querySelector('[data-half-carry]').textContent,progress:root.querySelector('[data-half-progress]').textContent});const initial=snap();b.click();const after01=snap();a.click();const after11=snap();b.click();const after10=snap();return {initial,after01,after11,after10,visited:[...root.querySelectorAll('[data-half-row]')].map(x=>({row:x.getAttribute('data-half-row'),seen:x.classList.contains('was-visited')}))};})()");
+  verify(result.initial.sum==="0"&&result.initial.carry==="0"&&result.initial.progress.startsWith("1 of 4"),"Half adder 00 is incorrect",result);
+  verify(result.after01.sum==="1"&&result.after01.carry==="0","Half adder 01 is incorrect",result);
+  verify(result.after11.sum==="0"&&result.after11.carry==="1","Half adder 11 is incorrect",result);
+  verify(result.after10.sum==="1"&&result.after10.carry==="0"&&result.after10.progress.startsWith("4 of 4")&&result.visited.length===4&&result.visited.every(x=>x.seen),"Half adder 10 or coverage is incorrect",result);
+  const quiz=await evaluate("(()=>{const root=document.querySelector('[data-half-quiz]');root.querySelector('[data-half-answer=01]').click();const wrong=root.querySelector('[data-half-quiz-status]').textContent;root.querySelector('[data-half-answer=10]').click();return {wrong,correct:root.querySelector('[data-half-quiz-status]').textContent,selected:root.querySelector('[data-half-answer=10]').getAttribute('aria-pressed')};})()");
+  verify(quiz.wrong.includes("Try again")&&quiz.correct.startsWith("Correct.")&&quiz.selected==="true","Half-adder self-assessment did not distinguish a wrong answer from a correct one",quiz);
+  const exported=await evaluate("(async()=>{const old=URL.createObjectURL;let blob=null;let name='';const handler=e=>{const a=e.target.closest('a[download]');if(a){name=a.download;e.preventDefault();}};document.addEventListener('click',handler,true);URL.createObjectURL=item=>{blob=item;return 'blob:half-adder-test';};document.querySelector('[data-half-export]').click();document.removeEventListener('click',handler,true);URL.createObjectURL=old;return {name,record:blob?JSON.parse(await blob.text()):null};})()");
+  const rows=exported.record?.observations||[];
+  verify(exported.name==="anevum-cfp101-half-adder-001.json"&&exported.record?.experimentId==="CFP-101-HALF-001"&&exported.record?.coverage.complete===true&&exported.record?.independentlyVerified===false&&exported.record?.academicCredit===false,"Half adder export invented evidence or lost observations",{name:exported.name,record:exported.record});
+  verify(JSON.stringify(rows.map(x=>[x.a,x.b,x.sum,x.carry]))===JSON.stringify([[0,0,0,0],[0,1,1,0],[1,0,1,0],[1,1,0,1]]),"Exported half-adder mathematical observations are wrong",rows);
+  const reset=await evaluate("(()=>{const root=document.querySelector('[data-half-adder]');root.querySelector('[data-half-reset]').click();return {coverage:root.querySelector('[data-half-progress]').textContent,sum:root.querySelector('[data-half-sum]').textContent,carry:root.querySelector('[data-half-carry]').textContent,seen:[...root.querySelectorAll('.was-visited')].length};})()");
+  verify(reset.coverage.startsWith("1 of 4")&&reset.sum==="0"&&reset.carry==="0"&&reset.seen===1,"Half adder reset retained stale experiment coverage",reset);
+  console.log("ANEVUM_HALF_ADDER_BROWSER_QA_PASS",JSON.stringify({fourStates:true,quiz:true,export:true,reset:true,independentReview:false}));
 }
 
 async function interactions(){
@@ -353,6 +375,7 @@ try{
   }
   await compactShellQA();
   await compactCourseUsabilityQA();
+  await halfAdderBrowserQA();
   await interactions();
   console.log("ANEVUM_INSTITUTE_BROWSER_QA_PASS");
 }finally{

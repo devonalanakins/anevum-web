@@ -672,4 +672,38 @@ body[data-area="course"] .unit[hidden]{display:none!important}
   .academy-practice{width:100%}
 }
 
+
+/* CFP-101 / Unit03: compact instrumental workbench inside ivory study. */
+.lesson-article .half-bench{background:linear-gradient(140deg,#102933,#081720);border:1px solid #739b99;color:#f1efe6;border-radius:10px;padding:clamp(16px,2.4vw,27px);margin:20px 0 30px}
+.half-bench-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:7px;border-bottom:1px solid #74958b62;padding-bottom:12px;margin-bottom:16px;color:#dcb98a;font:650 10px/1.45 ui-monospace,Consolas,monospace;letter-spacing:.04em}
+.lesson-article .half-bench h3{color:#f0e9d9;font-size:clamp(24px,2.3vw,32px);margin:8px 0 18px}
+.half-grid{display:grid;grid-template-columns:1fr minmax(0,.9fr);gap:20px}
+.half-switches{display:flex;gap:9px;flex-wrap:wrap}
+.half-switches button{min-width:100px;min-height:52px;border:1px solid #8daaa4;border-radius:6px;background:#0a1e28;color:#f4f2ea;font-size:15px;font-weight:650;cursor:pointer}
+.half-switches button[aria-pressed="true"]{background:#4d422f;border-color:#e7c58b}
+.half-switches button:hover{border-color:#e3bd83}
+.half-switches button:focus-visible,.half-actions button:focus-visible{outline:3px solid #ffe1a3;outline-offset:3px}
+.half-outputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:16px}
+.half-outputs>div{border:1px solid #7d9b9a88;border-radius:6px;padding:13px;background:#0c222c}
+.half-outputs small{display:block;font:650 10px ui-monospace,Consolas,monospace;color:#b9cfc9;letter-spacing:.04em}
+.half-outputs strong{display:block;font:normal 48px/1.1 Georgia,serif;color:#f0cb8a;margin-top:5px}
+.lesson-article .half-explanation,.lesson-article .half-coverage,.lesson-article .half-fine{color:#ccdad4;font-size:12px;line-height:1.65;margin:12px 0}
+.half-table{width:100%;border-collapse:collapse;font-size:12px}
+.half-table th,.half-table td{border-bottom:1px solid #597b7b6c;text-align:center;padding:9px 5px;color:#f0f2e8}
+.half-table th{font-size:10px;color:#e6c48e;letter-spacing:.05em}
+.half-table tbody tr.is-current{background:#4159578c}
+.half-table tbody tr.was-visited td:last-child{color:#cde7bf;font-weight:700}
+.half-grid .progress-meter{margin:10px 0 0}
+.half-actions{display:flex;gap:9px;flex-wrap:wrap;border-top:1px solid #65858564;padding-top:15px;margin-top:19px}
+.half-actions button{flex:1 1 195px;min-height:43px;border:1px solid #a6bbb1;color:#e7eee4;background:#17363d;border-radius:5px;padding:9px 12px;font-size:12px;font-weight:650;cursor:pointer}
+.half-actions button:hover{background:#24515a}
+.half-quiz .answer[aria-pressed="true"]{border-width:2px}
+.studio-next-unit{border:1px solid #a8b9ac;background:#e6eadf;padding:17px;margin:15px 0;border-radius:6px}
+.studio-next-unit strong{color:#466352;font:700 11px ui-monospace,Consolas,monospace;letter-spacing:.05em}
+.studio-next-unit p{font-size:12px;color:#405f55;margin:7px 0}
+.studio-next-unit a{display:inline-block;color:#1a5049;text-decoration:underline;text-underline-offset:3px;font-size:13px;font-weight:750}
+@media(max-width:900px){.half-grid{grid-template-columns:1fr}.half-grid .half-switches button{flex:1}}
+@media(max-width:470px){.lesson-article .half-bench{padding:14px;margin-inline:-7px}.half-outputs strong{font-size:39px}.half-table th,.half-table td{padding:8px 4px}.half-actions button{flex-basis:100%}}
+@media(prefers-reduced-motion:reduce){.half-grid .progress-meter span{transition:none}}
+
 `;

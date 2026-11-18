@@ -6,6 +6,7 @@ import {createHash} from "node:crypto";
 import {LAB_ART} from "../apps/anevum-public-studio/living-laboratory-art.mjs";
 import worker from "../apps/anevum-institute-preview/worker.mjs";
 import {CFP_101,validateCurriculum} from "../apps/anevum-institute-preview/curriculum.mjs";
+import {evaluateHalfAdder,HALF_ADDER_LESSON_HTML} from "../apps/anevum-institute-preview/half-adder-lesson.mjs";
 import {studyToolsHtml} from "../apps/anevum-institute-preview/study-tools.mjs";
 import {dossierPage} from "../apps/anevum-institute-preview/dossier-ui.mjs";
 import {localStudioPage,localProfilePage} from "../apps/anevum-institute-preview/learner-ui.mjs";
@@ -16,10 +17,10 @@ import {FRONTIER_GL_CLIENT} from "../apps/anevum-institute-preview/frontier-gl.m
 import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
-const PATHS=["","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
+const PATHS=["","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/laboratory/and-gate"];
 const req=(path="",init={})=>worker.fetch(new Request(BASE+path,init));
 
-test("ten isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
+test("eleven isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
   for(const path of PATHS){
     const response=await req(path);
     assert.equal(response.status,200,path);
@@ -62,10 +63,10 @@ test("course availability and educational boundaries are explicit",async()=>{
   const catalog=await(await req("/academy")).text();
   const course=await(await req("/academy/cfp-101")).text();
   const lesson=await(await req("/learn/cfp-101/logic-gates")).text();
-  assert.match(catalog,/Explore transistor switching and digital logic/i);
+  assert.match(catalog,/Explore transistor switching, Boolean logic and binary arithmetic/i);
   assert.match(catalog,/not operational faculties/i);
   assert.match(course,/curriculum in development/i);
-  assert.equal((course.match(/Study this lesson/g)||[]).length,2);
+  assert.equal((course.match(/Study this lesson/g)||[]).length,3);
   assert.ok(course.indexOf("Semiconductors and transistor switching")<course.indexOf("Binary logic and gates"),"Transistors-first syllabus order");
   assert.match(lesson,/Q = A ∧ B/);
   assert.match(lesson,/2² = 4/);
@@ -74,6 +75,33 @@ test("course availability and educational boundaries are explicit",async()=>{
   assert.match(lesson,/data-answer="and"/);
   assert.match(lesson,/data-local-progress/);
   assert.match(lesson,/not a transistor-level SPICE simulation/);
+});
+
+
+test("Unit03 half-adder model and route are true to their mathematical and review scope",async()=>{
+  const cases=[[0,0,{sum:0,carry:0}],[0,1,{sum:1,carry:0}],[1,0,{sum:1,carry:0}],[1,1,{sum:0,carry:1}]];
+  for(const [a,b,result] of cases){
+    assert.deepEqual(evaluateHalfAdder(a,b),result);
+    assert.equal(a+b,result.sum+2*result.carry,"binary arithmetic invariant");
+  }
+  for(const pair of [[2,0],[0,2],[-1,1],[null,1],["1",0],[0,undefined],[0.5,1]]){
+    assert.throws(()=>evaluateHalfAdder(...pair),TypeError);
+  }
+  assert.match(HALF_ADDER_LESSON_HTML,/S = A ⊕ B/);
+  assert.match(HALF_ADDER_LESSON_HTML,/C = A ∧ B/);
+  const response=await req("/learn/cfp-101/half-adders");
+  assert.equal(response.status,200);
+  const html=await response.text();
+  for(const token of ["CFP-101-U03","data-half-adder","data-half-input=\"a\"","data-half-input=\"b\"","data-half-sum","data-half-carry","data-half-export","data-half-reset","data-half-quiz-status","data-study-lesson=\"CFP-101-U03\""]){
+    assert.ok(html.includes(token),"Missing half-adder lesson control: "+token);
+  }
+  assert.equal((html.match(/data-half-row="(?:00|01|10|11)"/g)||[]).length,4);
+  assert.match(html,/no network request/i);
+  assert.match(html,/not a verified physical schematic|not a physical/i);
+  assert.match(html,/nand2tetris\.org\/project02/);
+  assert.match(html,/ocw\.mit\.edu\/courses\/6-004/);
+  assert.match(html,/independently inspectable|independent review|independently verified/i);
+  assert.doesNotMatch(html,/accredited degree|measured voltage|power in watts/i);
 });
 
 test("transistor switching lesson teaches ideal complementary inversion with accessible active controls",async()=>{
@@ -106,12 +134,12 @@ test("versioned curriculum JSON is portable, accurate and fail-closed on invalid
   assert.equal(manifest.accreditation,"none");
   assert.equal(manifest.units.length,8);
   assert.deepEqual(manifest.units.filter(unit=>unit.availability==="preview").map(unit=>unit.lessonPath),[
-    "/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates"
+    "/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders"
   ]);
-  assert.equal(manifest.units.filter(unit=>unit.availability==="planned").length,6);
+  assert.equal(manifest.units.filter(unit=>unit.availability==="planned").length,5);
   const manifestPage=await(await req("/academy/cfp-101")).text();
   assert.match(manifestPage,/Download portable curriculum metadata/);
-  assert.match(manifestPage,/version 0\.2\.0/);
+  assert.match(manifestPage,/version 0\.3\.0/);
   const invalid=structuredClone(manifest);
   invalid.units[2].availability="preview";
   assert.ok(validateCurriculum(invalid).some(error=>error.includes("Lesson availability mismatch")));
@@ -121,14 +149,15 @@ test("versioned curriculum JSON is portable, accurate and fail-closed on invalid
   const duplicate=structuredClone(manifest);
   duplicate.units[1].lessonPath=duplicate.units[0].lessonPath;
   assert.ok(validateCurriculum(duplicate).some(error=>error.includes("Duplicate lesson path")));
-  assert.ok(validateCurriculum({schemaVersion:1,id:"CFP-101",version:"0.2.0",status:"preview",units:[{availability:"preview"}]}).length>0);
+  assert.ok(validateCurriculum({schemaVersion:1,id:"CFP-101",version:"0.3.0",status:"preview",units:[{availability:"preview"}]}).length>0);
 });
 
-test("Learning Studio exposes independently keyed, accessible local notebooks for both lessons",async()=>{
-  assert.throws(()=>studyToolsHtml("CFP-101-U03"),/Unsupported or unreviewed/);
+test("Learning Studio exposes independently keyed, accessible local notebooks for all three lessons",async()=>{
+  assert.throws(()=>studyToolsHtml("CFP-101-U04"),/Unsupported or unreviewed/);
   const a=await (await req("/learn/cfp-101/transistor-switching")).text();
   const b=await (await req("/learn/cfp-101/logic-gates")).text();
-  for(const [html,key] of [[a,"CFP-101-U01"],[b,"CFP-101-U02"]]){
+  const c=await (await req("/learn/cfp-101/half-adders")).text();
+  for(const [html,key] of [[a,"CFP-101-U01"],[b,"CFP-101-U02"],[c,"CFP-101-U03"]]){
     assert.match(html,new RegExp('data-study-lesson="'+key+'"'));
     assert.match(html,/data-study-save/);
     assert.match(html,/data-study-download/);
@@ -141,6 +170,8 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   }
   assert.doesNotMatch(a,/data-study-lesson="CFP-101-U02"/);
   assert.doesNotMatch(b,/data-study-lesson="CFP-101-U01"/);
+  assert.doesNotMatch(c,/data-study-lesson="CFP-101-U01"/);
+  assert.doesNotMatch(c,/data-study-lesson="CFP-101-U02"/);
 });
 
 test("frontier society and evidence-based recognition distinguish working activities from future claims",async()=>{
@@ -155,7 +186,7 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.match(home,/INDEPENDENT SCIENTIFIC EDUCATION/);
   assert.match(home,/The work is the <em>curriculum/);
   assert.match(home,/NOT ISSUED/);
-  assert.match(home,/TWO PREVIEW LESSONS AVAILABLE/);
+  assert.match(home,/THREE PREVIEW LESSONS AVAILABLE/);
   assert.match(home,/href="\/institute-preview\/recognition"/);
   assert.match(recognition,/Your work should speak/);
   assert.match(recognition,/data-evidence-panel/);
@@ -206,7 +237,7 @@ test("working private learner workspace and profile expose real known course, no
   assert.match(studio,/data-studio-resume/);
   assert.match(studio,/data-studio-evidence-state/);
   assert.match(studio,/CFP-101-U02/);
-  assert.match(studio,/Six additional units remain unpublished/);
+  assert.match(studio,/Five additional units remain unpublished/);
   assert.match(studio,/private|Private/);
   assert.match(profile,/data-member-field="displayName"/);
   assert.match(profile,/data-member-field="tagline"/);

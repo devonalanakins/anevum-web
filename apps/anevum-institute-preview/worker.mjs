@@ -7,6 +7,7 @@ import {INSTITUTE_CSS} from "./styles.mjs";
 import {INSTITUTE_CLIENT} from "./client.mjs";
 import {FRONTIER_GL_CLIENT} from "./frontier-gl.mjs";
 import {TRANSISTOR_LESSON_HTML} from "./transistor-lesson.mjs";
+import {HALF_ADDER_LESSON_HTML} from "./half-adder-lesson.mjs";
 import {CFP_101} from "./curriculum.mjs";
 import {studyToolsHtml} from "./study-tools.mjs";
 import {frontierHome,frontierRecognition,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART} from "./frontier-society.mjs";
@@ -43,7 +44,7 @@ function navigation(active){
 function footer(){
   return `<footer class="footer"><div class="shell footer-inner">
     <div><div class="footer-brand">ANEVUM <span style="font-family:system-ui,sans-serif;letter-spacing:.09em;font-size:10px;color:#b6c6c6">OPEN RESEARCH SOCIETY / CONCEPT</span></div><p>An independent, non-accredited open-education and research project. No degrees or academic credit are offered. Free educational material; no sign-in required for this preview.</p></div>
-    <div><div class="preview-flag">Isolated design review / Not a public launch</div><p>The Academy currently contains two preview lessons and a Boolean laboratory. Other spaces and courses remain proposed.</p><p><a href="/original-works/archive">Visit the existing ANEVUM archive</a> · <a href="${BASE}">Return to Institute</a></p></div>
+    <div><div class="preview-flag">Isolated design review / Not a public launch</div><p>The Academy currently contains three preview lessons, an AND-gate laboratory and a half-adder simulation. Other spaces and courses remain proposed.</p><p><a href="/original-works/archive">Visit the existing ANEVUM archive</a> · <a href="${BASE}">Return to Institute</a></p></div>
   </div></footer>`;
 }
 
@@ -71,7 +72,7 @@ function academy(){
       <aside class="aside-panel"><div class="kicker">Six disciplines / proposed</div><h2>Fields of study</h2><ul class="discipline-list"><li>Computing &amp; systems engineering</li><li>Artificial intelligence &amp; machine learning</li><li>Mathematics &amp; physical sciences</li><li>Neuroscience &amp; cognitive science</li><li>Biology &amp; biophysics</li><li>Neuropsychology &amp; human behavior</li></ul><p>These groupings are proposed—not operational faculties, degrees, or clinical qualifications.</p></aside>
       <div class="academy-main"><div class="academy-tools"><span class="kicker">Ready to study / 01 course</span><a class="academy-jump" data-course-resume href="${BASE}/learn/cfp-101/transistor-switching">Begin lesson 01 →</a><span class="academy-practice" data-course-activity-status>Browser-local practice only</span></div>
         <article class="course-card"><div><div class="course-meta"><span>CFP-101</span><span>Foundational</span><span>Free / Self-paced</span></div>
-          <h3>Computing From First Principles</h3><p>Explore transistor switching and digital logic with two original introductory lessons, self-assessments, an inverter demonstration, and a Boolean AND laboratory. The full course is not complete.</p>
+          <h3>Computing From First Principles</h3><p>Explore transistor switching, Boolean logic and binary arithmetic through three original lessons, an inverter demonstration and two ideal Boolean experiments. The full eight-unit course remains unfinished.</p>
           <a class="btn small" href="${BASE}/academy/cfp-101">Open course ↗</a>
         </div></article>
         <div class="placeholder"><strong>More disciplines are being prepared.</strong>Rather than display fictitious course inventory, ANEVUM will add a subject only when its lessons, sources, exercises and review status are ready.</div>
@@ -81,15 +82,16 @@ function academy(){
 }
 
 function program(){
+  const available=CFP_101.units.filter(unit=>unit.availability==="preview").length;
   const units=CFP_101.units.map(unit=>[
     unit.number,unit.title,unit.displayStatus,unit.lessonPath
   ]);
   const cards=units.map(([number,name,state,href])=>`<article class="unit${href?' current':''}" data-unit-availability="${href?'available':'planned'}"><div class="index">${number}</div><div><h3>${name}</h3><p>${state}</p><div class="mark">${href?`<a href="${BASE}${href}">Study this lesson →</a>`:"Planned / Not yet published"}</div></div></article>`).join("");
   return layout("CFP-101 Course","Course",`<main id="main" tabindex="-1" class="site-main">
    <section class="page-hero"><div class="shell"><div class="crumb"><a href="${BASE}/academy">Academy</a> / School of Computing / CFP-101</div><div class="kicker">Founding course / 001</div>
-    <h1 class="serif">Computing from <em>first principles.</em></h1><p>From semiconductors and switching through digital logic and computer architecture. The eight-unit program is a planned syllabus; two introductory preview lessons and one laboratory are currently implemented.</p></div></section>
-   <section class="shell section compact-course"><div class="section-head"><div><div class="kicker">The learning path / ${CFP_101.version}</div><h2 class="serif">Eight units. Two lessons available.</h2></div><a class="text-link" data-course-resume href="${BASE}/learn/cfp-101/transistor-switching">Begin lesson 01 →</a></div>
-    <div class="course-controls"><div class="course-filter-buttons" role="group" aria-label="Filter syllabus units"><button type="button" data-unit-filter="all" aria-pressed="true">All 8 units</button><button type="button" data-unit-filter="available" aria-pressed="false">Available 2 lessons</button></div><span class="course-activity" data-course-activity-status>Browser-local practice only</span><span class="course-filter-status" role="status" aria-live="polite" data-unit-filter-status>Showing all 8 units.</span></div>
+    <h1 class="serif">Computing from <em>first principles.</em></h1><p>From semiconductors and switching through digital logic and computer architecture. The eight-unit program is a planned syllabus; three introductory preview lessons and two ideal Boolean experiments are currently implemented.</p></div></section>
+   <section class="shell section compact-course"><div class="section-head"><div><div class="kicker">The learning path / ${CFP_101.version}</div><h2 class="serif">Eight units. ${available} lessons available.</h2></div><a class="text-link" data-course-resume href="${BASE}/learn/cfp-101/transistor-switching">Begin lesson 01 →</a></div>
+    <div class="course-controls"><div class="course-filter-buttons" role="group" aria-label="Filter syllabus units"><button type="button" data-unit-filter="all" aria-pressed="true">All 8 units</button><button type="button" data-unit-filter="available" aria-pressed="false">Available ${available} lessons</button></div><span class="course-activity" data-course-activity-status>Browser-local practice only</span><span class="course-filter-status" role="status" aria-live="polite" data-unit-filter-status>Showing all 8 units.</span></div>
     <div class="program-grid" data-course-units>${cards}</div>
     <div class="aside-panel institution-side"><h2>What completing the course should mean</h2><p>Derive digital logic from explicit assumptions; construct and verify circuits; explain how memory, processing, and instructions fit together; produce an independently inspectable computing artifact. No academic credit or degree is awarded. Prerequisites: comfortable arithmetic and willingness to learn basic algebra.</p><p>Content status: draft syllabus, version ${CFP_101.version}. This is not a completed 30–40 hour course, and no academic credit is offered.</p><p><a href="${BASE}/curriculum/cfp-101.json" download="anevum-cfp-101-curriculum.json">Download portable curriculum metadata (JSON) ↗</a></p></div>
    </section>
@@ -98,6 +100,10 @@ function program(){
 
 function transistorLesson(){
   return layout("Lesson — Transistor Switching","Classroom",TRANSISTOR_LESSON_HTML.replace("</article>",studyToolsHtml("CFP-101-U01")+"</article>"));
+}
+
+function halfAdderLesson(){
+  return layout("Lesson — Half Adders","Classroom",HALF_ADDER_LESSON_HTML.replace("</article>",studyToolsHtml("CFP-101-U03")+"</article>"));
 }
 
 function gateFigure(){
@@ -145,7 +151,7 @@ function lesson(){
       <a class="btn" href="${BASE}/laboratory/and-gate">Open AND-gate experiment →</a>
       ${studyToolsHtml("CFP-101-U02")}
     </article>
-    <aside class="lesson-sidebar" aria-label="Lesson index"><div class="kicker">Lesson 02 / Index</div><h2>Inside this lesson</h2><ul><li><a href="#bits">From voltage to a bit</a></li><li><a href="#rule">Boolean definition</a></li><li><a href="#physical">Transistor implementation</a></li><li><a href="#check">Knowledge check</a></li><li><a href="#next">Laboratory exercise</a></li></ul><p>Estimated reading: 7–10 minutes. No account required.</p><p><a href="${BASE}/learn/cfp-101/transistor-switching">← Previous: Transistors</a></p><p><a href="${BASE}/academy/cfp-101">Full course outline ↗</a></p></aside>
+    <aside class="lesson-sidebar" aria-label="Lesson index"><div class="kicker">Lesson 02 / Index</div><h2>Inside this lesson</h2><ul><li><a href="#bits">From voltage to a bit</a></li><li><a href="#rule">Boolean definition</a></li><li><a href="#physical">Transistor implementation</a></li><li><a href="#check">Knowledge check</a></li><li><a href="#next">Laboratory exercise</a></li></ul><p>Estimated reading: 7–10 minutes. No account required.</p><p><a href="${BASE}/learn/cfp-101/transistor-switching">← Previous: Transistors</a></p><p><a href="${BASE}/learn/cfp-101/half-adders">Next: Half adders →</a></p><p><a href="${BASE}/academy/cfp-101">Full course outline ↗</a></p></aside>
    </div></section>
   </main>`);
 }
@@ -172,12 +178,12 @@ function lab(){
           <p class="fine-print" data-local-progress>Progress is stored only on this device.</p>
         </section>
       </div>
-      <div class="aside-panel" style="margin-top:23px"><h2>Scientific interpretation</h2><p>AND is defined mathematically by its truth table. This browser simulation evaluates the ideal Boolean function Q = A ∧ B; it is not a physical transistor circuit. The next step would be to construct a CMOS NAND gate followed by an inverter, then compare real switching behavior with this abstract model.</p></div>
+      <div class="aside-panel" style="margin-top:23px"><h2>Scientific interpretation</h2><p>AND is defined mathematically by its truth table. This browser simulation evaluates the ideal Boolean function Q = A ∧ B; it is not a physical transistor circuit. The next step would be to construct a CMOS NAND gate followed by an inverter, then compare real switching behavior with this abstract model.</p><p><a href="${BASE}/learn/cfp-101/half-adders">Next lesson: Use AND and XOR to build a half adder →</a></p></div>
     </section>
   </main>`);
 }
 
-const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/recognition",recognition],[BASE+"/dossier",dossier],[BASE+"/studio",memberStudio],[BASE+"/profile",memberProfile],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/laboratory/and-gate",lab]]);
+const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/recognition",recognition],[BASE+"/dossier",dossier],[BASE+"/studio",memberStudio],[BASE+"/profile",memberProfile],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/learn/cfp-101/half-adders",halfAdderLesson],[BASE+"/laboratory/and-gate",lab]]);
 
 const ASSETS=new Map([
   [BASE+"/curriculum/cfp-101.json",["application/json; charset=utf-8",JSON.stringify(CFP_101,null,2)+"\n"]],

@@ -1,8 +1,9 @@
-// ANEVUM Open Institute: accessible shared study tools for the two approved preview lessons.
+// ANEVUM Open Institute: accessible shared study tools for available preview lessons.
 // Device-only experimental support; no account, server-side notes, telemetry, or cloud sync.
 const LESSONS=Object.freeze({
   "CFP-101-U01":{label:"Lesson 01 · Transistor switching",filename:"anevum-cfp101-u01-notes.txt"},
-  "CFP-101-U02":{label:"Lesson 02 · Boolean logic",filename:"anevum-cfp101-u02-notes.txt"}
+  "CFP-101-U02":{label:"Lesson 02 · Boolean logic",filename:"anevum-cfp101-u02-notes.txt"},
+  "CFP-101-U03":{label:"Lesson 03 · Half adders",filename:"anevum-cfp101-u03-notes.txt"}
 });
 
 export function studyToolsHtml(unitId){

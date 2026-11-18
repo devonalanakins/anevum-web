@@ -27,7 +27,7 @@ export const INSTITUTE_CLIENT = String.raw`
       ?{href:"/institute-preview/learn/cfp-101/logic-gates",label:"Continue lesson 02 →"}
       :!result.experiment
       ?{href:"/institute-preview/laboratory/and-gate",label:"Run AND laboratory →"}
-      :{href:"/institute-preview/dossier",label:"Open Research Desk →"};
+      :{href:"/institute-preview/learn/cfp-101/half-adders",label:"Explore lesson 03 →"};
     document.querySelectorAll("[data-course-resume]").forEach(function(link){
       link.setAttribute("href",nextStep.href);
       link.textContent=nextStep.label;
@@ -331,6 +331,8 @@ export const INSTITUTE_CLIENT = String.raw`
     var controls=[].slice.call(document.querySelectorAll("[data-unit-filter]"));
     var units=[].slice.call(syllabus.querySelectorAll("[data-unit-availability]"));
     var status=document.querySelector("[data-unit-filter-status]");
+    var availableCount=units.filter(function(unit){return unit.getAttribute("data-unit-availability")==="available";}).length;
+    var plannedCount=units.length-availableCount;
     function select(value){
       controls.forEach(function(button){
         button.setAttribute("aria-pressed",button.getAttribute("data-unit-filter")===value?"true":"false");
@@ -339,14 +341,110 @@ export const INSTITUTE_CLIENT = String.raw`
         unit.hidden=value==="available"&&unit.getAttribute("data-unit-availability")!=="available";
       });
       if(status)status.textContent=value==="available"
-        ?"Showing the 2 available preview lessons. Six planned units are hidden, not removed."
-        :"Showing all 8 syllabus units, including six planned units.";
+        ?"Showing "+availableCount+" available preview lessons. "+plannedCount+" planned units are hidden, not removed."
+        :"Showing all "+units.length+" syllabus units, including "+plannedCount+" planned units.";
     }
     controls.forEach(function(button){
       button.addEventListener("click",function(){select(button.getAttribute("data-unit-filter"));});
     });
     select("all");
   })();
+
+  // CFP-101 / U03: ideal combinational arithmetic, not physical-circuit evidence.
+  (function(){
+    var bench=document.querySelector("[data-half-adder]");
+    if(!bench)return;
+    var a=0,b=0;
+    var visited=new Map();
+    var progress=bench.querySelector("[data-half-progress]");
+    var meter=bench.querySelector("[data-half-meter]");
+    var feedback=bench.querySelector("[data-half-feedback]");
+    var exportStatus=bench.querySelector("[data-half-export-status]");
+    function model(x,y){return {a:x,b:y,sum:x^y,carry:x&y};}
+    function observe(){
+      var state=model(a,b);
+      var key=String(a)+String(b);
+      visited.set(key,state);
+      bench.querySelectorAll("[data-half-input]").forEach(function(button){
+        var name=button.getAttribute("data-half-input");
+        var value=name==="a"?a:b;
+        button.setAttribute("aria-pressed",value===1?"true":"false");
+        button.querySelector("[data-half-input-value]").textContent=String(value);
+      });
+      bench.querySelector("[data-half-sum]").textContent=String(state.sum);
+      bench.querySelector("[data-half-carry]").textContent=String(state.carry);
+      feedback.textContent=a+" + "+b+" = binary "+state.carry+state.sum+" (sum "+state.sum+", carry "+state.carry+").";
+      bench.querySelectorAll("[data-half-row]").forEach(function(row){
+        var rowKey=row.getAttribute("data-half-row");
+        row.classList.toggle("is-current",rowKey===key);
+        row.classList.toggle("was-visited",visited.has(rowKey));
+        row.querySelector("[data-half-visited]").textContent=visited.has(rowKey)?"Seen":"—";
+      });
+      progress.textContent=visited.size+" of 4 combinations visited in this session."+(visited.size===4?" Complete Boolean coverage; no external review.":"");
+      meter.style.width=(visited.size/4*100)+"%";
+    }
+    bench.querySelectorAll("[data-half-input]").forEach(function(button){
+      button.addEventListener("click",function(){
+        if(button.getAttribute("data-half-input")==="a")a=1-a;else b=1-b;
+        observe();
+      });
+    });
+    bench.querySelector("[data-half-reset]").addEventListener("click",function(){
+      a=0;b=0;visited.clear();observe();
+      exportStatus.textContent="Experiment restarted. Previous session observations were cleared from this page.";
+    });
+    bench.querySelector("[data-half-export]").addEventListener("click",function(){
+      var rows=[...visited.values()].sort(function(x,y){return x.a*2+x.b-(y.a*2+y.b);});
+      var record={
+        schemaVersion:1,
+        kind:"browser-local-unverified-simulation",
+        experimentId:"CFP-101-HALF-001",
+        courseId:"CFP-101",
+        unitId:"CFP-101-U03",
+        model:"ideal-Boolean-half-adder",
+        assumptions:["binary inputs only","no physical propagation delay","no voltage, noise or power measurements"],
+        coverage:{observed:rows.length,possible:4,complete:rows.length===4},
+        observations:rows,
+        independentlyVerified:false,
+        academicCredit:false
+      };
+      try{
+        var blob=new Blob([JSON.stringify(record,null,2)+"\n"],{type:"application/json"});
+        var url=URL.createObjectURL(blob);
+        var anchor=document.createElement("a");
+        anchor.download="anevum-cfp101-half-adder-001.json";
+        anchor.href=url;anchor.hidden=true;
+        document.body.appendChild(anchor);anchor.click();anchor.remove();
+        setTimeout(function(){URL.revokeObjectURL(url);},5000);
+        exportStatus.textContent="Download requested for "+rows.length+" ideal simulation states. The record is not independently authenticated.";
+      }catch(_){
+        exportStatus.textContent="The browser could not create a download. You can still read the complete truth table above.";
+      }
+    });
+    observe();
+  })();
+  (function(){
+    var quiz=document.querySelector("[data-half-quiz]");
+    if(!quiz)return;
+    var status=quiz.querySelector("[data-half-quiz-status]");
+    quiz.querySelectorAll("[data-half-answer]").forEach(function(button){
+      button.addEventListener("click",function(){
+        quiz.querySelectorAll("[data-half-answer]").forEach(function(option){
+          option.setAttribute("aria-pressed","false");
+          option.classList.remove("correct","selected");
+        });
+        button.setAttribute("aria-pressed","true");
+        button.classList.add("selected");
+        if(button.getAttribute("data-half-answer")==="10"){
+          button.classList.add("correct");
+          status.textContent="Correct. One plus one equals binary 10: sum bit zero, carry bit one.";
+        }else{
+          status.textContent="Try again. XOR produces the sum bit; AND produces the carry bit. For 1 + 1, the sum is zero and the carry is one.";
+        }
+      });
+    });
+  })();
+
   // Local-only navigation. Every result is a real allowlisted preview route.
   (function(){
     var modal=document.querySelector("[data-command-dialog]");
@@ -364,6 +462,7 @@ export const INSTITUTE_CLIENT = String.raw`
       ["Computing From First Principles",root+"/academy/cfp-101","cfp 101 syllabus curriculum"],
       ["Transistor switching",root+"/learn/cfp-101/transistor-switching","semiconductor cmos lesson 01"],
       ["Boolean logic",root+"/learn/cfp-101/logic-gates","and gate lesson 02"],
+      ["Half adders",root+"/learn/cfp-101/half-adders","binary arithmetic combinational xor and sum carry lesson 03"],
       ["AND-gate laboratory",root+"/laboratory/and-gate","simulation experiment notebook"],
       ["Research Desk",root+"/dossier","evidence methodology draft"],
       ["Recognition",root+"/recognition","review policy research evidence"],
