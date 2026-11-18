@@ -407,4 +407,54 @@ body[data-area="society"] .mast,body[data-area="recognition"] .mast{background:#
 
 @media(prefers-reduced-motion:reduce){.space-card::before,.btn{transition:none!important;transform:none!important}}
 
+
+/* ANEVUM FRONTIER FACILITY — candidate hero v2. Old orbital imagery is deliberately disabled.
+   Photorealistic generated facility is packaged separately pending owner approval and binary ingestion.
+   Production and public routes are untouched. */
+.frontier-hero--facility{position:relative;display:flex;flex-direction:column;min-height:clamp(760px,100svh,1070px);background:#050f15;isolation:isolate}
+.frontier-hero--facility::before{display:none}
+.frontier-hero--facility::after{background:linear-gradient(90deg,#031017ed 0%,#041119de 24%,#06171db0 51%,#071b2233 100%),linear-gradient(0deg,#031017ee 0%,transparent 27%,transparent 72%,#07151c85 100%);z-index:1}
+.frontier-media--facility{background:#041017}
+.frontier-facility-art{position:absolute;inset:0;background:
+  radial-gradient(ellipse at 78% 38%,#608b9444 0,transparent 28%),
+  radial-gradient(ellipse at 89% 62%,#8b553042 0,transparent 23%),
+  linear-gradient(95deg,#051017 0%,#0b222b 42%,#1a353a 74%,#101f26 100%);z-index:0}
+.frontier-facility-silhouette{position:absolute;inset:0;z-index:1;opacity:.74;
+  background:
+  linear-gradient(158deg,transparent 49%,#6c8e903d 49.3%,#132a314d 50.5%,transparent 51.4%) 62% 28%/90% 70% no-repeat,
+  repeating-linear-gradient(90deg,transparent 0,transparent 72px,#7993981f 73px,#071116ab 77px,transparent 80px) 100% 0/58% 100% no-repeat,
+  repeating-linear-gradient(0deg,transparent 0,transparent 42px,#bc865331 43px,#0f2528ab 46px,transparent 49px) 90% 90%/44% 75% no-repeat,
+  linear-gradient(120deg,transparent 35%,#0a171de0 35.1%,#0a171de0 45%,transparent 46%) 80% 110%/65% 110% no-repeat;
+  mask-image:linear-gradient(90deg,transparent 29%,#000 70%)}
+.frontier-hero--facility .frontier-atmosphere{z-index:2;opacity:.32}
+.frontier-hero--facility .frontier-gl{z-index:3}
+.frontier-hero--facility .frontier-hero-inner{z-index:4;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;max-width:1550px;padding:clamp(132px,15vh,195px) 5% 190px}
+.frontier-hero--facility .frontier-index{font-size:10px;letter-spacing:.12em;color:#e5b887;gap:15px}
+.frontier-hero--facility .frontier-index span{color:#a9c9ca;letter-spacing:.08em}
+.frontier-hero--facility .facility-kicker{font:700 10px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.2em;color:#c0d4d3;text-transform:uppercase;margin-top:26px}
+.frontier-hero--facility h1{font:400 clamp(72px,8.6vw,148px)/.93 Georgia,"Times New Roman",serif;max-width:960px;letter-spacing:-.069em;text-wrap:balance;margin:24px 0 25px}
+.frontier-hero--facility h1 em{color:#e4b98c;font-style:normal}
+.frontier-hero--facility .hero-lead{color:#deebea;font-size:clamp(15px,1.33vw,18px);font-weight:400;line-height:1.8;max-width:620px;text-shadow:0 3px 22px #000c}
+.frontier-hero--facility .facility-actions{margin:33px 0 0;gap:13px}
+.frontier-hero--facility .facility-actions .btn{min-height:56px;padding:14px 23px;letter-spacing:.085em;gap:21px}
+.frontier-hero--facility .facility-actions .btn.ghost{background:#081b21e8;border-color:#b9cac68c}
+.frontier-hero--facility .frontier-commitment{font:500 11px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;max-width:620px;color:#c3d5d3;margin:20px 0 0}
+.frontier-hero--facility .frontier-commitment::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#dbab73;margin-right:12px;vertical-align:middle}
+.facility-visual-note{position:absolute;right:5%;top:50%;writing-mode:vertical-rl;font:600 9px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.13em;color:#d1dfdaaa;z-index:4;pointer-events:none}
+.facility-link-dock{position:absolute;z-index:5;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding-inline:max(5%,calc((100% - 1510px)/2));background:#06141ce6;backdrop-filter:blur(15px);border-top:1px solid #b6c7bb61}
+.facility-link-dock a{display:flex;align-items:center;gap:18px;padding:21px clamp(14px,2vw,30px);min-width:0;min-height:99px;border-inline-end:1px solid #b9c9c52b;transition:background .18s}
+.facility-link-dock a:first-child{border-inline-start:1px solid #b9c9c52b}
+.facility-link-dock a:hover{background:#2447515e}
+.facility-link-dock a:focus-visible{outline:3px solid #edd09b;outline-offset:-4px}
+.facility-link-index{flex:none;font:600 13px/1 ui-monospace,Consolas,monospace;color:#e1b782}
+.facility-link-copy{display:grid;gap:3px;min-width:0}
+.facility-link-copy strong{font-size:13px;color:#f4f2ed;font-weight:650;line-height:1.4}
+.facility-link-copy small{font-size:10px;color:#a7bdbe;line-height:1.4}
+.facility-link-dock a>span:last-child{margin-left:auto;color:#cbb58d;font-size:17px}
+@media(max-width:1100px){.frontier-hero--facility h1{font-size:clamp(60px,10vw,110px)}.facility-visual-note{display:none}.facility-link-dock a{gap:10px;padding:18px}.facility-link-copy strong{font-size:12px}}
+@media(max-width:750px){.frontier-hero--facility{min-height:900px}.frontier-hero--facility::after{background:linear-gradient(180deg,#04121be8 0%,#04121bd4 27%,#05171dba 52%,#06171b8a 72%,#06141cf5 100%),linear-gradient(90deg,#051017aa,#07151b22)}.frontier-hero--facility .frontier-hero-inner{padding-top:132px;padding-bottom:260px;justify-content:flex-start}.frontier-hero--facility h1{font-size:clamp(54px,12.3vw,78px);line-height:1.02;max-width:620px;margin:25px 0 18px}.frontier-hero--facility .facility-kicker{font-size:9px;letter-spacing:.13em;margin-top:18px}.frontier-hero--facility .hero-lead{font-size:14px;line-height:1.7}.frontier-hero--facility .facility-actions{margin-top:26px}.frontier-hero--facility .facility-actions .btn{min-height:47px}.frontier-hero--facility .frontier-commitment{font-size:10px;line-height:1.6;max-width:500px}.facility-link-dock{grid-template-columns:1fr;padding:0 5%;background:#06141cf0}.facility-link-dock a,.facility-link-dock a:first-child{min-height:54px;border-inline:0;border-bottom:1px solid #a2c1bc30;padding:10px 3px}.facility-link-copy small{display:none}.facility-link-copy strong{font-size:11px}.facility-link-index{font-size:11px}.frontier-hero--facility .frontier-index{display:block}.frontier-hero--facility .frontier-index span{display:block;margin-top:6px}.frontier-facility-silhouette{opacity:.5}}
+@media(max-width:470px){.frontier-hero--facility{min-height:885px}.frontier-hero--facility .frontier-hero-inner{padding-top:116px;padding-bottom:226px}.frontier-hero--facility h1{font-size:clamp(49px,12.2vw,64px);letter-spacing:-.06em}.frontier-hero--facility .facility-actions{width:100%;gap:10px}.frontier-hero--facility .facility-actions .btn{width:100%;min-height:47px;justify-content:space-between}.frontier-hero--facility .hero-lead{line-height:1.65}}
+@media(max-width:350px){.frontier-hero--facility h1{font-size:48px}.frontier-hero--facility .frontier-hero-inner{padding-top:108px}.frontier-hero--facility .frontier-index{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.facility-link-dock a,.frontier-hero--facility .btn{transition:none!important;transform:none!important}}
+
 `;
