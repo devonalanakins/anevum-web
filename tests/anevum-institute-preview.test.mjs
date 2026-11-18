@@ -231,6 +231,10 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   assert.match(client,/Unsaved notes\. Select Save notes or Bookmark this lesson/);
   assert.match(client,/var current=textarea\?textarea\.value\.slice\(0,8000\):""/);
   assert.doesNotMatch(client,/writeNotes\(saved\.note,next\)/);
+  assert.match(client,/function clearStagedNotesImport\(\)\{[\s\S]*?importRequest\+\+/);
+  assert.match(client,/clearStagedNotesImport\(\);\s*var request=importRequest/);
+  assert.match(client,/if\(request!==importRequest\)return/);
+  assert.match(client,/if\(importInput\)importInput\.value=""/);
   assert.match(client,/importInput\.addEventListener\("change",async function/);
   assert.match(client,/file\.size>40960/);
   assert.match(client,/raw\.startsWith\(prefix\)/);
