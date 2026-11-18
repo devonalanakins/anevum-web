@@ -287,7 +287,57 @@ if(panel){
       report("The transferred simulation was not applied. Your existing research draft was not changed.");
     }
   }
+  // Single-use same-tab transfers from computational teaching laboratories.
+  // Session storage is untrusted, exactly like uploaded JSON. Recompute the
+  // source-controlled mathematical models before permitting an explicit Apply.
+  function consumeModelHandoff(kind){
+    const config=kind==="cluster"
+      ?{key:"anevum.institute.handoff.cluster.v1",hash:"#cluster-import",section:"cluster-import",limit:16384,feedback:clusterFeedback,clear:clearStagedCluster}
+      :{key:"anevum.institute.handoff.neuron.v1",hash:"#neuron-import",section:"neuron-import",limit:65536,feedback:neuronFeedback,clear:clearStagedNeuron};
+    let raw=null;
+    try{raw=sessionStorage.getItem(config.key);}
+    catch(_){return;}
+    if(raw===null)return;
+    try{sessionStorage.removeItem(config.key);}
+    catch(_){
+      config.feedback.textContent="Could not clear the pending session transfer. Export JSON and import it manually instead.";
+      return;
+    }
+    if(window.location.hash!==config.hash)return;
+    try{
+      if(raw.length>config.limit)throw new Error("Session simulation exceeds the allowed size");
+      const source=JSON.parse(raw);
+      if(kind==="cluster"){
+        if(!source||![4,8].includes(source.capacity)||!["fifo","shortest"].includes(source.policy)){
+          throw new Error("Unsupported scheduler settings");
+        }
+        const expected=simulateCluster({capacity:source.capacity,policy:source.policy});
+        stagedCluster=evidenceFromClusterSchedulerNotebook(source,expected);
+        clusterApply.hidden=false;
+      }else{
+        if(!source||!source.settings||![5,10,20,40].includes(source.settings.tauMs)
+          ||![0,10,20,30].includes(source.settings.driveMv)){
+          throw new Error("Unsupported neuron simulation settings");
+        }
+        const expected=simulateNeuron({tauMs:source.settings.tauMs,driveMv:source.settings.driveMv});
+        stagedNeuron=evidenceFromNeuronLifNotebook(source,expected);
+        neuronApply.hidden=false;
+      }
+      if(importHub)importHub.open=true;
+      for(const item of importSources)item.open=item.id===config.section;
+      config.feedback.textContent=kind==="cluster"
+        ?"The GPU scheduling values were recomputed and checked against the simulation model. Select Use checked simulation to replace the editor fields. No real hardware, authorship or independent review was verified."
+        :"The neuron trace and threshold events were recomputed and checked against the teaching model. Select Use checked neuron simulation to replace editor fields. No biological recordings or clinical validity were established.";
+      report("A checked, unreviewed teaching-model result is staged. Your current editor and saved draft remain unchanged until you explicitly Apply and Save.");
+    }catch(error){
+      config.clear();
+      config.feedback.textContent="Same-tab handoff rejected: "+humanError(error)+". Editor fields and saved research remain unchanged; use manual JSON import if needed.";
+      report("The transferred simulation was not applied. Your existing research draft was not changed.");
+    }
+  }
   consumeAndLabHandoff();
+  consumeModelHandoff("cluster");
+  consumeModelHandoff("neuron");
   panel.setAttribute("data-evidence-ready","true");
 }
 `;
