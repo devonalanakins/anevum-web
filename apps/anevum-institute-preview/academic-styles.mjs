@@ -127,5 +127,45 @@ body[data-area="academy"] .course-card{border-left:4px solid #2d6961}
 @media(max-width:880px){.academic-hero-grid{grid-template-columns:1fr;gap:26px;padding-block:38px 44px}.academic-study-card{max-width:720px}.academic-offering-grid{grid-template-columns:1fr}.academic-offering{min-height:auto}.academic-offering h3{margin-top:14px}.academic-method-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.academic-fields-layout{grid-template-columns:1fr}.academic-pathways-inner{grid-template-columns:1fr}.academic-pathways a,.academic-pathways a:first-child{padding:13px 0;border-right:0;border-bottom:1px solid #cedbce}}
 @media(max-width:750px){.mast-inner{min-height:70px}.identity-mark{width:39px;height:39px}.identity-text{font-size:20px}.identity-caption{font-size:8px;letter-spacing:.11em}.academic-topline{padding-top:12px}.academic-topline span:last-child{display:none}.academic-hero-grid{padding-top:29px;gap:21px}.academic-hero-copy h1{font-size:clamp(43px,10vw,56px);margin:10px 0 13px}.academic-lead{font-size:14px;line-height:1.58}.academic-actions{margin-top:17px}.academic-actions a{width:100%;justify-content:space-between;min-height:44px;padding:10px 13px;font-size:11px}.academic-honesty{font-size:11px;margin-top:7px}.academic-section{padding-top:37px;padding-bottom:41px}.academic-heading-row{flex-wrap:wrap;gap:8px}.academic-fields-layout{gap:20px}body[data-area="academy"] .page-hero,body[data-area="course"] .page-hero{padding-top:31px;padding-bottom:30px}.academic-card-bottom{margin-top:11px}}
 @media(max-width:420px){.preview-ribbon{padding:4px 10px;font-size:10px;line-height:1.35}.academic-study-card{padding:16px}.academic-pathways a{gap:10px}.academic-path-num{font-size:23px}.academic-method-grid{gap:9px}.academic-method-grid h3{font-size:21px}.academic-offering h3{font-size:26px}.academic-topline{font-size:9px}}
+
+/* Research & Methods: real scientific instruments, evidence boundaries and editorial clarity. */
+.research-index{background:var(--academic-paper);color:var(--academic-ink)}
+.research-index .serif{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.045em}
+.research-index .serif em{font-style:normal;color:#2a6861}
+.research-intro{background:var(--academic-paper)!important;border-bottom:1px solid var(--academic-border)}
+.research-intro .shell{padding-block:20px 8px}
+.research-intro .kicker{color:#795e38}
+.research-intro h1{max-width:830px}
+.research-intro p{max-width:780px}
+.research-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:25px 0 12px}
+.research-actions a,.research-next a{display:inline-flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 16px;min-height:46px;border:1px solid #a8bdb2;border-radius:3px;font-size:12px;font-weight:700;text-decoration:none}
+.research-actions .academic-primary,.research-next .academic-primary{background:#1e4b47;border-color:#1e4b47;color:#fff}
+.research-actions .academic-secondary{color:#214b45}
+.research-intro .research-disclosure{font-size:12px;color:#576e64;line-height:1.6}
+.research-experiment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.research-experiment{display:flex;flex-direction:column;min-width:0;background:var(--academic-white);border:1px solid var(--academic-border);padding:22px}
+.research-experiment-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:#60766c;font:700 10px/1.4 ui-monospace,Consolas,monospace}
+.research-experiment-meta strong{color:#86683b}
+.research-experiment h3{font:normal clamp(24px,2.4vw,33px)/1.2 Georgia,serif;letter-spacing:-.035em;color:#244443;margin:24px 0 12px}
+.research-experiment p{font-size:13px;color:#536861;line-height:1.65;margin:0 0 16px}
+.research-experiment .research-assumption{padding:12px;background:#edf2eb;border-left:2px solid #6d998e;font-size:12px}
+.research-assumption strong{display:block;margin-bottom:4px;color:#244e47}
+.research-experiment>a{display:flex;justify-content:space-between;gap:8px;margin-top:auto;padding-top:13px;border-top:1px solid var(--academic-border);color:#1b5d53;font-size:12px;font-weight:750}
+.research-experiment>a:focus-visible,.research-index a:focus-visible{outline:3px solid #a37c3e;outline-offset:4px}
+.research-methods{background:#e9efe8;border-block:1px solid #d1ded3}
+.research-method-steps{padding:0;margin:15px 0 25px;list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.research-method-steps li{display:flex;gap:12px;border-top:2px solid #7d9d8f;padding-top:15px}
+.research-method-steps li>span{font:700 12px/1.5 ui-monospace,monospace;color:#39766d}
+.research-method-steps h3{font:normal 23px/1.2 Georgia,serif;margin:0 0 8px;color:#234441}
+.research-method-steps p{margin:0;font-size:12px;color:#536861;line-height:1.65}
+.research-next{border-top:1px solid #c6d9cc;display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:20px}
+.research-next strong{font-size:14px;color:#244641}
+.research-next p{font-size:12px;color:#536861;line-height:1.6;max-width:560px;margin:5px 0 0}
+.research-next a{flex-shrink:0}
+.research-status h2{font-size:clamp(30px,4vw,52px);line-height:1.14;max-width:840px;margin:24px 0 14px}
+.research-status p{font-size:14px;line-height:1.75;max-width:840px;color:#536861;margin:0 0 20px}
+@media(max-width:880px){.research-experiment-grid{grid-template-columns:1fr}.research-experiment h3{margin-top:14px}.research-method-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px){.research-intro .shell{padding-block:6px}.research-actions a{width:100%}.research-method-steps{gap:20px 10px}.research-next{flex-direction:column;align-items:stretch;gap:16px}.research-next a{width:100%}}
+@media(max-width:420px){.research-method-steps{grid-template-columns:1fr}.research-experiment{padding:17px}.research-experiment h3{font-size:27px}}
 @media(prefers-reduced-motion:reduce){.institution-home *{animation:none!important;transition:none!important}}
 `;
