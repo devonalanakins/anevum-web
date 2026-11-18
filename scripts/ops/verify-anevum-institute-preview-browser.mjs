@@ -136,6 +136,24 @@ async function testPage(pathname,label,width,height){
   console.log("INSTITUTE_PAGE_QA_PASS",label,width,state.heading);
 }
 
+async function registerLessonBrowserQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await navigate("/institute-preview/learn/cfp-101/registers");
+  const initial=await evaluate("(()=>({d:document.querySelector('[data-register-d]').textContent,q:document.querySelector('[data-register-q]').textContent,clock:document.querySelector('[data-register-count]').textContent,toggles:document.querySelectorAll('[data-register-bit]').length,notebook:document.querySelector('[data-study-lesson]')?.getAttribute('data-study-lesson')}))()");
+  verify(initial.d==="0000"&&initial.q==="0000"&&initial.clock==="0"&&initial.toggles===4&&initial.notebook==="CFP-101-U04","New clocked register lesson is not initialized",initial);
+  const hold=await evaluate("(()=>{const root=document.querySelector('[data-register-bench]');root.querySelector('[data-register-bit=\\\"0\\\"]').click();root.querySelector('[data-register-bit=\\\"2\\\"]').click();return {d:root.querySelector('[data-register-d]').textContent,q:root.querySelector('[data-register-q]').textContent,clock:root.querySelector('[data-register-count]').textContent,feedback:root.querySelector('[data-register-status]').textContent,buttons:[...root.querySelectorAll('[data-register-bit]')].map(b=>b.getAttribute('aria-pressed'))};})()");
+  verify(hold.d==="1010"&&hold.q==="0000"&&hold.clock==="0"&&hold.feedback.includes("no rising clock edge")&&hold.buttons.join(",")==="true,false,true,false","Changing input must not change stored Q before clock",hold);
+  const sampled=await evaluate("(()=>{const root=document.querySelector('[data-register-bench]');root.querySelector('[data-register-clock]').click();return {q:root.querySelector('[data-register-q]').textContent,clock:root.querySelector('[data-register-count]').textContent,row:root.querySelector('[data-register-history] li')?.textContent};})()");
+  verify(sampled.q==="1010"&&sampled.clock==="1"&&sampled.row.includes("D = 1010 → Q = 1010"),"Rising edge must capture input",sampled);
+  const retained=await evaluate("(()=>{const root=document.querySelector('[data-register-bench]');root.querySelector('[data-register-bit=\\\"0\\\"]').click();return {d:root.querySelector('[data-register-d]').textContent,q:root.querySelector('[data-register-q]').textContent};})()");
+  verify(retained.d==="0010"&&retained.q==="1010","Register must retain previous Q after input changes",retained);
+  const quiz=await evaluate("(()=>{document.querySelector('[data-register-answer=\\\"0011\\\"]').click();return document.querySelector('[data-register-quiz-status]').textContent;})()");
+  verify(quiz.includes("Correct")&&quiz.includes("rising clock event"),"Register knowledge check must explain hold behavior",quiz);
+  const reset=await evaluate("(()=>{const root=document.querySelector('[data-register-bench]');root.querySelector('[data-register-reset]').click();return {d:root.querySelector('[data-register-d]').textContent,q:root.querySelector('[data-register-q]').textContent,clock:root.querySelector('[data-register-count]').textContent,history:root.querySelector('[data-register-history]').textContent};})()");
+  verify(reset.d==="0000"&&reset.q==="0000"&&reset.clock==="0"&&reset.history.includes("No clock events"),"Register teaching model reset failed",reset);
+  console.log("ANEVUM_REGISTER_LESSON_BROWSER_QA_PASS",JSON.stringify({heldBeforeClock:true,capturedOnClock:true,heldAfterInputChange:true,quiz:true,reset:true}));
+}
+
 async function compactShellQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await navigate("/institute-preview/academy");
@@ -671,6 +689,7 @@ try{
   }
   await compactShellQA();
   await compactCourseUsabilityQA();
+  await registerLessonBrowserQA();
   await halfAdderBrowserQA();
   await clusterSchedulerBrowserQA();
   await neuronDynamicsBrowserQA();
