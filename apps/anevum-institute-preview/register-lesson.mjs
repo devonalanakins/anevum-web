@@ -98,7 +98,7 @@ export const REGISTER_LESSON_HTML=String.raw`
       <div class="kicker">Lesson 04 / Index</div><h2>Inside this lesson</h2>
       <ul><li><a href="#memory">Why storage matters</a></li><li><a href="#edge">Edge-triggered rule</a></li><li><a href="#bench">Register experiment</a></li><li><a href="#reasoning">Check your reasoning</a></li><li><a href="#limitations">Physical limitations</a></li></ul>
       <p>Estimated reading and practice: 12–18 minutes. No account or academic credit.</p>
-      <p><a href="/institute-preview/learn/cfp-101/half-adders">← Lesson 03: Half adders</a></p><p><a href="/institute-preview/academy/cfp-101">Full course outline →</a></p>
+      <p><a href="/institute-preview/learn/cfp-101/half-adders">← Lesson 03: Half adders</a></p><p><a href="/institute-preview/learn/cfp-101/addressed-memory">Next: Lesson 05 — Addressed memory →</a></p><p><a href="/institute-preview/academy/cfp-101">Full course outline →</a></p>
     </aside>
   </div></section>
 </main>
