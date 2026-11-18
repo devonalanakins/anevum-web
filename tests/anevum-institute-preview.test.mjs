@@ -643,7 +643,7 @@ test("neuron LIF simulator is deterministic, mathematically bounded and not a cl
 test("Research Desk groups all three locally checked teaching exports in native keyboard disclosures",async()=>{
   const dossier=await(await req("/dossier")).text();
   assert.match(dossier,/data-import-hub/);
-  assert.equal((dossier.match(/data-import-source/g)||[]).length,3);
+  assert.equal((dossier.match(/\bdata-import-source(?=[\s=>])/g)||[]).length,3);
   for(const id of ["logic-import","cluster-import","neuron-import"])assert.match(dossier,new RegExp('id="'+id+'"'));
   for(const picker of ["data-lab-import","data-cluster-import","data-neuron-import"])assert.match(dossier,new RegExp(picker));
   assert.match(dossier,/Import experiment results|Bring in experiment results/);
