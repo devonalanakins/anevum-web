@@ -70,6 +70,11 @@ async function testPage(pathname,label,width,height){
   verify(state.robots.includes("noindex")&&state.scriptCount===1,"Unexpected indexing or scripts",{label,width,state});
   verify(state.width>=width-20&&state.width<=width&&state.scrollWidth<=state.width+1&&state.bodyWidth<=state.width+1,"Horizontal overflow",{label,width,state});
   verify((width<=1100)===state.mobileVisible,"Wrong mobile navigation breakpoint",{label,width,state});
+  if(label==="home"){
+    await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='reduced-motion'"),"reduced-motion WebGL suppression");
+    const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,canvas:!!document.querySelector('[data-frontier-gl]'),draws:document.querySelector('[data-frontier-gl]').dataset.fxFrames||'0',display:getComputedStyle(document.querySelector('[data-frontier-gl]')).display,art:getComputedStyle(document.querySelector('.frontier-art')).backgroundImage}))()");
+    verify(fx.canvas&&fx.status==="reduced-motion"&&fx.draws==="0"&&fx.display==="none"&&fx.art.includes("research-computation-v1.webp"),"Reduced-motion users must keep an authentic still while avoiding GPU allocation",{width,fx});
+  }
   if(label==="recognition"&&width===390){
     const evidence=await evaluate("(()=>({count:document.querySelector('[data-evidence-count]')?.textContent,labels:[...document.querySelectorAll('[data-evidence-activity]')].map(x=>x.getAttribute('data-evidence-state')),status:document.querySelector('[data-evidence-label]')?.textContent}))()");
     verify(evidence.count==="0 / 3"&&evidence.labels.length===3&&evidence.labels.every(x=>x==="incomplete")&&evidence.status.includes("No completed"),"Fresh visitor must not see invented recognition",evidence);
@@ -100,6 +105,21 @@ async function testPage(pathname,label,width,height){
 }
 async function interactions(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
+  await navigate("/institute-preview");
+  await waitFor(()=>evaluate("['active','fallback'].includes(document.querySelector('[data-frontier-gl]')?.dataset.fxStatus)"),"WebGL startup or clean fallback");
+  const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,frames:Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0),shader:document.querySelector('[data-frontier-gl]').width>0,still:getComputedStyle(document.querySelector('.frontier-art')).backgroundImage.includes('research-computation-v1.webp')}))()");
+  verify(["active","fallback"].includes(fx.status)&&fx.still,"WebGL must draw or reliably fall back to the existing art",fx);
+  if(fx.status==="active"){
+    await waitFor(()=>evaluate("Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0)>=2"),"shader animation frames");
+    console.log("INSTITUTE_WEBGL_RENDER_QA_PASS",JSON.stringify(fx));
+  }else console.log("INSTITUTE_WEBGL_FALLBACK_QA_PASS",JSON.stringify(fx));
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='reduced-motion'"),"WebGL runtime preference switch");
+  const stopped=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,display:getComputedStyle(document.querySelector('[data-frontier-gl]')).display}))()");
+  verify(stopped.status==="reduced-motion"&&stopped.display==="none","WebGL must stop and hide immediately when user enables reduced motion",stopped);
+  console.log("INSTITUTE_WEBGL_ACCESSIBILITY_QA_PASS",JSON.stringify({initial:fx.status,motionStopped:true,stillAvailable:true}));
+
   await navigate("/institute-preview/learn/cfp-101/transistor-switching");
   const inverter=await evaluate("(()=>{const root=document.querySelector('[data-inverter-demo]');const t=root.querySelector('[data-inverter-toggle]');const a=root.querySelector('[data-inverter-input]');const q=root.querySelector('[data-inverter-output]');const states=[];const snapshot=()=>states.push([a.textContent,q.textContent]);snapshot();t.click();snapshot();const high=t.getAttribute('aria-pressed');t.click();snapshot();const wrong=document.querySelector('[data-inverter-answer=high]');wrong.click();const incorrect=document.querySelector('#inverter-feedback').textContent;const correct=document.querySelector('[data-inverter-answer=low]');correct.click();return {states,high,incorrect,feedback:document.querySelector('#inverter-feedback').textContent,progress:document.querySelector('[data-local-progress]').textContent,completed:JSON.parse(localStorage.getItem('anevum.institute.cfp101.preview.v1')).transistor};})()");
   verify(JSON.stringify(inverter.states)===JSON.stringify([["0","1"],["1","0"],["0","1"]])&&inverter.high==="true","Ideal inverter toggle or truth table invalid",inverter);
