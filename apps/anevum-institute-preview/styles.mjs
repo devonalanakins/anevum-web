@@ -259,6 +259,13 @@ body[data-area="society"] .mast,body[data-area="recognition"] .mast{background:#
 .frontier-hero::before{display:none}
 .frontier-hero::after{inset:0;background:linear-gradient(90deg,#061017fd 0%,#071219f2 26%,#07171fcc 45%,#0818214c 74%,#0610162c 100%),linear-gradient(0deg,#071016 0%,transparent 30%,transparent 78%,#07121988);z-index:1;pointer-events:none}
 .frontier-media{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+/* Original scientific art remains sharp; WebGL draws only transparent lighting/fog.
+   Canvas never owns labels or clickable content. It is skipped on reduced motion/Save-Data. */
+.frontier-gl{position:absolute;inset:0;display:block;width:100%;height:100%;opacity:0;pointer-events:none;z-index:3;transition:opacity .7s ease;mix-blend-mode:screen}
+.frontier-media[data-fx-status="active"] .frontier-gl{opacity:.92}
+.frontier-media[data-fx-status="active"] .frontier-atmosphere{opacity:.24;animation:none}
+.frontier-media[data-fx-status="fallback"] .frontier-gl,.frontier-media[data-fx-status="context-lost"] .frontier-gl,.frontier-media[data-fx-status="reduced-motion"] .frontier-gl,.frontier-media[data-fx-status="save-data"] .frontier-gl{opacity:0!important}
+@media(prefers-reduced-motion:reduce){.frontier-gl{display:none!important;transition:none!important}}
 .frontier-art{position:absolute;inset:0;background:linear-gradient(95deg,#0710164d,transparent 55%),url("/institute-preview/assets/research-computation-v1.webp") 63% 52%/cover no-repeat;background-color:#0b1a21;filter:contrast(1.12) saturate(.82)}
 .frontier-atmosphere{position:absolute;inset:0;background:radial-gradient(ellipse at 84% 40%,#d9a56b33,transparent 39%),radial-gradient(ellipse at 52% 95%,#618e9f40,transparent 56%);opacity:.77;mix-blend-mode:screen;animation:frontier-atmosphere 15s ease-in-out infinite alternate}
 @keyframes frontier-atmosphere{from{transform:translate3d(-1.2%,0,0);opacity:.46}to{transform:translate3d(1.2%,-.7%,0);opacity:.82}}
