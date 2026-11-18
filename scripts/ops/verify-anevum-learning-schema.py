@@ -69,9 +69,13 @@ def main() -> None:
     )
     expect_constraint(
         connection,
-        "INSERT INTO member_learning_profiles "
-        "(user_id,display_name,interests_json) VALUES (?,?,?)",
-        ("nonexistent-user", "Forged owner", '{"not":"array"}'),
+        "UPDATE member_learning_profiles SET interests_json=? WHERE user_id=?",
+        ('{"not":"array"}', "member-B"),
+    )
+    expect_constraint(
+        connection,
+        "UPDATE member_learning_profiles SET display_name=? WHERE user_id=?",
+        ("X", "member-B"),
     )
     connection.execute('DELETE FROM "user" WHERE id=?', ("member-A",))
     assert connection.execute(
