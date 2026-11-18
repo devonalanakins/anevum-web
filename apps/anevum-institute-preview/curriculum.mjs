@@ -5,12 +5,12 @@ export const CFP_101 = {
   id:"CFP-101",
   title:"Computing From First Principles",
   school:"Computing and Artificial Intelligence (proposed)",
-  version:"0.5.0",
+  version:"0.6.0",
   status:"preview",
   editorialStatus:"draft",
   delivery:"free-self-directed",
   accreditation:"none",
-  description:"A proposed eight-unit path from transistor switching to a simulated 8-bit computer. Five introductory lessons (including ideal clocked-register and addressed-memory demonstrations), an ideal AND-gate laboratory and a half-adder workbench are implemented as previews; three later units remain planned.",
+  description:"A proposed eight-unit path from transistor switching to a simulated 8-bit computer. Six introductory lessons (including ideal clocked-register and addressed-memory demonstrations and a fictional four-bit assembler), an ideal AND-gate laboratory and a half-adder workbench are implemented as previews; two later units remain planned.",
   provenance:"Original ANEVUM educational draft. Independent subject-matter and accessibility review pending.",
   units:[
     {id:"CFP-101-U01",number:"01",title:"Semiconductors and transistor switching",availability:"preview",displayStatus:"Introductory lesson available",lessonPath:"/learn/cfp-101/transistor-switching",prerequisites:[]},
@@ -18,7 +18,7 @@ export const CFP_101 = {
     {id:"CFP-101-U03",number:"03",title:"Combinational circuits and adders",availability:"preview",displayStatus:"Introductory half-adder lesson and four-state workbench available",lessonPath:"/learn/cfp-101/half-adders",prerequisites:["CFP-101-U02"]},
     {id:"CFP-101-U04",number:"04",title:"Sequential circuits and registers",availability:"preview",displayStatus:"Introductory lesson and ideal four-bit register model available",lessonPath:"/learn/cfp-101/registers",prerequisites:["CFP-101-U03"]},
     {id:"CFP-101-U05",number:"05",title:"Memory and instruction architecture",availability:"preview",displayStatus:"Introductory addressed-memory lesson and ideal 4×4-bit model available; no ISA implemented",lessonPath:"/learn/cfp-101/addressed-memory",prerequisites:["CFP-101-U04"]},
-    {id:"CFP-101-U06",number:"06",title:"Machine code and assembly",availability:"planned",displayStatus:"Curriculum in development",lessonPath:null,prerequisites:["CFP-101-U05"]},
+    {id:"CFP-101-U06",number:"06",title:"Machine code and assembly",availability:"preview",displayStatus:"Fictional four-bit instruction assembly and disassembly available; no CPU or program execution",lessonPath:"/learn/cfp-101/assembly-code",prerequisites:["CFP-101-U05"]},
     {id:"CFP-101-U07",number:"07",title:"Computer systems and software",availability:"planned",displayStatus:"Curriculum in development",lessonPath:null,prerequisites:["CFP-101-U06"]},
     {id:"CFP-101-U08",number:"08",title:"Simulated 8-bit computer capstone",availability:"planned",displayStatus:"Curriculum in development",lessonPath:null,prerequisites:["CFP-101-U07"]}
   ]
