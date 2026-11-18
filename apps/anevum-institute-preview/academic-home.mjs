@@ -17,7 +17,7 @@ const HOME=`
             <a class="academic-primary" href="%BASE%/academy">Explore the academic catalogue <span aria-hidden="true">→</span></a>
             <a class="academic-secondary" href="%BASE%/laboratory/neuron-dynamics">Explore a neuroscience lab <span aria-hidden="true">→</span></a>
           </div>
-          <p class="academic-honesty">Open access. No admission requirements. Independent and non-accredited; no degrees or academic credit are currently issued.</p>
+          <p class="academic-honesty">Designed for free, open-access learning with no admission requirements. ANEVUM is independent and non-accredited; no degrees or academic credit are currently issued.</p>
         </div>
         <aside class="academic-study-card" aria-label="Available coursework and experiments">
           <div class="academic-study-head"><span>ACADEMIC DIRECTORY</span><span>01 / ACTIVE COURSE</span></div>
@@ -27,7 +27,7 @@ const HOME=`
           <div class="academic-card-status"><span>3 lessons available</span><span>5 units in development</span></div>
           <a href="%BASE%/academy/cfp-101">View course and syllabus <span aria-hidden="true">→</span></a>
           <div class="academic-card-bottom">
-            <div><strong>02</strong><span>Computing lab models</span></div>
+            <div><strong>03</strong><span>Computing lab models</span></div>
             <div><strong>01</strong><span>Neuroscience model</span></div>
           </div>
         </aside>

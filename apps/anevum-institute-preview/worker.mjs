@@ -53,7 +53,7 @@ function navigation(active){
 
 function footer(){
   return `<footer class="footer"><div class="shell footer-inner">
-    <div><div class="footer-brand">ANEVUM <span style="font-family:system-ui,sans-serif;letter-spacing:.09em;font-size:10px;color:#b6c6c6">THE OPEN INSTITUTE / INDEPENDENT EDUCATION</span></div><p>An independent, non-accredited open-education and research project. No degrees or academic credit are offered. Free educational material; no sign-in required for this preview.</p></div>
+    <div><div class="footer-brand">ANEVUM <span style="font-family:system-ui,sans-serif;letter-spacing:.09em;font-size:10px;color:#b6c6c6">THE OPEN INSTITUTE / INDEPENDENT EDUCATION</span></div><p>An independent, non-accredited open-education and research project. No degrees or academic credit are offered. The learning demo stores notes locally; accessing this private review requires owner authentication through Cloudflare Access.</p></div>
     <div><div class="preview-flag">Isolated design review / Not a public launch</div><p>The Academy currently contains three computing lessons, two Boolean experiments, a simulated GPU scheduler and a single-neuron teaching model. Full degrees, real compute and clinical programs remain proposed.</p><p><a href="/original-works/archive">Visit the existing ANEVUM archive</a> · <a href="${BASE}">Return to Institute</a></p></div>
   </div></footer>`;
 }
