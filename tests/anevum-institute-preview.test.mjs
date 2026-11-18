@@ -7,6 +7,9 @@ import {LAB_ART} from "../apps/anevum-public-studio/living-laboratory-art.mjs";
 import worker from "../apps/anevum-institute-preview/worker.mjs";
 import {CFP_101,validateCurriculum} from "../apps/anevum-institute-preview/curriculum.mjs";
 import {evaluateHalfAdder,HALF_ADDER_LESSON_HTML} from "../apps/anevum-institute-preview/half-adder-lesson.mjs";
+import {CLUSTER_SCHEDULER_HTML} from "../apps/anevum-institute-preview/cluster-scheduler-ui.mjs";
+import {CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE} from "../apps/anevum-institute-preview/cluster-scheduler-model.mjs";
+import {CLUSTER_SCHEDULER_CSS} from "../apps/anevum-institute-preview/cluster-scheduler-styles.mjs";
 import {studyToolsHtml} from "../apps/anevum-institute-preview/study-tools.mjs";
 import {dossierPage} from "../apps/anevum-institute-preview/dossier-ui.mjs";
 import {localStudioPage,localProfilePage} from "../apps/anevum-institute-preview/learner-ui.mjs";
@@ -17,10 +20,10 @@ import {FRONTIER_GL_CLIENT} from "../apps/anevum-institute-preview/frontier-gl.m
 import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
-const PATHS=["","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/laboratory/and-gate"];
+const PATHS=["","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/laboratory/and-gate","/laboratory/cluster-scheduling"];
 const req=(path="",init={})=>worker.fetch(new Request(BASE+path,init));
 
-test("eleven isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
+test("twelve isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
   for(const path of PATHS){
     const response=await req(path);
     assert.equal(response.status,200,path);
@@ -495,10 +498,79 @@ test("unowned routes, origins, methods and data endpoints are rejected",async()=
   const post=await req("",{method:"POST",body:"x"});
   assert.equal(post.status,405);
   assert.equal(post.headers.get("Allow"),"GET, HEAD");
-  for(const path of ["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/curriculum/cfp-101.json","/styles.css","/client.js","/evidence-schema.js","/evidence-workbench.js","/local-member-schema.js","/local-member-client.js","/frontier-gl.js","/assets/lab-hero-v1.webp"]){
+  for(const path of ["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/laboratory/cluster-scheduling","/curriculum/cfp-101.json","/styles.css","/client.js","/evidence-schema.js","/evidence-workbench.js","/local-member-schema.js","/local-member-client.js","/frontier-gl.js","/assets/lab-hero-v1.webp"]){
     const get=await req(path),head=await req(path,{method:"HEAD"});
     assert.equal(head.status,200,path);
     assert.equal((await head.arrayBuffer()).byteLength,0);
     assert.deepEqual(Object.fromEntries(head.headers),Object.fromEntries(get.headers));
   }
+});
+
+
+test("compute scheduling laboratory model is deterministic, bounded and explicitly simulated",async()=>{
+  const response=await req("/cluster-scheduler-model.js");
+  assert.equal(response.status,200);
+  assert.equal(response.headers.get("Content-Type"),"text/javascript; charset=utf-8");
+  assert.match(response.headers.get("Content-Security-Policy"),/connect-src 'none'/);
+  assert.equal(await response.text(),CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE);
+  const model=await import("data:text/javascript,"+encodeURIComponent(CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE));
+  const {simulateCluster,CLUSTER_WORKLOADS,CLUSTER_SCHEDULER_FORMAT}=model;
+  assert.equal(CLUSTER_SCHEDULER_FORMAT,"anevum-cluster-scheduler-simulation/v1");
+  assert.equal(CLUSTER_WORKLOADS.length,5);
+  for(const capacity of [4,8]){
+    for(const policy of ["fifo","shortest"]){
+      const options={capacity,policy};
+      const run=simulateCluster(options),again=simulateCluster(options);
+      assert.deepEqual(run,again,"Simulation is not deterministic");
+      assert.equal(run.capacity,capacity);
+      assert.equal(run.jobs.length,5);
+      assert.equal(run.metrics.makespanTicks,run.timeline.length);
+      assert.equal(run.metrics.availableGpuTicks,run.timeline.length*capacity);
+      assert.equal(run.metrics.busyGpuTicks,run.jobs.reduce((s,j)=>s+j.gpus*j.ticks,0));
+      assert.ok(run.timeline.every(t=>t.usedGpus<=capacity&&t.usedGpus>=1&&t.usedGpus+t.freeGpus===capacity));
+      for(const job of run.jobs){
+        assert.equal(job.finishTick-job.startTick,job.ticks);
+        assert.equal(job.waitTicks,job.startTick);
+        assert.ok(job.finishTick<=run.metrics.makespanTicks);
+        for(let tick=0;tick<run.metrics.makespanTicks;tick++){
+          const running=run.timeline[tick].running.some(x=>x.id===job.id);
+          assert.equal(running,job.startTick<=tick&&tick<job.finishTick);
+        }
+      }
+      assert.equal(run.timeline.reduce((s,t)=>s+t.usedGpus,0),run.metrics.busyGpuTicks);
+      assert.equal(run.independentReview,false);
+      assert.ok(run.assumptions.some(s=>s.includes("No preemption")));
+      assert.ok(run.metrics.gpuUtilizationPercent>0&&run.metrics.gpuUtilizationPercent<=100);
+    }
+  }
+  const fifo=simulateCluster({policy:"fifo"}),shortest=simulateCluster({policy:"shortest"});
+  assert.ok(shortest.metrics.meanWaitTicks<fifo.metrics.meanWaitTicks);
+  assert.notDeepEqual(fifo.timeline,shortest.timeline);
+  assert.equal(fifo.jobs[1].startTick,2,"Strict FIFO must not leapfrog the blocking four-GPU job");
+  for(const invalid of [{capacity:0},{capacity:1},{capacity:9},{capacity:4.5},{policy:"round-robin"},{jobs:[]},
+    {jobs:[{id:"a",label:"Test job",gpus:5,ticks:2}]},
+    {jobs:[{id:"a",label:"Test job",gpus:1,ticks:2},{id:"a",label:"Test job",gpus:1,ticks:2}]},
+    {jobs:[{id:"a",label:"Test job",gpus:1,ticks:0}]},
+    {jobs:[{id:"a",label:"Test job",gpus:1,ticks:Infinity}]}]){
+    assert.throws(()=>simulateCluster(invalid));
+  }
+  const page=await(await req("/laboratory/cluster-scheduling")).text();
+  assert.ok(page.includes(CLUSTER_SCHEDULER_HTML.trim().slice(0,40)));
+  assert.match(page,/data-cluster-lab/);
+  assert.match(page,/Five illustrative jobs/);
+  assert.match(page,/No hardware or server jobs are involved/);
+  assert.doesNotMatch(page,/live telemetry|real GPU training jobs/i);
+  const academy=await(await req("/academy")).text();
+  assert.match(academy,/Open the scheduling simulator/);
+  assert.ok(academy.includes('/institute-preview/laboratory/cluster-scheduling'));
+  for(const asset of ["/cluster-scheduler-model.js","/cluster-scheduler-client.js"]){
+    const file=await req(asset);
+    assert.equal(file.status,200);
+    assert.equal(file.headers.get("Content-Type"),"text/javascript; charset=utf-8");
+    assert.match(file.headers.get("Content-Security-Policy"),/connect-src 'none'/);
+  }
+  assert.ok(CLUSTER_SCHEDULER_CSS.includes(".cluster-layout"));
+  const stylesheet=await(await req("/styles.css")).text();
+  assert.ok(stylesheet.includes(CLUSTER_SCHEDULER_CSS));
+  assert.doesNotMatch(stylesheet,/https?:\/\//);
 });
