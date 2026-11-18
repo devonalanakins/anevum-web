@@ -125,6 +125,16 @@ async function interactions(){
   const stopped=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,display:getComputedStyle(document.querySelector('[data-frontier-gl]')).display}))()");
   verify(stopped.status==="reduced-motion"&&stopped.display==="none","WebGL must stop and hide immediately when user enables reduced motion",stopped);
   console.log("INSTITUTE_WEBGL_ACCESSIBILITY_QA_PASS",JSON.stringify({initial:fx.status,motionStopped:true,stillAvailable:true}));
+  // Force a genuine missing GPU context before page scripts run: the still must stay usable.
+  const blockedGL=await send("Page.addScriptToEvaluateOnNewDocument",{source:"(()=>{const previous=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl')return null;return previous.apply(this,[type,...args]);};})()"});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
+  await navigate("/institute-preview");
+  await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='fallback'"),"no-WebGL fallback");
+  const disabledGL=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,art:getComputedStyle(document.querySelector('.frontier-art')).backgroundImage.includes('research-computation-v1.webp'),title:document.querySelector('main h1').textContent}))()");
+  verify(disabledGL.status==="fallback"&&disabledGL.art&&disabledGL.title.includes("frontier"),"WebGL absence must preserve readable architecture and learning entry",disabledGL);
+  await send("Page.removeScriptToEvaluateOnNewDocument",{identifier:blockedGL.identifier});
+  console.log("INSTITUTE_WEBGL_NO_GPU_QA_PASS",JSON.stringify(disabledGL));
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
 
   await navigate("/institute-preview/learn/cfp-101/transistor-switching");
   const inverter=await evaluate("(()=>{const root=document.querySelector('[data-inverter-demo]');const t=root.querySelector('[data-inverter-toggle]');const a=root.querySelector('[data-inverter-input]');const q=root.querySelector('[data-inverter-output]');const states=[];const snapshot=()=>states.push([a.textContent,q.textContent]);snapshot();t.click();snapshot();const high=t.getAttribute('aria-pressed');t.click();snapshot();const wrong=document.querySelector('[data-inverter-answer=high]');wrong.click();const incorrect=document.querySelector('#inverter-feedback').textContent;const correct=document.querySelector('[data-inverter-answer=low]');correct.click();return {states,high,incorrect,feedback:document.querySelector('#inverter-feedback').textContent,progress:document.querySelector('[data-local-progress]').textContent,completed:JSON.parse(localStorage.getItem('anevum.institute.cfp101.preview.v1')).transistor};})()");
