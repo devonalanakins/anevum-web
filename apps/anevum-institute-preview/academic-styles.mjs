@@ -213,7 +213,7 @@ body[data-area="research"]{background:var(--academic-paper);color:var(--academic
 .study-path{margin:0 0 30px;padding:16px 18px 14px;border:1px solid #d0dfd5;background:#e8eee8;border-radius:7px;color:#243d3b}
 .study-path-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:11px;font:750 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.045em;text-transform:uppercase;color:#3a5e54}
 .study-path-heading a{color:#235d54;text-transform:none;text-decoration:underline;text-underline-offset:3px}
-.study-path-links{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0!important;padding:0!important}
+.study-path-links{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0!important;padding:0!important}
 .study-path-links li{margin:0!important;min-width:0}
 .study-path-link{display:flex;align-items:center;gap:9px;min-height:58px;padding:10px;border:1px solid #c8d9cf;background:#f8f8f4;color:#284a43!important;border-radius:4px;text-decoration:none!important}
 .study-path-link[aria-current="page"]{border-color:#286356;background:#d7e6db;box-shadow:inset 0 0 0 1px #286356}
@@ -225,7 +225,31 @@ body[data-area="research"]{background:var(--academic-paper);color:var(--academic
 .study-path-details [data-practice-status="recorded"]{color:#216352;font-weight:700}
 .study-path-disclaimer{margin:11px 0 0!important;font-size:11px!important;line-height:1.55!important;color:#54695f!important}
 .study-path a:focus-visible{outline:3px solid #a37c3e;outline-offset:3px}
-@media(max-width:750px){.study-path{padding:12px;margin-bottom:22px}.study-path-links{gap:5px}.study-path-link{padding:8px;gap:6px}.study-path-index{width:25px;height:25px}.study-path-details strong{font-size:11px}.study-path-details small{font-size:9px}}
+/* Ideal four-bit clocked register: compact editorial workbench, no imagery. */
+.register-bench{margin:20px 0 28px;padding:20px;border:1px solid #bfd1c2;background:#e8eee8;border-radius:7px;color:#243f3c}
+.register-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:#46665d;font:700 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.025em}
+.lesson-article .register-bench h3{font:normal 28px/1.2 Georgia,serif;margin:15px 0;color:#244741}
+.register-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.register-input-panel,.register-output-panel{background:#fffefa;border:1px solid #d5e0d4;border-radius:5px;min-width:0;padding:15px}
+.register-meta{display:flex;flex-direction:column;color:#345b50;font:750 11px/1.5 ui-monospace,monospace;gap:3px}
+.register-meta small{font:400 11px/1.5 system-ui,sans-serif;color:#586d63}
+.register-bit-switches{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:15px}
+.register-bit-switches button{display:flex;flex-direction:column;align-items:center;gap:6px;border:1px solid #bad0c2;border-radius:5px;background:#f1f5ee;color:#31584d;padding:9px 4px;min-height:65px;font:700 11px/1.4 ui-monospace,Consolas,monospace}
+.register-bit-switches button strong{font-size:21px}
+.register-bit-switches button[aria-pressed="true"]{background:#285d51;border-color:#285d51;color:#fff}
+.register-output{display:block;font:700 clamp(32px,5vw,48px)/1.1 ui-monospace,Consolas,monospace;letter-spacing:.1em;color:#20564c;margin:18px 0 10px}
+.lesson-article .register-word{font:600 12px/1.5 ui-monospace,Consolas,monospace;color:#426458;margin:12px 0 0}
+.register-actions{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0}
+.register-actions button{min-height:44px;border:1px solid #a6c0ae;background:#f9fbf7;border-radius:4px;color:#275649;padding:11px 13px;font-size:12px;font-weight:750}
+.register-actions button:first-child{background:#285d51;border-color:#285d51;color:#fff}
+.register-bench button:focus-visible{outline:3px solid #b7834a;outline-offset:2px}
+.lesson-article .register-status{background:#d9e5db;border-left:3px solid #2c7564;margin:11px 0 18px;padding:12px;color:#285748;font-size:12px;line-height:1.6}
+.lesson-article .register-bench h4{font:700 13px/1.5 system-ui,sans-serif;color:#2a5047;margin:10px 0 5px}
+.register-history{padding:0 0 0 22px;color:#365e52;font:500 11px/1.8 ui-monospace,Consolas,monospace;max-height:220px;overflow:auto}
+.lesson-article .register-bench .half-fine{font-size:11px;color:#587166;margin:12px 0 0;line-height:1.55}
+@media(max-width:750px){.register-bench{padding:12px}.register-grid{grid-template-columns:1fr}.register-output{font-size:36px}.register-actions button{flex:1 1 auto}}
+@media(max-width:420px){.register-bit-switches button{min-height:57px}.register-actions button{width:100%}}
+@media(max-width:750px){.study-path{padding:12px;margin-bottom:22px}.study-path-links{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.study-path-link{padding:8px;gap:6px}.study-path-index{width:25px;height:25px}.study-path-details strong{font-size:11px}.study-path-details small{font-size:9px}}
 @media(max-width:420px){.study-path-links{grid-template-columns:1fr}.study-path-link{min-height:44px}.study-path-details strong{font-size:12px}.study-path-details small{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.institution-home *{animation:none!important;transition:none!important}}
 `;
