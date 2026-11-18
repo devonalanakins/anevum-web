@@ -91,11 +91,15 @@ export async function readInstitutePreviewSnapshot({token,accountId,fetchImpl=fe
     read("/workers/scripts/"+SCRIPT+"/subdomain"),
     read("/access/apps?page=1&per_page=100")
   ]);
-  // A partial inventory is never evidence that no competing Access app exists.
-  const totalPages=accessData.result_info?.total_pages;
-  if (totalPages !== undefined && (!Number.isInteger(totalPages) || totalPages > 1 || totalPages < 1)) {
-    throw new Error("ACCESS_INVENTORY_PAGINATION_UNVERIFIED");
+  // A partial inventory is never evidence that a target, competing Access app, or policy is absent.
+  function assertOnePage(payload,label) {
+    const pages=payload?.result_info?.total_pages;
+    if (pages !== undefined && (!Number.isInteger(pages) || pages !== 1)) {
+      throw new Error(label+"_PAGINATION_UNVERIFIED");
+    }
   }
+  assertOnePage(workerData,"WORKER_INVENTORY");
+  assertOnePage(accessData,"ACCESS_INVENTORY");
   const workers=workerList(workerData.result);
   const apps=workerList(accessData.result);
   if (!workers || !apps) throw new Error("CLOUDFLARE_INVENTORY_UNAVAILABLE");
@@ -104,6 +108,7 @@ export async function readInstitutePreviewSnapshot({token,accountId,fetchImpl=fe
   let policies=null;
   if (matches.length === 1 && UUID.test(matches[0]?.id || "")) {
     const policiesData=await read("/access/apps/"+matches[0].id+"/policies");
+    assertOnePage(policiesData,"ACCESS_POLICY_INVENTORY");
     policies=workerList(policiesData.result);
   }
   return {workers,subdomain:subdomainData.result,accessApps:apps,policies};
@@ -130,6 +135,8 @@ async function main() {
       "READONLY_CREDENTIALS_MISSING_OR_INVALID",
       "CLOUDFLARE_READ_DENIED_OR_UNAVAILABLE",
       "ACCESS_INVENTORY_PAGINATION_UNVERIFIED",
+      "WORKER_INVENTORY_PAGINATION_UNVERIFIED",
+      "ACCESS_POLICY_INVENTORY_PAGINATION_UNVERIFIED",
       "CLOUDFLARE_INVENTORY_UNAVAILABLE"
     ]);
     const code=known.has(error?.message)?error.message:"READONLY_DIAGNOSTIC_FAILED";
