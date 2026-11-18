@@ -32,6 +32,7 @@ jobs:
           node --check apps/anevum-institute-preview/transistor-lesson.mjs
           node --check apps/anevum-institute-preview/study-tools.mjs
           node --check apps/anevum-institute-preview/frontier-society.mjs
+          node --check apps/anevum-institute-preview/frontier-gl.mjs
           node --check apps/anevum-institute-preview/dossier-ui.mjs
           node --check apps/anevum-institute-preview/evidence-schema.mjs
           node --check apps/anevum-institute-preview/evidence-workbench.mjs
