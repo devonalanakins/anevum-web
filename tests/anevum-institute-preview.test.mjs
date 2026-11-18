@@ -183,17 +183,20 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
 test("frontier society and evidence-based recognition distinguish working activities from future claims",async()=>{
   const home=await(await req("")).text();
   const recognition=await(await req("/recognition")).text();
-  assert.match(home,/The frontier <em>is open\.<\/em>/);
-  assert.match(home,/Begin CFP-101/);
-  assert.match(home,/Enter the laboratory/);
-  assert.match(home,/class="facility-link-dock"/);
-  assert.match(home,/frontier-hero-inner/);
-  assert.match(home,/ANEVUM \/ 001/);
-  assert.match(home,/INDEPENDENT SCIENTIFIC EDUCATION/);
-  assert.match(home,/The work is the <em>curriculum/);
-  assert.match(home,/NOT ISSUED/);
-  assert.match(home,/THREE PREVIEW LESSONS AVAILABLE/);
-  assert.match(home,/href="\/institute-preview\/recognition"/);
+  assert.match(home,/An open institute for <em>serious inquiry/);
+  assert.match(home,/Explore the academic catalogue/);
+  assert.match(home,/Computing From First Principles/);
+  assert.match(home,/3 lessons available/);
+  assert.match(home,/5 units in development/);
+  assert.match(home,/class="academic-pathways"/);
+  assert.match(home,/href="\/institute-preview\/laboratory\/cluster-scheduling"/);
+  assert.match(home,/href="\/institute-preview\/laboratory\/neuron-dynamics"/);
+  assert.match(home,/href="\/institute-preview\/dossier"/);
+  assert.match(home,/Proposed fields · Not operating faculties/);
+  assert.match(home,/non-accredited/i);
+  assert.match(home,/no degrees or academic credit are currently issued/i);
+  assert.match(home,/data-area="society"/);
+  assert.doesNotMatch(home,/<canvas\b|<picture\b|<video\b|data-frontier-visual|facility-concept-v2|generated-facility-v2-review/i);
   assert.match(recognition,/Your work should speak/);
   assert.match(recognition,/data-evidence-panel/);
   assert.match(recognition,/data-evidence-count/);
@@ -221,17 +224,38 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.match(frontierMediaMarkup("/institute-preview"),/class="frontier-facility-art"/);
   assert.doesNotMatch(frontierHome("/institute-preview"),/observatory-review-desktop\.webp|observatory-review-mobile\.webp/);
   assert.match(frontierMediaMarkup("/institute-preview"),/data-frontier-gl/);
-  assert.match(home,/data-frontier-visual/);
-  assert.doesNotMatch(frontierHome("/institute-preview"),/<video\b|frontier-cavern-desktop\.webp|atmosphere-screenblend\.mp4/);
-  assert.match(home,/data-art-source="generated-facility-v2-review"/);
-  assert.match(home,/src="\/institute-preview\/media\/facility-concept-v2-desktop\.webp"/);
-  assert.match(home,/srcset="\/institute-preview\/media\/facility-concept-v2-mobile\.webp"/);
-  assert.match(home,/class="hero frontier-hero frontier-hero--facility"/);
-  assert.match(home,/href="\/institute-preview\/dossier"/);
-  assert.doesNotMatch(home,/frontier-cavern-desktop\.webp/);
+  // Old visual source remains in Git history/preview source but is not requested
+  // or rendered by the new institutional homepage.
+  assert.match(frontierHome("/institute-preview"),/data-art-source="generated-facility-v2-review"/);
+  assert.doesNotMatch(home,/frontier-cavern-desktop\.webp|facility-concept-v2-desktop\.webp/);
   assert.match(frontierHome("/institute-preview"),/href="\/institute-preview\/academy/);
   assert.match(frontierRecognition("/institute-preview"),/data-evidence-panel/);
   assert.doesNotMatch(home+recognition,/<form\b|<iframe|onclick=|onload=|download=".*certificate"/i);
+});
+
+test("academic homepage and catalogue use honest institution-style navigation without generated art",async()=>{
+  const home=await(await req("")).text();
+  const academy=await(await req("/academy")).text();
+  const css=await(await req("/styles.css")).text();
+  assert.match(home,/<title>The Open Institute — ANEVUM Open Institute/);
+  assert.match(home,/The Open Institute<\/span>/);
+  assert.match(home,/>Institute<\/a>/);
+  assert.match(home,/>Academics<\/a>/);
+  assert.match(home,/>Laboratories<\/a>/);
+  assert.match(home,/>Research<\/a>/);
+  assert.match(home,/class="academic-study-card"/);
+  assert.equal((home.match(/class="academic-offering"/g)||[]).length,3);
+  assert.equal((home.match(/<li><span>0[1-6]<\/span>/g)||[]).length,6);
+  assert.doesNotMatch(home,/<img[^>]+(?:facility|observatory|hero)|<canvas\b|<video\b/);
+  assert.match(academy,/not operational faculties/i);
+  assert.match(css,/\.academic-study-card/);
+  assert.match(css,/\.academic-offering-grid/);
+  assert.match(css,/\.dossier-import-hub/);
+  assert.match(css,/\.neuron-chart-wrap/);
+  assert.match(css,/\.cluster-/);
+  assert.match(css,/\.page-hero::before\{content:none!important/);
+  assert.match(css,/body\[data-area="society"\],body\[data-area="academy"\],body\[data-area="course"\]/);
+  assert.doesNotMatch(css.slice(css.lastIndexOf("ANEVUM — academic design layer.")),/background-image:url|background:url/);
 });
 
 test("working private learner workspace and profile expose real known course, notes and identity controls",async()=>{

@@ -3,6 +3,8 @@
 // No Cloudflare route, auth, API, database or production binding is owned by this module.
 
 import {INSTITUTE_CSS} from "./styles.mjs";
+import {INSTITUTION_CSS} from "./academic-styles.mjs";
+import {academicInstituteHome} from "./academic-home.mjs";
 
 import {INSTITUTE_CLIENT} from "./client.mjs";
 import {FRONTIER_GL_CLIENT} from "./frontier-gl.mjs";
@@ -18,7 +20,7 @@ import {NEURON_LIF_CLIENT_BROWSER_MODULE} from "./neuron-lif-client.mjs";
 import {NEURON_LIF_CSS} from "./neuron-lif-styles.mjs";
 import {CFP_101} from "./curriculum.mjs";
 import {studyToolsHtml} from "./study-tools.mjs";
-import {frontierHome,frontierRecognition,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART} from "./frontier-society.mjs";
+import {frontierRecognition,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART} from "./frontier-society.mjs";
 import {dossierPage} from "./dossier-ui.mjs";
 import {EVIDENCE_BROWSER_MODULE} from "./evidence-schema.mjs";
 import {EVIDENCE_WORKBENCH_CLIENT} from "./evidence-workbench.mjs";
@@ -32,16 +34,16 @@ const BASE="/institute-preview";
 
 function navigation(active){
   const links=[
-    ["Society",BASE],
-    ["Academy",BASE+"/academy"],
-    ["Laboratory",BASE+"/laboratory/and-gate"],
-    ["Recognition",BASE+"/recognition"],
-    ["My Studio",BASE+"/studio"]
+    ["Institute","Society",BASE],
+    ["Academics","Academy",BASE+"/academy"],
+    ["Laboratories","Laboratory",BASE+"/laboratory/cluster-scheduling"],
+    ["Research","Recognition",BASE+"/recognition"],
+    ["My Studio","My Studio",BASE+"/studio"]
   ];
-  const makeLinks=()=>links.map(([name,href])=>`<a href="${href}"${(name===active||active==="Course"&&name==="Academy"||active==="Classroom"&&name==="Academy")?' aria-current="page"':''}>${name}</a>`).join("");
+  const makeLinks=()=>links.map(([label,key,href])=>`<a href="${href}"${(key===active||(active==="Course"||active==="Classroom")&&key==="Academy")?' aria-current="page"':''}>${label}</a>`).join("");
   return `<a class="skip" href="#main">Skip to main content</a>
   <header class="mast"><div class="mast-inner">
-    <a class="identity" href="${BASE}" aria-label="ANEVUM, home"><img class="identity-mark" src="${BASE}/mark.svg" width="59" height="59" alt="" decoding="async"><span><span class="identity-text">ANEVUM</span><span class="identity-caption">Open Research Society</span></span></a>
+    <a class="identity" href="${BASE}" aria-label="ANEVUM, home"><img class="identity-mark" src="${BASE}/mark.svg" width="59" height="59" alt="" decoding="async"><span><span class="identity-text">ANEVUM</span><span class="identity-caption">The Open Institute</span></span></a>
     <nav class="desk-nav" aria-label="Primary navigation">${makeLinks()}</nav>
     <button type="button" class="shell-search" data-search-open aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K" aria-label="Search ANEVUM destinations">Search <kbd>/</kbd></button>
     <a class="mast-action" href="${BASE}/learn/cfp-101/transistor-switching">Start learning <span aria-hidden="true">→</span></a>
@@ -51,7 +53,7 @@ function navigation(active){
 
 function footer(){
   return `<footer class="footer"><div class="shell footer-inner">
-    <div><div class="footer-brand">ANEVUM <span style="font-family:system-ui,sans-serif;letter-spacing:.09em;font-size:10px;color:#b6c6c6">OPEN RESEARCH SOCIETY / CONCEPT</span></div><p>An independent, non-accredited open-education and research project. No degrees or academic credit are offered. Free educational material; no sign-in required for this preview.</p></div>
+    <div><div class="footer-brand">ANEVUM <span style="font-family:system-ui,sans-serif;letter-spacing:.09em;font-size:10px;color:#b6c6c6">THE OPEN INSTITUTE / INDEPENDENT EDUCATION</span></div><p>An independent, non-accredited open-education and research project. No degrees or academic credit are offered. Free educational material; no sign-in required for this preview.</p></div>
     <div><div class="preview-flag">Isolated design review / Not a public launch</div><p>The Academy currently contains three computing lessons, two Boolean experiments, a simulated GPU scheduler and a single-neuron teaching model. Full degrees, real compute and clinical programs remain proposed.</p><p><a href="/original-works/archive">Visit the existing ANEVUM archive</a> · <a href="${BASE}">Return to Institute</a></p></div>
   </div></footer>`;
 }
@@ -59,14 +61,14 @@ function footer(){
 function layout(title,active,body){
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow,noarchive"><meta name="color-scheme" content="dark"><link rel="icon" type="image/svg+xml" href="${BASE}/mark-small.svg"><meta name="theme-color" content="#071016">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="color-scheme" content="light"><link rel="icon" type="image/svg+xml" href="${BASE}/mark-small.svg"><meta name="theme-color" content="#f5f4ee">
 <meta name="description" content="ANEVUM design preview: free scientific learning, independent experiments, and evidence-based recognition.">
-<title>${title} — ANEVUM Open Research Society (Design Preview)</title>
+<title>${title} — ANEVUM Open Institute (Design Preview)</title>
 <link rel="stylesheet" href="${BASE}/styles.css"><script defer src="${BASE}/client.js"></script>
 </head><body data-area="${active.toLowerCase()}">${navigation(active)}<div class="preview-ribbon"><strong>Design review:</strong> ANEVUM is an independent, non-accredited education and research project. Accounts, peer review and credential issuance are not implemented.</div><dialog class="command-dialog" data-command-dialog aria-labelledby="command-title"><div class="command-heading"><div><p>ANEVUM / DIRECTORY</p><h2 id="command-title">Find a destination</h2></div><button type="button" data-command-close aria-label="Close search">Close</button></div><label for="command-query">Search available pages</label><input id="command-query" type="search" data-command-query autocomplete="off" placeholder="Course, lesson, laboratory"><p data-command-status role="status" aria-live="polite"></p><ul data-command-results aria-label="Search results"></ul><p class="command-disclaimer">Only available preview pages. No planned courses, cluster jobs, or credentials are listed.</p></dialog>${body}${footer()}</body></html>`;
 }
 
-function home(){return layout("Frontier","Society",frontierHome(BASE));}
+function home(){return layout("The Open Institute","Society",academicInstituteHome(BASE));}
 function recognition(){return layout("Recognition","Recognition",frontierRecognition(BASE));}
 function dossier(){return layout("Research Desk","My Studio",dossierPage(BASE));}
 function memberStudio(){return layout("My Studio","My Studio",localStudioPage(BASE));}
@@ -197,7 +199,7 @@ const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE
 
 const ASSETS=new Map([
   [BASE+"/curriculum/cfp-101.json",["application/json; charset=utf-8",JSON.stringify(CFP_101,null,2)+"\n"]],
-  [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS+"\n"+CLUSTER_SCHEDULER_CSS+"\n"+NEURON_LIF_CSS]],
+  [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS+"\n"+CLUSTER_SCHEDULER_CSS+"\n"+NEURON_LIF_CSS+"\n"+INSTITUTION_CSS]],
   [BASE+"/neuron-lif-model.js",["text/javascript; charset=utf-8",NEURON_LIF_MODEL_BROWSER_MODULE]],
   [BASE+"/neuron-lif-client.js",["text/javascript; charset=utf-8",NEURON_LIF_CLIENT_BROWSER_MODULE]],
   [BASE+"/cluster-scheduler-model.js",["text/javascript; charset=utf-8",CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE]],

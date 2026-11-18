@@ -5,12 +5,12 @@
  */
 export const INSTITUTION_CSS=String.raw`
 :root{--academic-paper:#f5f4ee;--academic-white:#fffefa;--academic-ink:#1c3136;--academic-muted:#5c6b6a;--academic-green:#1d4744;--academic-teal:#2c6a64;--academic-gold:#a17940;--academic-border:#d9dcd3;--academic-font:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-html{scroll-behavior:smooth}
-body{background:#f4f3ed;color:var(--academic-ink)}
+html{scroll-behavior:smooth}body[data-area="society"] .site-main,body[data-area="academy"] .site-main{background:#f5f4ee;color:var(--academic-ink)}
+body[data-area="society"],body[data-area="academy"],body[data-area="course"]{background:#f4f3ed;color:var(--academic-ink)}
 .mast{background:#fffefa!important;border-bottom:1px solid #d5dbd5!important;box-shadow:none!important;backdrop-filter:none}
 .mast-inner{min-height:75px}
 .identity{gap:11px}
-.identity-mark{filter:none!important;object-fit:contain!important}
+.identity-mark{filter:brightness(.57) saturate(1.15)!important;object-fit:contain!important}
 .identity-text{color:#1c3937;font-size:clamp(20px,1.8vw,26px);letter-spacing:.13em}
 .identity-caption{color:#587069!important;font-size:9px;letter-spacing:.19em}
 .desk-nav a,.nav-menu a{color:#3d5751;font-size:11px;letter-spacing:.055em;text-transform:none;font-weight:650}
