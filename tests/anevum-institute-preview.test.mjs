@@ -65,6 +65,31 @@ test("every relative institute navigation link resolves within the preview",asyn
   }
 });
 
+test("Academy advertises only implemented curriculum lessons and real simulated laboratories",async()=>{
+  const html=await(await req("/academy")).text();
+  const lessonPaths=CFP_101.units.filter(unit=>unit.availability==="preview");
+  assert.equal(lessonPaths.length,3);
+  assert.match(html,/data-study-path aria-labelledby="academy-available-title"/);
+  assert.match(html,/3 published previews \/ 5 planned units/);
+  assert.equal((html.match(/class="academy-unit-link"/g)||[]).length,3);
+  for(const unit of lessonPaths){
+    assert.ok(html.includes('href="/institute-preview'+unit.lessonPath+'"'),"Missing implemented lesson "+unit.id);
+    assert.ok(html.includes('data-study-path-status="'+unit.id+'"'),"Missing honest practice marker "+unit.id);
+    assert.ok(html.includes(unit.title),"Lesson name must derive from the curriculum");
+  }
+  for(const unit of CFP_101.units.filter(unit=>unit.availability==="planned")){
+    assert.ok(!html.includes('href="/institute-preview'+(unit.lessonPath||'/no-route')+'"'),"Planned lessons cannot be linked");
+  }
+  assert.equal((html.match(/class="academy-lab-item"/g)||[]).length,3);
+  for(const path of ["/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics"]){
+    assert.ok(html.includes('href="/institute-preview'+path+'"'),"Missing working laboratory "+path);
+  }
+  assert.match(html,/Local practice only · No course credit or verified completion/);
+  assert.match(html,/No physical equipment/);
+  assert.match(html,/These groupings are proposed—not operational faculties/);
+  assert.doesNotMatch(html,/<canvas\b|<video\b|<picture\b/i);
+});
+
 test("course availability and educational boundaries are explicit",async()=>{
   const catalog=await(await req("/academy")).text();
   const course=await(await req("/academy/cfp-101")).text();
