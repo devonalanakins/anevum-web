@@ -30,7 +30,7 @@ export const REGISTER_LESSON_HTML=String.raw`
       <h2 id="edge">2. A clocked element samples on an event</h2>
       <p>We model four edge-triggered D-type storage elements sharing a clock. For each bit, the next stored value is the current input bit <strong>when the rising clock edge occurs</strong>. Between those edges, the stored value holds:</p>
       <p class="mathline">Q(next) = D at ↑CLK; otherwise Q(next) = Q</p>
-      <p>This is a <strong>discrete event model</strong>. The "Clock ↑" button below represents one ideal rising-edge event. It does not simulate a changing voltage, clock frequency, propagation delay, transistor topology or electrical signal.</p>
+      <p>This is a <strong>discrete event model</strong>. The "Clock ↑" button below represents one ideal rising-edge event. This is not a physical circuit or timing simulator: it does not simulate a changing voltage, clock frequency, propagation delay, transistor topology or electrical signal.</p>
       <table class="data-table tabular" aria-label="Ideal edge-triggered register transition rule">
         <thead><tr><th scope="col">Event</th><th scope="col">Input D</th><th scope="col">Next Q</th></tr></thead>
         <tbody>
