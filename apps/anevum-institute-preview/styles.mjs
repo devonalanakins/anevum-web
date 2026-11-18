@@ -244,6 +244,7 @@ body[data-area="laboratory"] .section h2{font-size:clamp(33px,3.3vw,46px)}
 .study-import input[type=file]{display:block;min-width:0;width:100%;max-width:100%;padding:9px 10px;min-height:44px;border:1px solid #aab8a7;border-radius:5px;background:#fffdf7;color:#24423b;font-size:12px}
 .study-import input[type=file]:focus-visible,.study-import button:focus-visible{outline:3px solid #ae7844;outline-offset:3px}
 .study-import .btn{min-height:43px;font-size:11px}
+.study-import [data-study-import-apply][hidden]{display:none!important}
 .lesson-article .study-notes .study-import-disclosure{flex:1 1 100%;font-size:11px;line-height:1.6;margin:0;color:#5a665f}
 .study-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .study-actions .btn{font-size:10px;min-height:43px}
