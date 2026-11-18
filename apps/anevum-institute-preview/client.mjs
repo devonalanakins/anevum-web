@@ -163,6 +163,14 @@ export const INSTITUTE_CLIENT = String.raw`
       }
     });
   });
+  // Discovery-only WebGL light/fog layer: no 3D models and no impact on study controls.
+  // The dedicated source module handles context loss, Save-Data, reduced motion and tab visibility.
+  if(document.querySelector("[data-frontier-gl]")){
+    import("/institute-preview/frontier-gl.js").catch(function(){
+      var canvas=document.querySelector("[data-frontier-gl]");
+      if(canvas){canvas.dataset.fxStatus="fallback";canvas.closest(".frontier-media").dataset.fxStatus="fallback";}
+    });
+  }
   // Cinematic MP4 only exists after reviewed assets have been bundled.
   // No remote video, simulated 3D, or motion for reduced-motion/Save-Data users.
   var frontierVideo=document.querySelector("[data-frontier-video]");
