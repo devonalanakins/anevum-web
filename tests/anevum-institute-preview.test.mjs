@@ -224,7 +224,7 @@ test("real WebGL atmospheric module is isolated, accessible, same-origin, and re
   assert.match(source,/now-lastFrame<42/,"WebGL frame rate must be limited");
   assert.match(source,/Math\.sqrt\(1050000\//,"WebGL pixel count must be bounded");
   assert.match(source,/dataset\.fxStatus=/);
-  assert.match(source,/FRONTIER/);
+  assert.match(source,/Frontier Research Society/);
   assert.doesNotMatch(source,/fetch\(|XMLHttpRequest|WebSocket|sendBeacon|import\(|eval\(|new Function|three\.js|\.glb\b|\.gltf\b/i);
 });
 
