@@ -1,4 +1,5 @@
-export const EVIDENCE_WORKBENCH_CLIENT=String.raw`import {EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,createEvidenceEnvelope,parseEvidenceEnvelope,evidenceFromAndLabNotebook} from "/institute-preview/evidence-schema.js";
+export const EVIDENCE_WORKBENCH_CLIENT=String.raw`import {EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,createEvidenceEnvelope,parseEvidenceEnvelope,evidenceFromAndLabNotebook,evidenceFromClusterSchedulerNotebook} from "/institute-preview/evidence-schema.js";
+import {simulateCluster} from "/institute-preview/cluster-scheduler-model.js";
 
 const panel=document.querySelector("[data-evidence-workbench]");
 if(panel){
@@ -13,7 +14,19 @@ if(panel){
   const labImporter=panel.querySelector("[data-lab-import]");
   const labApply=panel.querySelector("[data-lab-apply]");
   const labFeedback=panel.querySelector("[data-lab-feedback]");
+  const clusterImporter=panel.querySelector("[data-cluster-import]");
+  const clusterApply=panel.querySelector("[data-cluster-apply]");
+  const clusterFeedback=panel.querySelector("[data-cluster-feedback]");
   let stagedLab=null;
+  let stagedCluster=null;
+  function clearStagedLab(){
+    stagedLab=null;
+    labApply.hidden=true;
+  }
+  function clearStagedCluster(){
+    stagedCluster=null;
+    clusterApply.hidden=true;
+  }
   let awaitingDelete=false;
   function report(message){if(status)status.textContent=message;}
   function resetDelete(){awaitingDelete=false;deletion.textContent="Delete saved draft";}
@@ -82,7 +95,9 @@ if(panel){
     finally{importer.value="";}
   });
   labImporter.addEventListener("change",async function(){
-    stagedLab=null;labApply.hidden=true;
+    clearStagedLab();
+    clearStagedCluster();
+    clusterFeedback.textContent="No GPU scheduling result is staged.";
     labFeedback.textContent="Checking laboratory notebook format and Boolean values…";
     const file=labImporter.files?.[0];
     if(!file)return;
@@ -99,9 +114,41 @@ if(panel){
   labApply.addEventListener("click",function(){
     if(!stagedLab)return;
     fill(stagedLab);resetReceipt();resetDelete();
-    stagedLab=null;labApply.hidden=true;
+    clearStagedLab();
     labFeedback.textContent="Simulated results copied into the editor. Review the method and limitations, then select Save locally if you want to keep them.";
     report("Checked simulation staged in your research draft. No institutional verification, account or network upload.");
+  });
+  clusterImporter.addEventListener("change",async function(){
+    clearStagedCluster();
+    clearStagedLab();
+    labFeedback.textContent="No Boolean notebook is staged.";
+    clusterFeedback.textContent="Checking the GPU scheduling model and metrics…";
+    const file=clusterImporter.files?.[0];
+    if(!file)return;
+    try{
+      if(file.size>16384)throw new Error("Simulation export exceeds 16 KiB");
+      const source=JSON.parse(await file.text());
+      if(!source||![4,8].includes(source.capacity)||!["fifo","shortest"].includes(source.policy)){
+        throw new Error("Unsupported scheduler capacity or policy");
+      }
+      // Always recompute with trusted fixed workloads, never with job data
+      // from the untrusted import. Accepting matching math is not provenance.
+      const expected=simulateCluster({capacity:source.capacity,policy:source.policy});
+      stagedCluster=evidenceFromClusterSchedulerNotebook(source,expected);
+      clusterApply.hidden=false;
+      clusterFeedback.textContent="Checked all five workloads, timeline allocations and metrics against the deterministic simulator. Select Use checked simulation to replace the current editor fields. No hardware, identity or independent review was verified.";
+    }catch(error){
+      clearStagedCluster();
+      clusterFeedback.textContent="GPU scheduling import rejected: "+humanError(error)+". Existing editor and saved data were not changed.";
+    }finally{clusterImporter.value="";}
+  });
+  clusterApply.addEventListener("click",function(){
+    if(!stagedCluster)return;
+    fill(stagedCluster);
+    resetReceipt();resetDelete();
+    clearStagedCluster();
+    clusterFeedback.textContent="Simulated GPU scheduling results copied into the editor. Review limitations before choosing Save locally; nothing was submitted or saved automatically.";
+    report("Validated simulation staged in your personal research draft. This is not a real hardware benchmark or independently verified evidence.");
   });
   deletion.addEventListener("click",function(){
     if(!awaitingDelete){
