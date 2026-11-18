@@ -59,3 +59,27 @@ Pre-rendered, carefully art-directed imagery, not live 3D models: high-quality s
 ## Acceptance and release gates
 
 Draft source is allowed; no production routing, DNS, Access policies, merges, deployments or public brand replacement. CI must check schema, route isolation, test paths, actual Chromium interaction and 320/390/768/1024/1440 widths. Hosted preview Cloudflare Access pinned application/Worker identifiers remain owner-only configuration and must not be bypassed to produce a green release.
+
+## Personal evidence workbench implementation — 2026-11-17
+
+**Scope:** isolated review-only route `/institute-preview/dossier` with the existing Worker and no production binding. This is an interactive *personal research desk*, not a member profile or scientific-award service. The new route is deliberately separated from the existing protected member/Command identity systems; it does not register accounts, publish artifacts, change Cloudflare, or expose a write API.
+
+### Actual user capability
+
+A learner can produce a personal draft with a title, research question, reproducible method, observations, limitations, and up to eight HTTPS references. A shared Node/browser validation module enforces the same versioned portable schema. The learner can save to browser-local storage, revisit the draft, export a JSON document with SHA-256 checksum, import a previously exported record with strict structure/digest checks, and delete the saved record after a two-click confirmation. Personal drafts never become reviewed, credentialed, or publicly attributable by changing labels.
+
+The workbench also accepts the existing `CFP-101-AND-001` laboratory JSON. It validates schema, exact ideal Boolean model, row coverage, distinct 0/1 input pairs, and mathematically correct outputs. It first **stages** the content; the learner must explicitly apply it to the editor and separately save or export. Observation text, limitations, and provenance distinguish a browser simulation from a hardware measurement and from independently reviewed findings. A determined actor can forge both an unsigned source notebook and its SHA checksum; **neither is a digital signature, authentication, or an institutional attestation**.
+
+The portal's JavaScript loads the workbench module only on the dossier route using same-origin code and a strict CSP. No external network requests or user-code execution are added. Content is displayed through native textarea values and textContent, not untrusted HTML. The educational site remains accessible without registration.
+
+### Boundaries
+
+- One *device-only draft* in a browser profile, unencrypted. No multi-user identity, collaboration, database, backed-up research archive, reviewer assignment, role permissions, signed awards, security-reviewed publication, or full self-hosting acceptance.
+- Import limits and explicit failure feedback protect against malformed JSON and overwriting saved work without an intentional action.
+- The workbench is subordinate to the published lesson and reproducible artifact, never to a points, streak, or popularity score.
+- Historical ANEVUM creative, botanical, and institutional design code remains preserved.
+- Full site launch, new public branding, imagery and video adoption, Access configuration, production merge, and any award issuance continue to require separate approval and verification.
+
+### Verification
+
+Dedicated Node contracts and real Chromium browser checks cover responsive layouts at widths 320, 390, 768, 1024, and 1440, working input validation, local persistence and reload, exported and imported record checks, counterfeit and malformed payload rejection, confirmed deletion, and staging a real AND-lab output. The workbench's first editable field must be visible in the initial 390px/1440px viewport; working surfaces are deliberately task-first rather than cinematic wrappers. Record exact-head GitHub Actions links and results in PR #816, not as assumptions here.
