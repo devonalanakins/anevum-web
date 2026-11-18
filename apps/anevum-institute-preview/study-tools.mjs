@@ -3,7 +3,8 @@
 const LESSONS=Object.freeze({
   "CFP-101-U01":{label:"Lesson 01 · Transistor switching",filename:"anevum-cfp101-u01-notes.txt"},
   "CFP-101-U02":{label:"Lesson 02 · Boolean logic",filename:"anevum-cfp101-u02-notes.txt"},
-  "CFP-101-U03":{label:"Lesson 03 · Half adders",filename:"anevum-cfp101-u03-notes.txt"}
+  "CFP-101-U03":{label:"Lesson 03 · Half adders",filename:"anevum-cfp101-u03-notes.txt"},
+  "CFP-101-U04":{label:"Lesson 04 · Clocked registers",filename:"anevum-cfp101-u04-notes.txt"}
 });
 
 export function studyToolsHtml(unitId){
