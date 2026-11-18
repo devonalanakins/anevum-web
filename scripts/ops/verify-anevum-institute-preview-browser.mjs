@@ -517,7 +517,7 @@ async function andResearchDirectHandoffQA(){
   await navigate("/institute-preview/laboratory/and-gate");
   const initial=await evaluate("(()=>({disabled:document.querySelector('[data-to-dossier]')?.disabled,coverage:document.querySelector('[data-lab-progress]')?.textContent}))()");
   verify(initial.disabled&&initial.coverage.startsWith("1 of 4"),"Direct handoff must start disabled until full coverage",initial);
-  const completed=await evaluate("(()=>{const root=document.querySelector('[data-and-lab]');const tap=key=>root.querySelector('[data-input="'+key+'"]').click();tap('b');tap('a');tap('b');return {disabled:root.querySelector('[data-to-dossier]').disabled,coverage:root.querySelector('[data-lab-progress]').textContent};})()");
+  const completed=await evaluate("(()=>{const root=document.querySelector('[data-and-lab]');const tap=key=>root.querySelector('[data-input='+key+']').click();tap('b');tap('a');tap('b');return {disabled:root.querySelector('[data-to-dossier]').disabled,coverage:root.querySelector('[data-lab-progress]').textContent};})()");
   verify(completed.disabled===false&&completed.coverage.startsWith("4 of 4"),"Direct handoff did not unlock after all four ideal states",completed);
   await evaluate("document.querySelector('[data-to-dossier]').click()");
   await waitFor(()=>evaluate("location.pathname==='/institute-preview/dossier'&&location.hash==='#logic-import'&&document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"same-tab handoff into Research Desk");
@@ -530,7 +530,7 @@ async function andResearchDirectHandoffQA(){
   verify(oneShot.apply&&oneShot.stored===baseline.title&&oneShot.pending===null,"One-time session handoff must not restage on reload",oneShot);
   // Recreate a valid transfer from the laboratory, approve explicitly and export.
   await navigate("/institute-preview/laboratory/and-gate");
-  await evaluate("(()=>{const root=document.querySelector('[data-and-lab]');root.querySelector('[data-input="b"]').click();root.querySelector('[data-input="a"]').click();root.querySelector('[data-input="b"]').click();root.querySelector('[data-to-dossier]').click();})()");
+  await evaluate("(()=>{const root=document.querySelector('[data-and-lab]');root.querySelector('[data-input=b]').click();root.querySelector('[data-input=a]').click();root.querySelector('[data-input=b]').click();root.querySelector('[data-to-dossier]').click();})()");
   await waitFor(()=>evaluate("location.pathname==='/institute-preview/dossier'&&document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"second explicit handoff");
   const applied=await evaluate("(()=>{document.querySelector('[data-lab-apply]').click();return {title:document.querySelector('[data-evidence-field=title]').value,observations:document.querySelector('[data-evidence-field=observations]').value,receipt:document.querySelector('[data-evidence-receipt-state]').textContent,stored:JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1')).record.title};})()");
   verify(applied.title==="Boolean AND study (4 of 4 states)"&&applied.observations.includes("11 -> 1")&&applied.receipt==="Unsaved changes"&&applied.stored===baseline.title,"Explicit Apply must populate editor without saving or corrupting the existing draft",applied);
