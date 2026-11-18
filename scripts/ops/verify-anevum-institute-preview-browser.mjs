@@ -91,6 +91,10 @@ async function testPage(pathname,label,width,height){
     const evidence=await evaluate("(()=>({count:document.querySelector('[data-evidence-count]')?.textContent,labels:[...document.querySelectorAll('[data-evidence-activity]')].map(x=>x.getAttribute('data-evidence-state')),status:document.querySelector('[data-evidence-label]')?.textContent}))()");
     verify(evidence.count==="0 / 3"&&evidence.labels.length===3&&evidence.labels.every(x=>x==="incomplete")&&evidence.status.includes("No completed"),"Fresh visitor must not see invented recognition",evidence);
   }
+  if(label==="cluster"&&(width===390||width===1440)){
+    const action=await evaluate("(()=>{const b=document.querySelector('[data-cluster-run]').getBoundingClientRect();const t=document.querySelector('.cluster-table-wrap').getBoundingClientRect();return {buttonTop:b.top,buttonBottom:b.bottom,tableTop:t.top,visible:innerHeight};})()");
+    verify(action.buttonBottom<=height-6&&action.buttonTop<action.tableTop,"GPU lab must expose its primary action before the workload table in the initial viewport",{width,action});
+  }
   if(label==="academy"&&width===390){
     const layout=await evaluate("(()=>({courseTop:document.querySelector('.course-card')?.getBoundingClientRect().top,schoolsTop:document.querySelector('.catalog-layout>.aside-panel')?.getBoundingClientRect().top}))()");
     verify(layout.courseTop<layout.schoolsTop&&layout.courseTop<height,"Mobile Academy must show the published learning opportunity before planned schools",{width,layout});
