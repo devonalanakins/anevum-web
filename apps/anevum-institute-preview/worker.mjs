@@ -174,7 +174,7 @@ const ASSETS=new Map([
 ]);
 
 const IMAGE_ASSETS=new Set(["lab-hero-v1.webp","lab-archive-v1.webp","research-generation-v1.webp","research-computation-v1.webp","research-worlds-v1.webp","rhen-generative-v1.webp"]);
-const SECURITY={"Content-Security-Policy":"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'","X-Frame-Options":"DENY","X-Content-Type-Options":"nosniff","Referrer-Policy":"no-referrer","X-Robots-Tag":"noindex, nofollow, noarchive","Cache-Control":"no-store","X-Anevum-Surface":"open-institute-design-review-v1"};
+const SECURITY={"Content-Security-Policy":"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; media-src 'self'; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'","X-Frame-Options":"DENY","X-Content-Type-Options":"nosniff","Referrer-Policy":"no-referrer","X-Robots-Tag":"noindex, nofollow, noarchive","Cache-Control":"no-store","X-Anevum-Surface":"open-institute-design-review-v1"};
 
 export default {async fetch(request){
   const url=new URL(request.url);
