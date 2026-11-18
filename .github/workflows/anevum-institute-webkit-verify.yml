@@ -1,0 +1,43 @@
+name: ANEVUM Open Institute WebKit Preflight
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/anevum-institute-preview/**"
+      - "scripts/ops/anevum-institute-preview-server.mjs"
+      - "scripts/ops/verify-anevum-institute-preview-webkit.mjs"
+      - ".github/workflows/anevum-institute-webkit-verify.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  webkit-preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check isolated WebKit smoke script syntax
+        run: node --check scripts/ops/verify-anevum-institute-preview-webkit.mjs
+      - name: Install pinned test-only Playwright without changing repo dependencies
+        run: npm install --no-save --no-package-lock --ignore-scripts --no-audit --no-fund playwright@1.56.1
+      - name: Install WebKit browser and Linux dependencies
+        run: npx playwright install --with-deps webkit
+      - name: Run loopback-only WebKit phone and desktop acceptance preflight
+        run: node scripts/ops/verify-anevum-institute-preview-webkit.mjs
+      - name: Preserve WebKit screenshots for visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: anevum-institute-webkit-preflight
+          path: "${{ runner.temp }}/anevum-institute-webkit-*.png"
+          if-no-files-found: warn
+          retention-days: 7
+
+# This is isolated cross-engine UI evidence, not an iPhone Safari owner acceptance
+# or a deployment. No Cloudflare tokens, secrets, public routes or DNS are used.
