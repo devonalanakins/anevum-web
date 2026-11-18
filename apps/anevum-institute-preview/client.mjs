@@ -454,7 +454,7 @@ export const INSTITUTE_CLIENT = String.raw`
     bench.querySelector("[data-half-export]").addEventListener("click",function(){
       var record=halfNotebook();
       try{
-        var blob=new Blob([JSON.stringify(record,null,2)+"\\n"],{type:"application/json"});
+        var blob=new Blob([JSON.stringify(record,null,2)+"\n"],{type:"application/json"});
         var url=URL.createObjectURL(blob);
         var anchor=document.createElement("a");
         anchor.download="anevum-cfp101-half-adder-001.json";
