@@ -23,10 +23,10 @@ import {FRONTIER_GL_CLIENT} from "../apps/anevum-institute-preview/frontier-gl.m
 import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
-const PATHS=["","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics"];
+const PATHS=["","/research","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics"];
 const req=(path="",init={})=>worker.fetch(new Request(BASE+path,init));
 
-test("thirteen isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
+test("fourteen isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
   for(const path of PATHS){
     const response=await req(path);
     assert.equal(response.status,200,path);
@@ -526,7 +526,7 @@ test("unowned routes, origins, methods and data endpoints are rejected",async()=
   const post=await req("",{method:"POST",body:"x"});
   assert.equal(post.status,405);
   assert.equal(post.headers.get("Allow"),"GET, HEAD");
-  for(const path of ["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics","/curriculum/cfp-101.json","/styles.css","/client.js","/evidence-schema.js","/evidence-workbench.js","/local-member-schema.js","/local-member-client.js","/frontier-gl.js","/assets/lab-hero-v1.webp"]){
+  for(const path of ["","/research","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics","/curriculum/cfp-101.json","/styles.css","/client.js","/evidence-schema.js","/evidence-workbench.js","/local-member-schema.js","/local-member-client.js","/frontier-gl.js","/assets/lab-hero-v1.webp"]){
     const get=await req(path),head=await req(path,{method:"HEAD"});
     assert.equal(head.status,200,path);
     assert.equal((await head.arrayBuffer()).byteLength,0);
@@ -683,4 +683,23 @@ test("Research Desk groups all three locally checked teaching exports in native 
   assert.match(css,/\.dossier-import-hub/);
   assert.match(css,/\.dossier-import-source/);
   assert.match(css,/summary:focus-visible/);
+});
+
+test("Research navigation opens a real methods page, not recognition policy",async()=>{
+  const home=await(await req("")).text();
+  assert.match(home,/href="\/institute-preview\/research"[^>]*>Research<\/a>/);
+  const response=await req("/research");
+  assert.equal(response.status,200);
+  assert.match(response.headers.get("X-Robots-Tag"),/noindex/);
+  const research=await response.text();
+  assert.match(research,/Research &amp; Methods/);
+  assert.match(research,/No peer-reviewed findings/);
+  assert.match(research,/No GPU hardware/);
+  assert.match(research,/No neural recordings/);
+  assert.match(research,/No transistor timings/);
+  assert.equal((research.match(/class="research-experiment"/g)||[]).length,3);
+  for(const path of ["/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics","/dossier","/recognition","/academy"]){
+    assert.ok(research.includes('href="/institute-preview'+path+'"'),"Missing working destination: "+path);
+  }
+  assert.doesNotMatch(research,/<canvas|<video|<picture|<form\b/i);
 });
