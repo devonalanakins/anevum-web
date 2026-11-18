@@ -452,6 +452,13 @@ export const INSTITUTE_CLIENT = String.raw`
       if(message)message.textContent="The local scheduling model could not load. No simulation ran.";
     });
   }
+  // Computational neuroscience demonstration: isolated, lazy same-origin model.
+  if(document.querySelector("[data-neuron-lab]")){
+    import("/institute-preview/neuron-lif-client.js").catch(function(){
+      var message=document.querySelector("[data-neuron-status]");
+      if(message)message.textContent="The local neuron model could not load. No simulation ran.";
+    });
+  }
   // Local-only navigation. Every result is a real allowlisted preview route.
   (function(){
     var modal=document.querySelector("[data-command-dialog]");
@@ -472,6 +479,7 @@ export const INSTITUTE_CLIENT = String.raw`
       ["Half adders",root+"/learn/cfp-101/half-adders","binary arithmetic combinational xor and sum carry lesson 03"],
       ["AND-gate laboratory",root+"/laboratory/and-gate","simulation experiment notebook"],
       ["GPU cluster scheduling",root+"/laboratory/cluster-scheduling","compute gpu allocation fifo shortest job first simulator"],
+      ["Neuron dynamics laboratory",root+"/laboratory/neuron-dynamics","neuroscience leaky integrate fire membrane potential threshold spike refractory"],
       ["Research Desk",root+"/dossier","evidence methodology draft"],
       ["Recognition",root+"/recognition","review policy research evidence"],
       ["My Studio",root+"/studio","personal learning progress notes"],

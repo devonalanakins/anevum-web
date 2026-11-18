@@ -10,6 +10,9 @@ import {evaluateHalfAdder,HALF_ADDER_LESSON_HTML} from "../apps/anevum-institute
 import {CLUSTER_SCHEDULER_HTML} from "../apps/anevum-institute-preview/cluster-scheduler-ui.mjs";
 import {CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE} from "../apps/anevum-institute-preview/cluster-scheduler-model.mjs";
 import {CLUSTER_SCHEDULER_CSS} from "../apps/anevum-institute-preview/cluster-scheduler-styles.mjs";
+import {NEURON_LIF_HTML} from "../apps/anevum-institute-preview/neuron-lif-ui.mjs";
+import {NEURON_LIF_MODEL_BROWSER_MODULE} from "../apps/anevum-institute-preview/neuron-lif-model.mjs";
+import {NEURON_LIF_CSS} from "../apps/anevum-institute-preview/neuron-lif-styles.mjs";
 import {studyToolsHtml} from "../apps/anevum-institute-preview/study-tools.mjs";
 import {dossierPage} from "../apps/anevum-institute-preview/dossier-ui.mjs";
 import {localStudioPage,localProfilePage} from "../apps/anevum-institute-preview/learner-ui.mjs";
@@ -20,10 +23,10 @@ import {FRONTIER_GL_CLIENT} from "../apps/anevum-institute-preview/frontier-gl.m
 import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
-const PATHS=["","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/laboratory/and-gate","/laboratory/cluster-scheduling"];
+const PATHS=["","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics"];
 const req=(path="",init={})=>worker.fetch(new Request(BASE+path,init));
 
-test("twelve isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
+test("thirteen isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
   for(const path of PATHS){
     const response=await req(path);
     assert.equal(response.status,200,path);
@@ -498,7 +501,7 @@ test("unowned routes, origins, methods and data endpoints are rejected",async()=
   const post=await req("",{method:"POST",body:"x"});
   assert.equal(post.status,405);
   assert.equal(post.headers.get("Allow"),"GET, HEAD");
-  for(const path of ["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/laboratory/cluster-scheduling","/curriculum/cfp-101.json","/styles.css","/client.js","/evidence-schema.js","/evidence-workbench.js","/local-member-schema.js","/local-member-client.js","/frontier-gl.js","/assets/lab-hero-v1.webp"]){
+  for(const path of ["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics","/curriculum/cfp-101.json","/styles.css","/client.js","/evidence-schema.js","/evidence-workbench.js","/local-member-schema.js","/local-member-client.js","/frontier-gl.js","/assets/lab-hero-v1.webp"]){
     const get=await req(path),head=await req(path,{method:"HEAD"});
     assert.equal(head.status,200,path);
     assert.equal((await head.arrayBuffer()).byteLength,0);
@@ -573,4 +576,65 @@ test("compute scheduling laboratory model is deterministic, bounded and explicit
   const stylesheet=await(await req("/styles.css")).text();
   assert.ok(stylesheet.includes(CLUSTER_SCHEDULER_CSS));
   assert.doesNotMatch(stylesheet,/https?:\/\//);
+});
+
+
+test("neuron LIF simulator is deterministic, mathematically bounded and not a clinical or physical recording",async()=>{
+  const moduleRes=await req("/neuron-lif-model.js");
+  assert.equal(moduleRes.status,200);
+  assert.equal(moduleRes.headers.get("Content-Type"),"text/javascript; charset=utf-8");
+  assert.match(moduleRes.headers.get("Content-Security-Policy"),/connect-src 'none'/);
+  assert.equal(await moduleRes.text(),NEURON_LIF_MODEL_BROWSER_MODULE);
+  const mod=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(NEURON_LIF_MODEL_BROWSER_MODULE));
+  const {simulateNeuron,NEURON_FORMAT,NEURON_CONSTANTS,NEURON_TAUS,NEURON_DRIVES}=mod;
+  assert.equal(NEURON_FORMAT,"anevum-neuron-lif-simulation/v1");
+  assert.equal(NEURON_CONSTANTS.stepMs,0.5);
+  assert.equal(NEURON_CONSTANTS.durationMs,200);
+  for(const tauMs of NEURON_TAUS){
+    for(const driveMv of NEURON_DRIVES){
+      const run=simulateNeuron({tauMs,driveMv});
+      assert.deepEqual(run,simulateNeuron({tauMs,driveMv}),"Repeat with identical parameters must reproduce the exact data");
+      assert.equal(run.trace.length,401);
+      assert.equal(run.trace[0].timeMs,0);
+      assert.equal(run.trace[400].timeMs,200);
+      assert.equal(run.format,NEURON_FORMAT);
+      assert.equal(run.independentlyReviewed,false);
+      assert.equal(run.clinicalUse,false);
+      assert.equal(run.metrics.spikeCount,run.spikeTimesMs.length);
+      assert.ok(run.trace.every((x,i)=>x.timeMs===i*0.5&&Number.isFinite(x.voltageMv)&&x.voltageMv>=-65&&x.voltageMv<=-50));
+      assert.ok(run.spikeTimesMs.every((t,i)=>t>=20&&t<160&&Number.isFinite(t)&&Number.isInteger(t*2)&&(i===0||t-run.spikeTimesMs[i-1]>=2)));
+      assert.ok(run.assumptions.some(x=>x.includes("not a measured electrical current")));
+    }
+  }
+  const silent=simulateNeuron({tauMs:20,driveMv:0});
+  const subthreshold=simulateNeuron({tauMs:20,driveMv:10});
+  const active=simulateNeuron({tauMs:20,driveMv:20});
+  const faster=simulateNeuron({tauMs:5,driveMv:20});
+  assert.equal(silent.metrics.spikeCount,0);
+  assert.equal(subthreshold.metrics.spikeCount,0);
+  assert.equal(silent.metrics.firstSpikeMs,null);
+  assert.equal(silent.metrics.meanInterspikeIntervalMs,null);
+  assert.ok(active.metrics.spikeCount>0);
+  assert.ok(faster.metrics.spikeCount>active.metrics.spikeCount);
+  assert.equal(active.trace[20].voltageMv,-65,"Before stimulus the rest voltage is constant");
+  assert.ok(active.trace[60].voltageMv>-65,"Active pulse causes subthreshold integration");
+  assert.equal(active.trace[400].voltageMv<=-50,true);
+  for(const invalid of [{tauMs:0},{tauMs:1},{tauMs:20.1},{tauMs:NaN},{tauMs:Infinity},{tauMs:"20"},{tauMs:20,driveMv:-1},{driveMv:15},{driveMv:Infinity},{driveMv:"20"}]){
+    assert.throws(()=>simulateNeuron(invalid),/RangeError/);
+  }
+  const page=await(await req("/laboratory/neuron-dynamics")).text();
+  assert.ok(page.includes(NEURON_LIF_HTML));
+  assert.match(page,/data-neuron-lab/);
+  assert.match(page,/threshold/i);
+  assert.match(page,/not a simulation of real action-potential waveforms/i);
+  assert.doesNotMatch(page,/medical diagnosis|clinical validation|real neural recordings/i);
+  const academy=await(await req("/academy")).text();
+  assert.match(academy,/Open neuron dynamics model/);
+  const client=await req("/neuron-lif-client.js");
+  assert.equal(client.status,200);
+  assert.match(client.headers.get("Content-Security-Policy"),/connect-src 'none'/);
+  assert.ok(NEURON_LIF_CSS.includes(".neuron-layout"));
+  const style=await(await req("/styles.css")).text();
+  assert.ok(style.includes(NEURON_LIF_CSS));
+  assert.equal((await req("/api/neuron-data")).status,404);
 });

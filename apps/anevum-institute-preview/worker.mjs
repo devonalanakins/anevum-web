@@ -12,6 +12,10 @@ import {CLUSTER_SCHEDULER_HTML} from "./cluster-scheduler-ui.mjs";
 import {CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE} from "./cluster-scheduler-model.mjs";
 import {CLUSTER_SCHEDULER_CLIENT_BROWSER_MODULE} from "./cluster-scheduler-client.mjs";
 import {CLUSTER_SCHEDULER_CSS} from "./cluster-scheduler-styles.mjs";
+import {NEURON_LIF_HTML} from "./neuron-lif-ui.mjs";
+import {NEURON_LIF_MODEL_BROWSER_MODULE} from "./neuron-lif-model.mjs";
+import {NEURON_LIF_CLIENT_BROWSER_MODULE} from "./neuron-lif-client.mjs";
+import {NEURON_LIF_CSS} from "./neuron-lif-styles.mjs";
 import {CFP_101} from "./curriculum.mjs";
 import {studyToolsHtml} from "./study-tools.mjs";
 import {frontierHome,frontierRecognition,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART} from "./frontier-society.mjs";
@@ -48,7 +52,7 @@ function navigation(active){
 function footer(){
   return `<footer class="footer"><div class="shell footer-inner">
     <div><div class="footer-brand">ANEVUM <span style="font-family:system-ui,sans-serif;letter-spacing:.09em;font-size:10px;color:#b6c6c6">OPEN RESEARCH SOCIETY / CONCEPT</span></div><p>An independent, non-accredited open-education and research project. No degrees or academic credit are offered. Free educational material; no sign-in required for this preview.</p></div>
-    <div><div class="preview-flag">Isolated design review / Not a public launch</div><p>The Academy currently contains three preview lessons, two Boolean experiments and a simulated GPU scheduling laboratory. Other courses and real compute infrastructure remain proposed.</p><p><a href="/original-works/archive">Visit the existing ANEVUM archive</a> · <a href="${BASE}">Return to Institute</a></p></div>
+    <div><div class="preview-flag">Isolated design review / Not a public launch</div><p>The Academy currently contains three computing lessons, two Boolean experiments, a simulated GPU scheduler and a single-neuron teaching model. Full degrees, real compute and clinical programs remain proposed.</p><p><a href="/original-works/archive">Visit the existing ANEVUM archive</a> · <a href="${BASE}">Return to Institute</a></p></div>
   </div></footer>`;
 }
 
@@ -68,6 +72,7 @@ function dossier(){return layout("Research Desk","My Studio",dossierPage(BASE));
 function memberStudio(){return layout("My Studio","My Studio",localStudioPage(BASE));}
 function memberProfile(){return layout("Private Learner Card","My Studio",localProfilePage(BASE));}
 function clusterScheduling(){return layout("GPU Cluster Scheduling Simulation","Laboratory",CLUSTER_SCHEDULER_HTML);}
+function neuronLab(){return layout("Leaky Integrate-and-Fire Neuron Simulation","Laboratory",NEURON_LIF_HTML);}
 
 function academy(){
   return layout("Academy","Academy",`<main id="main" tabindex="-1" class="site-main">
@@ -80,7 +85,7 @@ function academy(){
           <h3>Computing From First Principles</h3><p>Explore transistor switching, Boolean logic and binary arithmetic through three original lessons, an inverter demonstration and two ideal Boolean experiments. The full eight-unit course remains unfinished.</p>
           <a class="btn small" href="${BASE}/academy/cfp-101">Open course ↗</a>
         </div></article>
-        <section class="academy-experiment" aria-labelledby="academy-compute-title"><div class="academy-experiment-head"><span class="kicker">Computing laboratory / preview</span><span class="academy-experiment-type">Local simulation · No GPUs</span></div><h3 id="academy-compute-title">How should a GPU cluster schedule work?</h3><p>Compare two allocation policies across five illustrative workloads. Inspect queue times, utilization and the job timeline, then export a transparent simulated result.</p><a href="${BASE}/laboratory/cluster-scheduling">Open the scheduling simulator →</a></section><div class="placeholder"><strong>More disciplines are being prepared.</strong>Rather than display fictitious course inventory, ANEVUM will add a subject only when its lessons, sources, exercises and review status are ready.</div>
+        <section class="academy-experiment" aria-labelledby="academy-compute-title"><div class="academy-experiment-head"><span class="kicker">Computing laboratory / preview</span><span class="academy-experiment-type">Local simulation · No GPUs</span></div><h3 id="academy-compute-title">How should a GPU cluster schedule work?</h3><p>Compare two allocation policies across five illustrative workloads. Inspect queue times, utilization and the job timeline, then export a transparent simulated result.</p><a href="${BASE}/laboratory/cluster-scheduling">Open the scheduling simulator →</a></section><section class="academy-experiment" aria-labelledby="academy-neuron-title"><div class="academy-experiment-head"><span class="kicker">Neuroscience laboratory / teaching model</span><span class="academy-experiment-type">Local LIF simulation · No biological recordings</span></div><h3 id="academy-neuron-title">When does a neuron reach threshold?</h3><p>Model ideal membrane leakage, effective depolarizing drive, threshold events and refractory resets. Compare deterministic traces without biological or clinical claims.</p><a href="${BASE}/laboratory/neuron-dynamics">Open neuron dynamics model →</a></section><div class="placeholder"><strong>More disciplines are being prepared.</strong>Rather than display fictitious course inventory, ANEVUM will add a subject only when its lessons, sources, exercises and review status are ready.</div>
       </div></div>
     </section>
   </main>`);
@@ -188,11 +193,13 @@ function lab(){
   </main>`);
 }
 
-const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/recognition",recognition],[BASE+"/dossier",dossier],[BASE+"/studio",memberStudio],[BASE+"/profile",memberProfile],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/learn/cfp-101/half-adders",halfAdderLesson],[BASE+"/laboratory/and-gate",lab],[BASE+"/laboratory/cluster-scheduling",clusterScheduling]]);
+const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/recognition",recognition],[BASE+"/dossier",dossier],[BASE+"/studio",memberStudio],[BASE+"/profile",memberProfile],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/learn/cfp-101/half-adders",halfAdderLesson],[BASE+"/laboratory/and-gate",lab],[BASE+"/laboratory/cluster-scheduling",clusterScheduling],[BASE+"/laboratory/neuron-dynamics",neuronLab]]);
 
 const ASSETS=new Map([
   [BASE+"/curriculum/cfp-101.json",["application/json; charset=utf-8",JSON.stringify(CFP_101,null,2)+"\n"]],
-  [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS+"\n"+CLUSTER_SCHEDULER_CSS]],
+  [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS+"\n"+CLUSTER_SCHEDULER_CSS+"\n"+NEURON_LIF_CSS]],
+  [BASE+"/neuron-lif-model.js",["text/javascript; charset=utf-8",NEURON_LIF_MODEL_BROWSER_MODULE]],
+  [BASE+"/neuron-lif-client.js",["text/javascript; charset=utf-8",NEURON_LIF_CLIENT_BROWSER_MODULE]],
   [BASE+"/cluster-scheduler-model.js",["text/javascript; charset=utf-8",CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE]],
   [BASE+"/cluster-scheduler-client.js",["text/javascript; charset=utf-8",CLUSTER_SCHEDULER_CLIENT_BROWSER_MODULE]],
   [BASE+"/client.js",["text/javascript; charset=utf-8",INSTITUTE_CLIENT]],

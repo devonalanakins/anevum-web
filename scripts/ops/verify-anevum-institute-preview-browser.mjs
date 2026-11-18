@@ -20,7 +20,8 @@ const pages=[
   ["/institute-preview/learn/cfp-101/logic-gates","lesson"],
   ["/institute-preview/learn/cfp-101/half-adders","adder"],
   ["/institute-preview/laboratory/and-gate","laboratory"],
-  ["/institute-preview/laboratory/cluster-scheduling","cluster"]
+  ["/institute-preview/laboratory/cluster-scheduling","cluster"],
+  ["/institute-preview/laboratory/neuron-dynamics","neuron"]
 ];
 mkdirSync(output,{recursive:true});
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -128,7 +129,7 @@ async function compactShellQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await navigate("/institute-preview/academy");
   const open=await evaluate("(()=>{const trigger=document.querySelector('[data-search-open]');trigger.click();const d=document.querySelector('[data-command-dialog]');return {modal:d.open,focused:document.activeElement===d.querySelector('[data-command-query]'),count:d.querySelectorAll('.command-result').length};})()");
-  verify(open.modal&&open.focused&&open.count===12,"Compact palette did not open with actual routes",open);
+  verify(open.modal&&open.focused&&open.count===13,"Compact palette did not open with actual routes",open);
   const search=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');const q=d.querySelector('[data-command-query]');q.value='transistor';q.dispatchEvent(new Event('input',{bubbles:true}));return [...d.querySelectorAll('.command-result')].map(a=>a.getAttribute('href'));})()");
   verify(search.includes("/institute-preview/learn/cfp-101/transistor-switching")&&search.every(url=>url.startsWith("/institute-preview/")),"Search did not resolve the existing lesson",search);
   const closed=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');d.querySelector('[data-command-close]').click();return !d.open;})()");
@@ -198,6 +199,29 @@ async function halfAdderBrowserQA(){
   console.log("ANEVUM_HALF_ADDER_BROWSER_QA_PASS",JSON.stringify({fourStates:true,quiz:true,export:true,reset:true,independentReview:false}));
 }
 
+
+
+async function neuronDynamicsBrowserQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await navigate("/institute-preview/laboratory/neuron-dynamics");
+  await waitFor(()=>evaluate("document.querySelector('[data-neuron-lab]')?.dataset.neuronReady==='true'"),"same-origin neuron module");
+  const initial=await evaluate("(()=>({hidden:document.querySelector('[data-neuron-results]').hidden,disabled:document.querySelector('[data-neuron-export]').disabled,tau:document.querySelector('[data-neuron-tau]').value,drive:document.querySelector('[data-neuron-drive]').value}))()");
+  verify(initial.hidden&&initial.disabled&&initial.tau==="20"&&initial.drive==="20","Neuron lab must start uncomputed with meaningful defaults",initial);
+  const active=await evaluate("(()=>{document.querySelector('[data-neuron-run]').click();return {visible:!document.querySelector('[data-neuron-results]').hidden,count:Number(document.querySelector('[data-neuron-count]').textContent),first:document.querySelector('[data-neuron-first]').textContent,svg:!!document.querySelector('svg[data-neuron-chart] polyline'),polyPoints:document.querySelector('svg[data-neuron-chart] polyline')?.getAttribute('points').split(' ').length,exportEnabled:!document.querySelector('[data-neuron-export]').disabled,summary:document.querySelector('[data-neuron-summary]').textContent,status:document.querySelector('[data-neuron-status]').textContent};})()");
+  verify(active.visible&&active.count>0&&active.svg&&active.polyPoints===401&&active.exportEnabled&&active.summary.includes("No biological action potentials were recorded")&&active.status.includes("locally"),"Neuron lab failed to produce truthfully labeled simulated trace",active);
+  await screenshot("neuron-results-390-full",true);
+  await send("Emulation.setDeviceMetricsOverride",{width:1440,height:900,deviceScaleFactor:1,mobile:false});
+  await screenshot("neuron-results-1440-full",true);
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  const saved=await evaluate("(async()=>{let name='',data=null;const orig=URL.createObjectURL;const capture=e=>{if(e.target.matches('a[download]')){name=e.target.download;e.preventDefault();}};document.addEventListener('click',capture,true);URL.createObjectURL=blob=>{data=blob;return 'blob:neuron-qa';};try{document.querySelector('[data-neuron-export]').click();return {name,record:data?JSON.parse(await data.text()):null,status:document.querySelector('[data-neuron-status]').textContent};}finally{URL.createObjectURL=orig;document.removeEventListener('click',capture,true);}})()");
+  verify(saved.name==="anevum-neuron-lif-simulation.json"&&saved.record?.format==="anevum-neuron-lif-simulation/v1"&&saved.record.trace.length===401&&saved.record.metrics.spikeCount===active.count&&saved.record.independentlyReviewed===false&&saved.record.clinicalUse===false&&saved.status.includes("not a validated biological"),"Neuron export must preserve declared scientific limits",saved);
+  const stale=await evaluate("(()=>{const drive=document.querySelector('[data-neuron-drive]');drive.value='0';drive.dispatchEvent(new Event('change',{bubbles:true}));return {hidden:document.querySelector('[data-neuron-results]').hidden,disabled:document.querySelector('[data-neuron-export]').disabled,status:document.querySelector('[data-neuron-status]').textContent};})()");
+  verify(stale.hidden&&stale.disabled&&stale.status.includes("Settings changed"),"Changing neuron controls must invalidate prior traces",stale);
+  const quiet=await evaluate("(()=>{document.querySelector('[data-neuron-run]').click();return {count:document.querySelector('[data-neuron-count]').textContent,first:document.querySelector('[data-neuron-first]').textContent,isi:document.querySelector('[data-neuron-isi]').textContent,summary:document.querySelector('[data-neuron-summary]').textContent};})()");
+  verify(quiet.count==="0"&&quiet.first==="None"&&quiet.isi==="N/A"&&quiet.summary.includes("did not cross"),"Zero-input neuron must produce a correct quiet result",quiet);
+  console.log("ANEVUM_NEURON_LIF_BROWSER_QA_PASS",JSON.stringify({spiking:active.count,trace:active.polyPoints,quiet:quiet.count,export:saved.name}));
+}
 
 async function clusterSchedulerBrowserQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
@@ -445,6 +469,7 @@ try{
   await compactCourseUsabilityQA();
   await halfAdderBrowserQA();
   await clusterSchedulerBrowserQA();
+  await neuronDynamicsBrowserQA();
   await interactions();
   await clusterResearchBrowserQA();
   console.log("ANEVUM_INSTITUTE_BROWSER_QA_PASS");
