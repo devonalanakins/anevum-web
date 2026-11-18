@@ -238,6 +238,13 @@ body[data-area="laboratory"] .section h2{font-size:clamp(33px,3.3vw,46px)}
 .study-notes label{display:block;margin:22px 0 9px;color:#294046;font-size:13px;font-weight:750}
 .study-notes textarea{display:block;resize:vertical;width:100%;min-width:0;min-height:145px;line-height:1.6;font:15px/1.6 ui-sans-serif,system-ui,sans-serif;border:1px solid #9fa99e;border-radius:7px;padding:15px 17px;color:#20383b;background:#fffdf7}
 .study-notes textarea:focus-visible{outline:3px solid #ae7844;outline-offset:3px}
+
+.study-import{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px;padding:15px 16px;border-top:1px solid #c7c7b8;background:#e4e6da;border-radius:5px}
+.study-notes .study-import label{flex:1 1 100%;margin:0;color:#324f48;font-size:12px}
+.study-import input[type=file]{display:block;min-width:0;width:100%;max-width:100%;padding:9px 10px;min-height:44px;border:1px solid #aab8a7;border-radius:5px;background:#fffdf7;color:#24423b;font-size:12px}
+.study-import input[type=file]:focus-visible,.study-import button:focus-visible{outline:3px solid #ae7844;outline-offset:3px}
+.study-import .btn{min-height:43px;font-size:11px}
+.lesson-article .study-notes .study-import-disclosure{flex:1 1 100%;font-size:11px;line-height:1.6;margin:0;color:#5a665f}
 .study-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .study-actions .btn{font-size:10px;min-height:43px}
 .study-actions.secondary{margin-top:12px;gap:15px}
