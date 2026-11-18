@@ -706,4 +706,9 @@ body[data-area="course"] .unit[hidden]{display:none!important}
 @media(max-width:470px){.lesson-article .half-bench{padding:14px;margin-inline:-7px}.half-outputs strong{font-size:39px}.half-table th,.half-table td{padding:8px 4px}.half-actions button{flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){.half-grid .progress-meter span{transition:none}}
 
+
+/* Readable research scope: current draft identifier is not a credential. */
+.dossier-scope{color:#354b44;background:#e6e8dc;border:1px solid #b9c7b7;border-radius:6px;padding:10px 13px;margin:13px 0 19px;font-size:12px;line-height:1.55}
+.dossier-scope strong{color:#20463d;font:750 12px ui-monospace,Consolas,monospace;letter-spacing:.01em}
+
 `;
