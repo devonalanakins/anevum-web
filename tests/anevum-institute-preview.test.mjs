@@ -627,7 +627,8 @@ test("neuron LIF simulator is deterministic, mathematically bounded and not a cl
   assert.match(page,/data-neuron-lab/);
   assert.match(page,/threshold/i);
   assert.match(page,/not a simulation of real action-potential waveforms/i);
-  assert.doesNotMatch(page,/medical diagnosis|clinical validation|real neural recordings/i);
+  assert.match(page,/No real neural recordings/i);
+  assert.doesNotMatch(page,/clinically validated|medical diagnosis available|diagnostic accuracy established/i);
   const academy=await(await req("/academy")).text();
   assert.match(academy,/Open neuron dynamics model/);
   const client=await req("/neuron-lif-client.js");
