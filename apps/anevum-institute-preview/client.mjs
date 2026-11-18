@@ -283,4 +283,12 @@ export const INSTITUTE_CLIENT = String.raw`
     render();
   }
   updateStatus();
+  // Load the separate source-controlled dossier editor only on its own preview route.
+  // No accounts, public upload or credential issuance exist in this preview.
+  if(document.querySelector("[data-evidence-workbench]")){
+    import("/institute-preview/evidence-workbench.js").catch(function(){
+      var note=document.querySelector("[data-evidence-status]");
+      if(note)note.textContent="The local evidence editor could not load. Your existing saved draft has not been changed.";
+    });
+  }
 })();`;
