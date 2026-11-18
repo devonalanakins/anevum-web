@@ -276,6 +276,7 @@ body[data-area="society"] .mast,body[data-area="recognition"] .mast{background:#
 .frontier-media[data-art-source="pr813-review"][data-fx-status="active"] .frontier-poster{filter:contrast(1.045) saturate(.9) brightness(.9)}
 .frontier-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:screen;opacity:.47;pointer-events:none}
 @media(max-width:650px){.frontier-poster{object-position:50% 43%;filter:brightness(.66) saturate(.88)}}
+@media(max-width:650px){.frontier-hero::after{background:linear-gradient(90deg,#061018ab,#0610183b 85%),linear-gradient(0deg,#071016e8 0%,#07101676 28%,#071016a3 58%,#071016d6 100%)}.frontier-hero h1{text-shadow:0 4px 32px #000f,0 1px 2px #01080c}.frontier-hero h1 em{text-shadow:0 2px 28px #000f}}
 @media(prefers-reduced-motion:reduce){.frontier-video{display:none}}
 .frontier-hero-inner{z-index:2;max-width:var(--max);width:100%;padding-block:clamp(105px,15vh,175px) clamp(140px,17vh,205px)}
 .frontier-hero-inner .kicker{color:#b7cfcd;font-size:10px;letter-spacing:.17em;margin-top:35px}
