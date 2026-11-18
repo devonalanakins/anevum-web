@@ -452,6 +452,25 @@ test("logic laboratory exposes four correct truth-table rows and accessible cont
   assert.match(html,/browser simulation evaluates the ideal Boolean function/);
 });
 
+test("AND-to-Research Desk handoff requires full coverage and explicit draft approval",async()=>{
+  const html=await(await req("/laboratory/and-gate")).text();
+  assert.match(html,/<button[^>]*data-to-dossier disabled>Review in Research Desk/);
+  assert.match(html,/After testing all four input pairs/);
+  const client=await(await req("/client.js")).text();
+  assert.match(client,/handoffKey="anevum\.institute\.handoff\.and\.v1"/);
+  assert.match(client,/handoff\.disabled=visited\.size!==4/);
+  assert.match(client,/sessionStorage\.setItem\(handoffKey,encoded\)/);
+  assert.match(client,/window\.location\.assign\("\/institute-preview\/dossier#logic-import"\)/);
+  const workbench=await(await req("/evidence-workbench.js")).text();
+  assert.match(workbench,/function consumeAndLabHandoff\(\)/);
+  assert.match(workbench,/sessionStorage\.removeItem\(handoffKey\)/);
+  assert.match(workbench,/stagedLab=evidenceFromAndLabNotebook\(source\)/);
+  assert.match(workbench,/source\?\.coverage\?\.complete!==true/);
+  assert.match(workbench,/Nothing is saved or submitted automatically/);
+  assert.doesNotMatch(client,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon/);
+  assert.doesNotMatch(workbench,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon/);
+});
+
 test("preview client parses, and uses only local browser state",async()=>{
   const response=await req("/client.js");
   assert.equal(response.status,200);
