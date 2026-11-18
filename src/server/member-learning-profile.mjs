@@ -17,7 +17,9 @@ export function learnerProfilePreviewEnabled(env,origin){
      !origin || origin===PRODUCTION)return false;
   try{
     const configured=new URL(String(env.MEMBER_PREVIEW_ORIGIN||""));
-    return configured.protocol==="https:" && !configured.port &&
+    const host=configured.hostname.toLowerCase();
+    const allowedHost=host.endsWith(".anevum.com")||host.endsWith(".workers.dev");
+    return allowedHost && configured.protocol==="https:" && !configured.port &&
       configured.pathname==="/" && !configured.search && !configured.hash &&
       configured.origin===origin;
   }catch{return false;}

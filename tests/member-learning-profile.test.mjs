@@ -69,6 +69,8 @@ test("private learning route remains disabled without dedicated staging controls
  assert.equal(learnerProfilePreviewEnabled({...enabled,ANEVUM_LEARNING_PROFILE_PREVIEW_ENABLED:"false"},stage),false);
  assert.equal(learnerProfilePreviewEnabled({...enabled,MEMBER_PREVIEW_ORIGIN:"https://evil.example"},stage),false);
  assert.equal(learnerProfilePreviewEnabled({...enabled,MEMBER_PREVIEW_ORIGIN:stage+"/other"},stage),false);
+ assert.equal(learnerProfilePreviewEnabled({...enabled,MEMBER_PREVIEW_ORIGIN:"https://evil.example"},"https://evil.example"),false);
+ assert.equal(learnerProfilePreviewEnabled({...enabled,MEMBER_PREVIEW_ORIGIN:"https://anevum.com"},"https://anevum.com"),false);
  assert.equal(await learnerProfileSchemaReady(db),true);
  assert.equal(await learnerProfileSchemaReady(dbSimulator(false)),false);
  const denied=await memberLearningProfileEndpoint(
