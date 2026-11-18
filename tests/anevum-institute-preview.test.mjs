@@ -213,6 +213,7 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
     assert.match(html,/data-study-clear/);
     assert.match(html,/data-study-status role="status" aria-live="polite"/);
     assert.match(html,/not encrypted or synced/);
+    assert.match(html,/Bookmarking also saves the text currently in the editor/);
     assert.match(html,/maxlength="8000"/);
     assert.equal((html.match(/class="study-notes"/g)||[]).length,1,"A lesson must have exactly one local notebook");
   }
@@ -220,6 +221,12 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   assert.doesNotMatch(b,/data-study-lesson="CFP-101-U01"/);
   assert.doesNotMatch(c,/data-study-lesson="CFP-101-U01"/);
   assert.doesNotMatch(c,/data-study-lesson="CFP-101-U02"/);
+  const client=await (await req("/client.js")).text();
+  assert.match(client,/var persistedNote=initial\.note/);
+  assert.match(client,/textarea\.addEventListener\("input"/);
+  assert.match(client,/Unsaved notes\. Select Save notes or Bookmark this lesson/);
+  assert.match(client,/var current=textarea\?textarea\.value\.slice\(0,8000\):""/);
+  assert.doesNotMatch(client,/writeNotes\(saved\.note,next\)/);
 });
 
 test("CFP-101 reader exposes curriculum-grounded navigation without invented completion",async()=>{
