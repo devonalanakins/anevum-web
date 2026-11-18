@@ -71,12 +71,11 @@ async function testPage(pathname,label,width,height){
   verify(state.width>=width-20&&state.width<=width&&state.scrollWidth<=state.width+1&&state.bodyWidth<=state.width+1,"Horizontal overflow",{label,width,state});
   verify((width<=1100)===state.mobileVisible,"Wrong mobile navigation breakpoint",{label,width,state});
   if(label==="home"){
-    await waitFor(()=>evaluate("document.querySelector('.frontier-poster')?.complete&&document.querySelector('.frontier-poster')?.naturalWidth>700"),"high-resolution heritage review art decode");
-    const poster=await evaluate("(()=>{const el=document.querySelector('.frontier-poster');return {width:el.naturalWidth,current:el.currentSrc,artSource:document.querySelector('[data-frontier-visual]').dataset.artSource};})()");
-    verify(poster.artSource==="pr813-review"&&poster.width===(width<=650?720:1536),"Responsive archival photography must use real hi-resolution assets",{width,poster});
+    const background=await evaluate("(()=>({artSource:document.querySelector('[data-frontier-visual]').dataset.artSource,oldPoster:document.querySelector('.frontier-poster')!==null,facilityScene:getComputedStyle(document.querySelector('.frontier-facility-art')).backgroundImage,links:document.querySelectorAll('.facility-link-dock a').length,title:document.querySelector('main h1').textContent}))()");
+    verify(background.artSource==="facility-revision-pending-photo"&&!background.oldPoster&&background.facilityScene.includes("gradient")&&background.links===3&&background.title.includes("frontier"),"Rejected orbital art must be removed and working activity links preserved",{width,background});
     await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='reduced-motion'"),"reduced-motion WebGL suppression");
-    const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,canvas:!!document.querySelector('[data-frontier-gl]'),draws:document.querySelector('[data-frontier-gl]').dataset.fxFrames||'0',display:getComputedStyle(document.querySelector('[data-frontier-gl]')).display,art:getComputedStyle(document.querySelector('.frontier-art')).backgroundImage}))()");
-    verify(fx.canvas&&fx.status==="reduced-motion"&&fx.draws==="0"&&fx.display==="none"&&fx.art.includes("research-computation-v1.webp"),"Reduced-motion users must keep an authentic still while avoiding GPU allocation",{width,fx});
+    const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,canvas:!!document.querySelector('[data-frontier-gl]'),draws:document.querySelector('[data-frontier-gl]').dataset.fxFrames||'0',display:getComputedStyle(document.querySelector('[data-frontier-gl]')).display,art:getComputedStyle(document.querySelector('.frontier-facility-art')).backgroundImage}))()");
+    verify(fx.canvas&&fx.status==="reduced-motion"&&fx.draws==="0"&&fx.display==="none"&&fx.art.includes("gradient"),"Reduced-motion users must keep an authentic still while avoiding GPU allocation",{width,fx});
   }
   if(label==="recognition"&&width===390){
     const evidence=await evaluate("(()=>({count:document.querySelector('[data-evidence-count]')?.textContent,labels:[...document.querySelectorAll('[data-evidence-activity]')].map(x=>x.getAttribute('data-evidence-state')),status:document.querySelector('[data-evidence-label]')?.textContent}))()");
@@ -111,7 +110,7 @@ async function interactions(){
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
   await navigate("/institute-preview");
   await waitFor(()=>evaluate("['active','fallback'].includes(document.querySelector('[data-frontier-gl]')?.dataset.fxStatus)"),"WebGL startup or clean fallback");
-  const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,frames:Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0),shader:document.querySelector('[data-frontier-gl]').width>0,still:document.querySelector('.frontier-poster').naturalWidth>700}))()");
+  const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,frames:Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0),shader:document.querySelector('[data-frontier-gl]').width>0,still:getComputedStyle(document.querySelector('.frontier-facility-art')).backgroundImage.includes('gradient')}))()");
   verify(["active","fallback"].includes(fx.status)&&fx.still,"WebGL must draw or reliably fall back to the existing art",fx);
   if(fx.status==="active"){
     await waitFor(()=>evaluate("Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0)>=2"),"shader animation frames");
@@ -133,7 +132,7 @@ async function interactions(){
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
   await navigate("/institute-preview");
   await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='fallback'"),"no-WebGL fallback");
-  const disabledGL=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,art:document.querySelector('.frontier-poster').naturalWidth>700,title:document.querySelector('main h1').textContent}))()");
+  const disabledGL=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,art:getComputedStyle(document.querySelector('.frontier-facility-art')).backgroundImage.includes('gradient'),title:document.querySelector('main h1').textContent}))()");
   verify(disabledGL.status==="fallback"&&disabledGL.art&&disabledGL.title.includes("frontier"),"WebGL absence must preserve readable architecture and learning entry",disabledGL);
   await send("Page.removeScriptToEvaluateOnNewDocument",{identifier:blockedGL.identifier});
   console.log("INSTITUTE_WEBGL_NO_GPU_QA_PASS",JSON.stringify(disabledGL));
