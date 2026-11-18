@@ -5,6 +5,8 @@ const panel=document.querySelector("[data-evidence-workbench]");
 if(panel){
   const keys=["title","question","method","observations","limitations","references"];
   const status=panel.querySelector("[data-evidence-status]");
+  const courseStatus=panel.querySelector("[data-evidence-course]");
+  let draftCourseId="CFP-101";
   const state=panel.querySelector("[data-evidence-receipt-state]");
   const digest=panel.querySelector("[data-evidence-digest]");
   const save=panel.querySelector("[data-evidence-save]");
@@ -32,7 +34,7 @@ if(panel){
   function resetDelete(){awaitingDelete=false;deletion.textContent="Delete saved draft";}
   function resetReceipt(){state.textContent="Unsaved changes";digest.textContent="Not computed for current edits";}
   function inputs(){
-    const result={schemaVersion:1,kind:"personal-unreviewed-draft",courseId:"CFP-101"};
+    const result={schemaVersion:1,kind:"personal-unreviewed-draft",courseId:draftCourseId};
     for(const key of keys){
       const field=panel.querySelector('[data-evidence-field="'+key+'"]');
       result[key]=key==="references"?field.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean):field.value;
@@ -40,6 +42,8 @@ if(panel){
     return result;
   }
   function fill(record){
+    draftCourseId=record.courseId||"CFP-101";
+    if(courseStatus)courseStatus.textContent=draftCourseId;
     for(const key of keys){
       const field=panel.querySelector('[data-evidence-field="'+key+'"]');
       field.value=key==="references"?record.references.join("\n"):record[key];
@@ -54,7 +58,7 @@ if(panel){
     const blob=new Blob([contents],{type:"application/json;charset=utf-8"});
     const url=URL.createObjectURL(blob);
     const link=document.createElement("a");
-    link.href=url;link.download="anevum-personal-evidence-CFP-101.json";link.hidden=true;
+    link.href=url;link.download="anevum-personal-evidence-"+draftCourseId+".json";link.hidden=true;
     document.body.appendChild(link);link.click();link.remove();
     setTimeout(()=>URL.revokeObjectURL(url),5000);
   }
