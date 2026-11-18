@@ -30,7 +30,7 @@ export function validateEvidence(input){
   for(const key of Object.keys(input))if(!FIELDS.includes(key))errors.push("Unsupported evidence field: "+key);
   if(input.schemaVersion!==1)errors.push("Unsupported schema version");
   if(input.kind!=="personal-unreviewed-draft")errors.push("Record must remain an unreviewed personal draft");
-  if(input.courseId!=="CFP-101"&&input.courseId!=="COMPUTE-LAB-001")errors.push("Unknown course identifier");
+  if(input.courseId!=="CFP-101"&&input.courseId!=="COMPUTE-LAB-001"&&input.courseId!=="NEURO-LAB-001")errors.push("Unknown course identifier");
   for(const [name,min,max] of [["title",8,EVIDENCE_LIMITS.title],["question",12,EVIDENCE_LIMITS.question],["method",35,EVIDENCE_LIMITS.method],["observations",15,EVIDENCE_LIMITS.observations],["limitations",12,EVIDENCE_LIMITS.limitations]]){
     const value=input[name];
     if(typeof value!=="string"||value.trim().length<min||value.length>max)errors.push(name+" must be "+min+"-"+max+" characters");
@@ -192,6 +192,67 @@ export function evidenceFromClusterSchedulerNotebook(value,expected){
   });
 }
 
+
+/**
+ * Require exact agreement with the canonical in-repository leaky integrate-
+ * and-fire model. Recomputing the same simulation checks internal consistency
+ * ONLY; it cannot authenticate who generated a file or prove biological truth.
+ * Callers must construct expected from trusted model code using allowlisted
+ * settings, NEVER from imported constants/trace/assumptions.
+ */
+export function validateNeuronLifNotebook(value,expected){
+  const errors=[];
+  if(!value||typeof value!=="object"||Array.isArray(value))return ["Neuron simulation export must be a JSON object"];
+  if(value.format!=="anevum-neuron-lif-simulation/v1"
+    ||value.model!=="ideal-single-neuron-leaky-integrate-and-fire"
+    ||value.provenance!=="deterministic-browser-only-educational-model"
+    ||value.independentlyReviewed!==false
+    ||value.clinicalUse!==false)errors.push("Unsupported neuron simulation provenance or review/clinical claims");
+  if(!value.settings||typeof value.settings!=="object"||Array.isArray(value.settings)
+    ||![5,10,20,40].includes(value.settings.tauMs)
+    ||![0,10,20,30].includes(value.settings.driveMv))errors.push("Neuron simulation settings are outside the teaching model");
+  if(!expected||typeof expected!=="object"||Array.isArray(expected)
+    ||expected.format!=="anevum-neuron-lif-simulation/v1"
+    ||JSON.stringify(expected.settings)!==JSON.stringify(value.settings))errors.push("Neuron reference model settings do not match");
+  else if(JSON.stringify(value)!==JSON.stringify(expected)){
+    // Reject altered trace or timestamps, inferred biology, missing events,
+    // edited constants, additional fields, changed metrics or false provenance.
+    errors.push("Neuron simulation differs from the deterministic reference model");
+  }
+  return errors;
+}
+export function evidenceFromNeuronLifNotebook(value,expected){
+  const errors=validateNeuronLifNotebook(value,expected);
+  if(errors.length)throw new Error(errors.join("; "));
+  const s=value.settings,m=value.metrics;
+  const intervals=m.meanInterspikeIntervalMs===null?"not defined for fewer than two events":m.meanInterspikeIntervalMs+" ms";
+  const first=m.firstSpikeMs===null?"no threshold event":m.firstSpikeMs+" ms";
+  return canonicalEvidence({
+    courseId:"NEURO-LAB-001",
+    title:"Simulated point-neuron dynamics: tau "+s.tauMs+" ms, drive "+s.driveMv+" mV",
+    question:"How do the fixed effective input and membrane time constant influence threshold events and integration in a single ideal leaky integrate-and-fire neuron?",
+    method:"Use the ANEVUM browser-only single-point-neuron model with tau "+s.tauMs+
+      " ms and effective drive "+s.driveMv+" mV. Start at -65 mV. Apply the modeled drive"+
+      " between 20 and 160 ms, with -50 mV threshold, 2 ms hard refractory interval,"+
+      " 0.5 ms numerical steps, and 200 ms total duration. Export the deterministic"+
+      " trace, then compare a repeated run using identical settings. No biological"+
+      " tissue, electrodes, patient data, or neural recordings are involved.",
+    observations:"SIMULATED ONLY — no neuronal or clinical measurements.\n"+
+      "Model: single-point-neuron leaky integrate-and-fire; tau "+s.tauMs+
+      " ms; effective drive "+s.driveMv+" mV (voltage shift, not measured current)."+
+      "\nTime samples: "+value.trace.length+" at 0.5 ms increments over 200 ms."+
+      "\nNumerical threshold crossings: "+m.spikeCount+
+      "; first event: "+first+
+      "; mean inter-event interval: "+intervals+
+      "; peak stored/reset potential: "+m.peakRecordedVoltageMv+" mV."+
+      "\nThreshold event times (ms): "+(value.spikeTimesMs.join(", ")||"none")+".",
+    limitations:"Agreement with a freshly rerun educational model checks mathematical consistency only, not independent research replication, source authenticity or the validity of human physiology."+
+      " This ideal point-neuron model uses a fixed threshold and instantaneous voltage reset; it omits action-potential waveforms, ion channels, dendrites, synaptic inputs, network dynamics, noise, plasticity and model uncertainty."+
+      " Its effective drive in mV is not a measured electric current. Nothing here is neural data, a clinical neuropsychological assessment, CNS-regulation evidence or a research credential.",
+    references:[]
+  });
+}
+
 /** The exact same schema functions run in Node tests and the browser sandbox. */
 export const EVIDENCE_BROWSER_MODULE=[
   "const EVIDENCE_FORMAT="+JSON.stringify(EVIDENCE_FORMAT)+";",
@@ -209,5 +270,7 @@ export const EVIDENCE_BROWSER_MODULE=[
   evidenceFromAndLabNotebook.toString(),
   validateClusterSchedulerNotebook.toString(),
   evidenceFromClusterSchedulerNotebook.toString(),
-  "export {EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,normalizeEvidence,validateEvidence,canonicalEvidence,digestEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook,validateClusterSchedulerNotebook,evidenceFromClusterSchedulerNotebook};"
+  validateNeuronLifNotebook.toString(),
+  evidenceFromNeuronLifNotebook.toString(),
+  "export {EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,normalizeEvidence,validateEvidence,canonicalEvidence,digestEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook,validateClusterSchedulerNotebook,evidenceFromClusterSchedulerNotebook,validateNeuronLifNotebook,evidenceFromNeuronLifNotebook};"
 ].join("\n")+"\n";

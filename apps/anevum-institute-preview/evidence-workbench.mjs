@@ -1,4 +1,5 @@
-export const EVIDENCE_WORKBENCH_CLIENT=String.raw`import {EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,createEvidenceEnvelope,parseEvidenceEnvelope,evidenceFromAndLabNotebook,evidenceFromClusterSchedulerNotebook} from "/institute-preview/evidence-schema.js";
+export const EVIDENCE_WORKBENCH_CLIENT=String.raw`import {EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,createEvidenceEnvelope,parseEvidenceEnvelope,evidenceFromAndLabNotebook,evidenceFromClusterSchedulerNotebook,evidenceFromNeuronLifNotebook} from "/institute-preview/evidence-schema.js";
+import {simulateNeuron} from "/institute-preview/neuron-lif-model.js";
 import {simulateCluster} from "/institute-preview/cluster-scheduler-model.js";
 
 const panel=document.querySelector("[data-evidence-workbench]");
@@ -19,8 +20,12 @@ if(panel){
   const clusterImporter=panel.querySelector("[data-cluster-import]");
   const clusterApply=panel.querySelector("[data-cluster-apply]");
   const clusterFeedback=panel.querySelector("[data-cluster-feedback]");
+  const neuronImporter=panel.querySelector("[data-neuron-import]");
+  const neuronApply=panel.querySelector("[data-neuron-apply]");
+  const neuronFeedback=panel.querySelector("[data-neuron-feedback]");
   let stagedLab=null;
   let stagedCluster=null;
+  let stagedNeuron=null;
   function clearStagedLab(){
     stagedLab=null;
     labApply.hidden=true;
@@ -29,6 +34,7 @@ if(panel){
     stagedCluster=null;
     clusterApply.hidden=true;
   }
+  function clearStagedNeuron(){stagedNeuron=null;neuronApply.hidden=true;}
   let awaitingDelete=false;
   function report(message){if(status)status.textContent=message;}
   function resetDelete(){awaitingDelete=false;deletion.textContent="Delete saved draft";}
@@ -86,6 +92,7 @@ if(panel){
     }catch(error){report("Export not created: "+humanError(error));}
   });
   importer.addEventListener("change",async function(){
+    clearStagedLab();clearStagedCluster();clearStagedNeuron();
     resetDelete();
     const file=importer.files?.[0];
     if(!file)return;
@@ -101,6 +108,8 @@ if(panel){
   labImporter.addEventListener("change",async function(){
     clearStagedLab();
     clearStagedCluster();
+    clearStagedNeuron();
+    neuronFeedback.textContent="No neuron simulation is staged.";
     clusterFeedback.textContent="No GPU scheduling result is staged.";
     labFeedback.textContent="Checking laboratory notebook format and Boolean values…";
     const file=labImporter.files?.[0];
@@ -125,6 +134,8 @@ if(panel){
   clusterImporter.addEventListener("change",async function(){
     clearStagedCluster();
     clearStagedLab();
+    clearStagedNeuron();
+    neuronFeedback.textContent="No neuron simulation is staged.";
     labFeedback.textContent="No Boolean notebook is staged.";
     clusterFeedback.textContent="Checking the GPU scheduling model and metrics…";
     const file=clusterImporter.files?.[0];
@@ -153,6 +164,42 @@ if(panel){
     clearStagedCluster();
     clusterFeedback.textContent="Simulated GPU scheduling results copied into the editor. Review limitations before choosing Save locally; nothing was submitted or saved automatically.";
     report("Validated simulation staged in your personal research draft. This is not a real hardware benchmark or independently verified evidence.");
+  });
+
+  neuronImporter.addEventListener("change",async function(){
+    clearStagedNeuron();
+    clearStagedLab();
+    clearStagedCluster();
+    labFeedback.textContent="No Boolean notebook is staged.";
+    clusterFeedback.textContent="No GPU scheduling result is staged.";
+    neuronFeedback.textContent="Checking the ideal neuron model and entire voltage trace…";
+    const file=neuronImporter.files?.[0];
+    if(!file)return;
+    try{
+      if(file.size>65536)throw new Error("Neuron simulation export exceeds 64 KiB");
+      const imported=JSON.parse(await file.text());
+      if(!imported||!imported.settings||![5,10,20,40].includes(imported.settings.tauMs)
+        ||![0,10,20,30].includes(imported.settings.driveMv)){
+        throw new Error("Unsupported neuron simulation settings");
+      }
+      // Do not use exported trace, biological constants, or reported metrics
+      // as trusted model inputs. Recompute from source-controlled assumptions.
+      const expected=simulateNeuron({tauMs:imported.settings.tauMs,driveMv:imported.settings.driveMv});
+      stagedNeuron=evidenceFromNeuronLifNotebook(imported,expected);
+      neuronApply.hidden=false;
+      neuronFeedback.textContent="The 401 voltage samples, threshold events and metrics match a new local model run. Select Use checked neuron simulation to replace editor fields. Biological measurement, origin, identity and peer review have NOT been established.";
+    }catch(error){
+      clearStagedNeuron();
+      neuronFeedback.textContent="Neuron simulation import rejected: "+humanError(error)+". Existing editor and saved data remain unchanged.";
+    }finally{neuronImporter.value="";}
+  });
+  neuronApply.addEventListener("click",function(){
+    if(!stagedNeuron)return;
+    fill(stagedNeuron);
+    resetReceipt();resetDelete();
+    clearStagedNeuron();
+    neuronFeedback.textContent="The checked ideal-neuron result is in the editor. Review the limitations and explicitly save if desired. Nothing was submitted.";
+    report("Local unreviewed neuroscience draft staged. No actual neural recordings, clinical validation, external review or credential.");
   });
   deletion.addEventListener("click",function(){
     if(!awaitingDelete){
