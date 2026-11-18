@@ -1,5 +1,8 @@
 # ANEVUM / identity refinement — owner-review candidates
 
+> **Owner direction update — November 18, 2026:** The earlier wedge/three-path aperture design is **REJECTED**, as it resembles sportswear branding. The owner selected **The Confluence** as ANEVUM's new lead identity concept. See [CONFLUENCE.md](./CONFLUENCE.md) and six new `confluence-*.svg` source files. Selection authorizes source-level refinement only; do not change the served mark or public brand without a separate approval.
+
+
 Session: `ANEVUM.WEB.DESIGN.2026-11-17.005.OPEN-APERTURE-MARK-REVIEW`  
 Parent engineering session: `ANEVUM.WEB.BUILD.2026-11-17.003.OPEN-INSTITUTE-FULL-IMPLEMENTATION`  
 Status: **READY FOR OWNER REVIEW** — none of these new symbols is approved or public. Draft PR #816 only.
@@ -14,7 +17,7 @@ The original symbol contains tiny detached strokes, a dot, very fine orbital arc
 
 | Candidate | Why it exists | Risk |
 | --- | --- | --- |
-| **Open Aperture refined** (recommended *for review*, not approved) | Retains the established three-path DNA and open discovery theme; one bolder structural arc, no stray dot, no overlapping lower orbit, fewer micro details; typography and palette can evolve independently | May still suggest topography rather than frontier scientific research and needs independent small-scale human recognition |
+| **Open Aperture refined** (rejected / archived) | Retains the established three-path DNA and open discovery theme; one bolder structural arc, no stray dot, no overlapping lower orbit, fewer micro details; typography and palette can evolve independently | May still suggest topography rather than frontier scientific research and needs independent small-scale human recognition |
 | **Axiom** | Extremely readable A-derived structure at 16–32px, technical and architectural | Simple letter-A mark could collide with unrelated institutional identities; requires stronger differentiation |
 | **Gate** | References a monumental open research facility without a generic university crest or circular orbital decoration | Can be interpreted as an N or doorway at small sizes; less obvious tie to ANEVUM initial |
 

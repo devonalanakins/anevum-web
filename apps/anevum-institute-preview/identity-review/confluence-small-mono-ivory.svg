@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-labelledby="title desc">
+<title id="title">ANEVUM — The Confluence / small icon — mono-ivory</title>
+<desc id="desc">The Confluence: paired scientific field lines meeting at a central discovery point, with a calibrated axis. An editable identity review candidate, not an approved public mark.</desc>
+<path d="M80 28 V65 M80 106 V133" stroke="#F4F1E8" stroke-width="5.4" stroke-linecap="round"/>
+<path d="M80 85 C61 52 33 49 19 70 C8 87 25 104 48 95 C60 91 70 86 80 85" fill="none" stroke="#F4F1E8" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<g transform="translate(160 0) scale(-1 1)"><path d="M80 85 C61 52 33 49 19 70 C8 87 25 104 48 95 C60 91 70 86 80 85" fill="none" stroke="#F4F1E8" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/></g>
+<path d="M80 85 C64 107 39 117 25 128" fill="none" stroke="#F4F1E8" stroke-width="5.7" stroke-linecap="round"/>
+<g transform="translate(160 0) scale(-1 1)"><path d="M80 85 C64 107 39 117 25 128" fill="none" stroke="#F4F1E8" stroke-width="5.7" stroke-linecap="round"/></g>
+<path d="M80 65 L86 79 L100 85 L86 91 L80 106 L74 91 L60 85 L74 79Z" fill="#F4F1E8"/>
+</svg>
