@@ -6,8 +6,10 @@ on:
     paths:
       - "apps/anevum-institute-preview/**"
       - "scripts/ops/anevum-institute-preview-server.mjs"
+      - "scripts/ops/anevum-institute-preview-readiness.mjs"
       - "scripts/ops/verify-anevum-institute-preview-browser.mjs"
       - "tests/anevum-institute-preview.test.mjs"
+      - "tests/anevum-institute-preview-readiness.test.mjs"
       - "tests/anevum-identity-review.test.mjs"
       - "tests/member-learning-profile.test.mjs"
       - "src/server/member-learning-profile.mjs"
@@ -32,6 +34,7 @@ jobs:
           node-version: "22"
       - name: Parse self-contained preview files
         run: |
+          node --check scripts/ops/anevum-institute-preview-readiness.mjs
           node --check apps/anevum-institute-preview/worker.mjs
           node --check apps/anevum-institute-preview/styles.mjs
           node --check apps/anevum-institute-preview/client.mjs
@@ -51,6 +54,8 @@ jobs:
           node --check scripts/ops/verify-anevum-institute-preview-browser.mjs
       - name: Verify isolated educational content and route contracts
         run: node --test tests/anevum-institute-preview.test.mjs tests/anevum-evidence-schema.test.mjs tests/anevum-local-member-card.test.mjs tests/anevum-local-member.test.mjs tests/anevum-identity-review.test.mjs tests/member-learning-profile.test.mjs
+      - name: Verify fail-closed owner preview readiness diagnostic (synthetic only)
+        run: node --test tests/anevum-institute-preview-readiness.test.mjs
       - name: Rehearse learning profile migration in disposable SQLite
         run: python3 scripts/ops/verify-anevum-learning-schema.py
       - name: Verify real Chromium interaction, accessibility and responsiveness
