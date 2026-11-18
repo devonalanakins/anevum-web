@@ -11,6 +11,7 @@ import {HALF_ADDER_LESSON_HTML} from "./half-adder-lesson.mjs";
 import {CLUSTER_SCHEDULER_HTML} from "./cluster-scheduler-ui.mjs";
 import {CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE} from "./cluster-scheduler-model.mjs";
 import {CLUSTER_SCHEDULER_CLIENT_BROWSER_MODULE} from "./cluster-scheduler-client.mjs";
+import {CLUSTER_SCHEDULER_CSS} from "./cluster-scheduler-styles.mjs";
 import {CFP_101} from "./curriculum.mjs";
 import {studyToolsHtml} from "./study-tools.mjs";
 import {frontierHome,frontierRecognition,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART} from "./frontier-society.mjs";
@@ -191,7 +192,7 @@ const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE
 
 const ASSETS=new Map([
   [BASE+"/curriculum/cfp-101.json",["application/json; charset=utf-8",JSON.stringify(CFP_101,null,2)+"\n"]],
-  [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS]],
+  [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS+"\n"+CLUSTER_SCHEDULER_CSS]],
   [BASE+"/cluster-scheduler-model.js",["text/javascript; charset=utf-8",CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE]],
   [BASE+"/cluster-scheduler-client.js",["text/javascript; charset=utf-8",CLUSTER_SCHEDULER_CLIENT_BROWSER_MODULE]],
   [BASE+"/client.js",["text/javascript; charset=utf-8",INSTITUTE_CLIENT]],
