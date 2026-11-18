@@ -19,7 +19,8 @@ const pages=[
   ["/institute-preview/learn/cfp-101/transistor-switching","transistor"],
   ["/institute-preview/learn/cfp-101/logic-gates","lesson"],
   ["/institute-preview/learn/cfp-101/half-adders","adder"],
-  ["/institute-preview/laboratory/and-gate","laboratory"]
+  ["/institute-preview/laboratory/and-gate","laboratory"],
+  ["/institute-preview/laboratory/cluster-scheduling","cluster"]
 ];
 mkdirSync(output,{recursive:true});
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -123,7 +124,7 @@ async function compactShellQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await navigate("/institute-preview/academy");
   const open=await evaluate("(()=>{const trigger=document.querySelector('[data-search-open]');trigger.click();const d=document.querySelector('[data-command-dialog]');return {modal:d.open,focused:document.activeElement===d.querySelector('[data-command-query]'),count:d.querySelectorAll('.command-result').length};})()");
-  verify(open.modal&&open.focused&&open.count===11,"Compact palette did not open with actual routes",open);
+  verify(open.modal&&open.focused&&open.count===12,"Compact palette did not open with actual routes",open);
   const search=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');const q=d.querySelector('[data-command-query]');q.value='transistor';q.dispatchEvent(new Event('input',{bubbles:true}));return [...d.querySelectorAll('.command-result')].map(a=>a.getAttribute('href'));})()");
   verify(search.includes("/institute-preview/learn/cfp-101/transistor-switching")&&search.every(url=>url.startsWith("/institute-preview/")),"Search did not resolve the existing lesson",search);
   const closed=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');d.querySelector('[data-command-close]').click();return !d.open;})()");
@@ -191,6 +192,28 @@ async function halfAdderBrowserQA(){
   const reset=await evaluate("(()=>{const root=document.querySelector('[data-half-adder]');root.querySelector('[data-half-reset]').click();return {coverage:root.querySelector('[data-half-progress]').textContent,sum:root.querySelector('[data-half-sum]').textContent,carry:root.querySelector('[data-half-carry]').textContent,seen:[...root.querySelectorAll('.was-visited')].length};})()");
   verify(reset.coverage.startsWith("1 of 4")&&reset.sum==="0"&&reset.carry==="0"&&reset.seen===1,"Half adder reset retained stale experiment coverage",reset);
   console.log("ANEVUM_HALF_ADDER_BROWSER_QA_PASS",JSON.stringify({fourStates:true,quiz:true,export:true,reset:true,independentReview:false}));
+}
+
+
+async function clusterSchedulerBrowserQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  await navigate("/institute-preview/laboratory/cluster-scheduling");
+  await waitFor(()=>evaluate("document.querySelector('[data-cluster-lab]')?.dataset.clusterReady==='true'"),"local cluster simulator import");
+  const initial=await evaluate("(()=>({hidden:document.querySelector('[data-cluster-output]').hidden,exportDisabled:document.querySelector('[data-cluster-export]').disabled,policy:document.querySelector('[data-cluster-policy]').value,capacity:document.querySelector('[data-cluster-capacity]').value}))()");
+  verify(initial.hidden&&initial.exportDisabled&&initial.policy==="fifo"&&initial.capacity==="4","Cluster must start with no fabricated output",initial);
+  const result=await evaluate("(()=>{document.querySelector('[data-cluster-run]').click();return {shown:!document.querySelector('[data-cluster-output]').hidden,makespan:document.querySelector('[data-cluster-makespan]').textContent,wait:document.querySelector('[data-cluster-wait]').textContent,util:document.querySelector('[data-cluster-util]').textContent,rows:document.querySelectorAll('[data-cluster-job-results] tr').length,ticks:document.querySelectorAll('.cluster-tick').length,exportEnabled:!document.querySelector('[data-cluster-export]').disabled,status:document.querySelector('[data-cluster-status]').textContent};})()");
+  verify(result.shown&&Number(result.makespan)>0&&Number(result.wait)>0&&result.util.endsWith("%")&&result.rows===5&&result.ticks===Number(result.makespan)&&result.exportEnabled&&result.status.includes("no actual GPUs"),"Cluster model did not produce a valid, explicitly simulated result",result);
+  const compared=await evaluate("(()=>{document.querySelector('[data-cluster-compare]').click();return {shown:!document.querySelector('[data-cluster-comparison]').hidden,rows:document.querySelectorAll('[data-cluster-compare-results] tr').length,policies:[...document.querySelectorAll('[data-cluster-compare-results] tr td:first-child')].map(td=>td.textContent)};})()");
+  verify(compared.shown&&compared.rows===2&&compared.policies.some(x=>x.includes("FIFO"))&&compared.policies.some(x=>x.includes("Shortest")),"Policy comparison did not render honest alternatives",compared);
+  const download=await evaluate("(async()=>{let payload=null;let filename='';const old=URL.createObjectURL;const stop=e=>{if(e.target.matches('a[download]')){e.preventDefault();filename=e.target.download;}};document.addEventListener('click',stop,true);URL.createObjectURL=blob=>{payload=blob;return 'blob:cluster-sim-test';};try{document.querySelector('[data-cluster-export]').click();return {name:filename,content:payload?await payload.text():null,status:document.querySelector('[data-cluster-status]').textContent};}finally{URL.createObjectURL=old;document.removeEventListener('click',stop,true);}})()");
+  const record=download.content?JSON.parse(download.content):null;
+  verify(download.name==="anevum-cluster-scheduler-simulation.json"&&record?.format==="anevum-cluster-scheduler-simulation/v1"&&record.policy==="fifo"&&record.capacity===4&&record.jobs.length===5&&record.independentReview===false&&download.status.includes("unreviewed"),"Simulation export fabricated or malformed research evidence",{downloadName:download.name,record});
+  const stale=await evaluate("(()=>{const capacity=document.querySelector('[data-cluster-capacity]');capacity.value='8';capacity.dispatchEvent(new Event('change',{bubbles:true}));return {hidden:document.querySelector('[data-cluster-output]').hidden,compareHidden:document.querySelector('[data-cluster-comparison]').hidden,exportDisabled:document.querySelector('[data-cluster-export]').disabled,notice:document.querySelector('[data-cluster-status]').textContent};})()");
+  verify(stale.hidden&&stale.compareHidden&&stale.exportDisabled&&stale.notice.includes("Configuration changed"),"Configuration must invalidate prior result",stale);
+  const newCapacity=await evaluate("(()=>{document.querySelector('[data-cluster-policy]').value='shortest';document.querySelector('[data-cluster-run]').click();return {status:document.querySelector('[data-cluster-policy-label]').textContent,makespan:Number(document.querySelector('[data-cluster-makespan]').textContent),usage:document.querySelector('[data-cluster-util]').textContent};})()");
+  verify(newCapacity.status==="Shortest eligible"&&newCapacity.makespan>0&&newCapacity.usage.endsWith("%"),"Resimulation after config update failed",newCapacity);
+  console.log("ANEVUM_CLUSTER_SCHEDULER_BROWSER_QA_PASS",JSON.stringify({initial,model:result,comparison:compared,export:download.name,rerun:newCapacity}));
 }
 
 async function interactions(){
@@ -376,6 +399,7 @@ try{
   await compactShellQA();
   await compactCourseUsabilityQA();
   await halfAdderBrowserQA();
+  await clusterSchedulerBrowserQA();
   await interactions();
   console.log("ANEVUM_INSTITUTE_BROWSER_QA_PASS");
 }finally{
