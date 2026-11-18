@@ -257,9 +257,10 @@ function lab(){
           <div class="panel-label">Experiment coverage</div><p data-lab-progress aria-live="polite">1 of 4 input combinations tested</p><div class="progress-meter" aria-hidden="true"><span data-lab-meter></span></div>
           <p data-observation role="status" aria-live="polite">Predict the output, then change the input switches.</p>
           <div class="lab-actions"><button class="btn ghost small" type="button" data-reset>Restart experiment</button>
-            <button class="btn ghost small" type="button" data-export>Export notebook (JSON)</button></div>
+            <button class="btn ghost small" type="button" data-export>Export notebook (JSON)</button>
+            <button class="btn small" type="button" data-to-dossier disabled>Review in Research Desk →</button></div>
           <p class="fine-print" role="status" aria-live="polite" data-export-status>Export the simulated observations from this session. No data is sent to ANEVUM.</p>
-          <p class="fine-print">To document your experiment, download the notebook above, then <a href="${BASE}/dossier">open Research Desk</a> and import the simulation JSON. This is not an externally reviewed result.</p>
+          <p class="fine-print">After testing all four input pairs, <strong>Review in Research Desk</strong> transfers a same-tab, session-only copy for validation and explicit approval. The working draft is never replaced or saved automatically. You can also <a href="${BASE}/dossier#logic-import">import a downloaded notebook manually</a>. This is not independently verified research.</p>
           <p class="fine-print" data-local-progress>Progress is stored only on this device.</p>
         </section>
       </div>
