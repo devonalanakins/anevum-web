@@ -1,5 +1,5 @@
 // ANEVUM evidence draft v1: portable, content-addressed, deliberately UNISSUED.
-// A SHA-256 digest detects changes, but does not authenticate a learner or reviewer.
+// A SHA-256 digest can detect accidental changes, but does not authenticate anyone and can be recalculated by an attacker.
 export const EVIDENCE_FORMAT="anevum-personal-evidence-draft/v1";
 export const EVIDENCE_STORAGE_KEY="anevum.institute.evidence-draft.v1";
 export const EVIDENCE_LIMITS=Object.freeze({
@@ -76,3 +76,19 @@ export async function parseEvidenceEnvelope(value){
   if(source.digest!==expected)throw new Error("Integrity mismatch: the evidence file differs from its recorded SHA-256 digest");
   return {format:EVIDENCE_FORMAT,record:canonical,digest:expected};
 }
+
+/** The exact same schema functions run in Node tests and the browser sandbox. */
+export const EVIDENCE_BROWSER_MODULE=[
+  "const EVIDENCE_FORMAT="+JSON.stringify(EVIDENCE_FORMAT)+";",
+  "const EVIDENCE_STORAGE_KEY="+JSON.stringify(EVIDENCE_STORAGE_KEY)+";",
+  "const EVIDENCE_LIMITS="+JSON.stringify(EVIDENCE_LIMITS)+";",
+  "const FIELDS="+JSON.stringify(FIELDS)+";",
+  "const KEYS="+JSON.stringify(KEYS)+";",
+  normalizeEvidence.toString(),
+  validateEvidence.toString(),
+  canonicalEvidence.toString(),
+  digestEvidence.toString(),
+  createEvidenceEnvelope.toString(),
+  parseEvidenceEnvelope.toString(),
+  "export {EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,normalizeEvidence,validateEvidence,canonicalEvidence,digestEvidence,createEvidenceEnvelope,parseEvidenceEnvelope};"
+].join("\n")+"\n";
