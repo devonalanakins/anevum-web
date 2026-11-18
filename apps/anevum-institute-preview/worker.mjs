@@ -4,6 +4,7 @@
 
 import {INSTITUTE_CSS} from "./styles.mjs";
 import {INSTITUTION_CSS} from "./academic-styles.mjs";
+import {studyPathNav} from "./study-path.mjs";
 import {academicInstituteHome} from "./academic-home.mjs";
 
 import {INSTITUTE_CLIENT} from "./client.mjs";
@@ -58,7 +59,12 @@ function footer(){
   </div></footer>`;
 }
 
-function layout(title,active,body){
+function layout(title,active,body,studyUnit=null){
+  if(studyUnit){
+    const article='<article class="lesson-article">';
+    if(!body.includes(article))throw new Error("Lesson article missing for study path");
+    body=body.replace(article,article+studyPathNav(studyUnit));
+  }
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive"><meta name="color-scheme" content="light"><link rel="icon" type="image/svg+xml" href="${BASE}/mark-small.svg"><meta name="theme-color" content="#f5f4ee">
@@ -167,11 +173,11 @@ function program(){
 }
 
 function transistorLesson(){
-  return layout("Lesson — Transistor Switching","Classroom",TRANSISTOR_LESSON_HTML.replace("</article>",studyToolsHtml("CFP-101-U01")+"</article>"));
+  return layout("Lesson — Transistor Switching","Classroom",TRANSISTOR_LESSON_HTML.replace("</article>",studyToolsHtml("CFP-101-U01")+"</article>"),"CFP-101-U01");
 }
 
 function halfAdderLesson(){
-  return layout("Lesson — Half Adders","Classroom",HALF_ADDER_LESSON_HTML.replace("</article>",studyToolsHtml("CFP-101-U03")+"</article>"));
+  return layout("Lesson — Half Adders","Classroom",HALF_ADDER_LESSON_HTML.replace("</article>",studyToolsHtml("CFP-101-U03")+"</article>"),"CFP-101-U03");
 }
 
 function gateFigure(){
@@ -221,7 +227,7 @@ function lesson(){
     </article>
     <aside class="lesson-sidebar" aria-label="Lesson index"><div class="kicker">Lesson 02 / Index</div><h2>Inside this lesson</h2><ul><li><a href="#bits">From voltage to a bit</a></li><li><a href="#rule">Boolean definition</a></li><li><a href="#physical">Transistor implementation</a></li><li><a href="#check">Knowledge check</a></li><li><a href="#next">Laboratory exercise</a></li></ul><p>Estimated reading: 7–10 minutes. No account required.</p><p><a href="${BASE}/learn/cfp-101/transistor-switching">← Previous: Transistors</a></p><p><a href="${BASE}/learn/cfp-101/half-adders">Next: Half adders →</a></p><p><a href="${BASE}/academy/cfp-101">Full course outline ↗</a></p></aside>
    </div></section>
-  </main>`);
+  </main>`,"CFP-101-U02");
 }
 
 function lab(){
