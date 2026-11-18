@@ -4,7 +4,7 @@
 
 import {INSTITUTE_CSS} from "./styles.mjs";
 import {INSTITUTION_CSS} from "./academic-styles.mjs";
-import {studyPathNav} from "./study-path.mjs";
+import {studyPathNav,academyLearningDirectory} from "./study-path.mjs";
 import {academicInstituteHome} from "./academic-home.mjs";
 
 import {INSTITUTE_CLIENT} from "./client.mjs";
@@ -149,7 +149,18 @@ function academy(){
           <h3>Computing From First Principles</h3><p>Explore transistor switching, Boolean logic and binary arithmetic through three original lessons, an inverter demonstration and two ideal Boolean experiments. The full eight-unit course remains unfinished.</p>
           <a class="btn small" href="${BASE}/academy/cfp-101">Open course ↗</a>
         </div></article>
-        <section class="academy-experiment" aria-labelledby="academy-compute-title"><div class="academy-experiment-head"><span class="kicker">Computing laboratory / preview</span><span class="academy-experiment-type">Local simulation · No GPUs</span></div><h3 id="academy-compute-title">How should a GPU cluster schedule work?</h3><p>Compare two allocation policies across five illustrative workloads. Inspect queue times, utilization and the job timeline, then export a transparent simulated result.</p><a href="${BASE}/laboratory/cluster-scheduling">Open the scheduling simulator →</a></section><section class="academy-experiment" aria-labelledby="academy-neuron-title"><div class="academy-experiment-head"><span class="kicker">Neuroscience laboratory / teaching model</span><span class="academy-experiment-type">Local LIF simulation · No biological recordings</span></div><h3 id="academy-neuron-title">When does a neuron reach threshold?</h3><p>Model ideal membrane leakage, effective depolarizing drive, threshold events and refractory resets. Compare deterministic traces without biological or clinical claims.</p><a href="${BASE}/laboratory/neuron-dynamics">Open neuron dynamics model →</a></section><div class="placeholder"><strong>More disciplines are being prepared.</strong>Rather than display fictitious course inventory, ANEVUM will add a subject only when its lessons, sources, exercises and review status are ready.</div>
+        ${academyLearningDirectory(BASE)}
+        <section class="academy-laboratory-directory" aria-labelledby="academy-laboratories-title">
+          <div class="academy-directory-heading"><div><div class="kicker">02 / Working laboratories</div><h2 id="academy-laboratories-title">Experiment with a model.</h2></div><span class="academy-directory-count">3 browser simulations · No physical equipment</span></div>
+          <p class="academy-directory-intro">Each instrument has explicit assumptions and exports an inspectable simulation record. These are educational models, not clinical experiments, hardware benchmarks or independently validated research.</p>
+          <div class="academy-lab-grid">
+            <article class="academy-lab-item"><div class="academy-lab-label"><span>CFP-101 / IDEAL DIGITAL LOGIC</span><span>4 INPUT STATES</span></div><h3>AND gate</h3><p>Predict a Boolean output, test every two-bit input pair and export your observations.</p><a href="${BASE}/laboratory/and-gate">Open AND-gate experiment <span aria-hidden="true">→</span></a></article>
+            <article class="academy-lab-item"><div class="academy-lab-label"><span>COMPUTE-LAB-001 / SIMULATION</span><span>NO GPU HARDWARE</span></div><h3>GPU scheduling</h3><p>Compare two illustrative scheduling policies and inspect simulated queue and utilization metrics.</p><a href="${BASE}/laboratory/cluster-scheduling">Open the scheduling simulator <span aria-hidden="true">→</span></a></article>
+            <article class="academy-lab-item"><div class="academy-lab-label"><span>NEURO-LAB-001 / TEACHING MODEL</span><span>NO NEURAL RECORDINGS</span></div><h3>Neuron dynamics</h3><p>Study leakage and threshold events using a deterministic leaky integrate-and-fire model.</p><a href="${BASE}/laboratory/neuron-dynamics">Open neuron dynamics model <span aria-hidden="true">→</span></a></article>
+          </div>
+          <p class="academy-laboratory-note">The half-adder workbench is part of <a href="${BASE}/learn/cfp-101/half-adders">CFP-101 lesson 03</a>. Evidence drafting and exporting are available in the <a href="${BASE}/dossier">browser-local Research Desk</a>; no independent research review is provided.</p>
+        </section>
+        <div class="placeholder"><strong>More disciplines are being prepared.</strong>Rather than display fictitious course inventory, ANEVUM will add a subject only when its lessons, sources, exercises and review status are ready.</div>
       </div></div>
     </section>
   </main>`);
