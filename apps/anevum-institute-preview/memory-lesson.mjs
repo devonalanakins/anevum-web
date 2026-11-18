@@ -85,7 +85,7 @@ export const MEMORY_LESSON_HTML=String.raw`<main id="main" tabindex="-1" class="
 </section>
 <h2 id="instructions">4. An address is not an instruction</h2>
 <p>In a real computer, an <strong>instruction set architecture (ISA)</strong> specifies how operations are encoded and what they mean. A hypothetical <strong>LOAD address</strong> instruction could copy memory into a CPU register; <strong>STORE address</strong> could copy a register into memory. A real system would need an instruction decoder, program counter, register state and control logic to execute them.</p>
-<p><strong>This lesson does not implement an ISA, instruction decoder, program counter, real RAM or CPU.</strong> The Write button directly updates the teaching array. Unit 06 will address actual instruction encodings and assembly; it remains planned.</p>
+<p><strong>This lesson does not implement an ISA, instruction decoder, program counter, real RAM or CPU.</strong> The Write button directly updates the teaching array. Unit 06 introduces a fictional four-bit instruction encoding and assembly syntax. It does not execute instructions or implement a real processor.</p>
 <h2 id="check">5. Check your reasoning</h2>
 <div class="quiz" data-memory-quiz><div class="kicker">Self-check / No credit or verified completion</div>
 <h3>If M[2] contains 1010 and you write 0101 to address 1, what remains at M[2]?</h3>
@@ -100,7 +100,7 @@ export const MEMORY_LESSON_HTML=String.raw`<main id="main" tabindex="-1" class="
  <li><a href="https://www.nand2tetris.org/project03">Nand2Tetris — Project 03: Memory</a></li>
  <li><a href="https://www.nand2tetris.org/project04">Nand2Tetris — Project 04: Machine Language</a></li>
 </ul>
-<p><a href="/institute-preview/academy/cfp-101">Full syllabus →</a> · <a href="/institute-preview/learn/cfp-101/registers">← Previous: Registers</a></p>
+<p><a href="/institute-preview/academy/cfp-101">Full syllabus →</a> · <a href="/institute-preview/learn/cfp-101/registers">← Previous: Registers</a> · <a href="/institute-preview/learn/cfp-101/assembly-code">Next: Assembly encoding →</a></p>
 </article>
 <aside class="lesson-sidebar" aria-label="Lesson index"><div class="kicker">Lesson 05 / Index</div><h2>Inside this lesson</h2>
 <ul><li><a href="#words">Words and addresses</a></li><li><a href="#operations">Read and write</a></li><li><a href="#bench">Memory workbench</a></li><li><a href="#instructions">Instructions versus memory</a></li><li><a href="#check">Self-check</a></li><li><a href="#limits">Boundaries</a></li></ul>
