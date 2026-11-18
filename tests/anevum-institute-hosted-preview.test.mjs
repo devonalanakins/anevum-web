@@ -88,7 +88,8 @@ test("four reviewed image assets decode from local repo bytes and arbitrary asse
     assert.equal(new Uint8Array(await r.arrayBuffer()).length,Number(r.headers.get("Content-Length")));
   }
   assert.equal((await req("/institute-preview/media/secret.webp")).status,404);
-  assert.equal((await req("/institute-preview/media/../profile")).status,404);
+  // URL parsing normalizes dot segments; a private unowned route must still fail.
+  assert.equal((await req("/institute-preview/media/../../private")).status,404);
 });
 
 test("separate Wrangler file never inherits production routes, D1 or credentials",async()=>{
