@@ -129,6 +129,68 @@ export function evidenceFromAndLabNotebook(value){
 }
 
 
+// A half-adder notebook is an ideal two-bit arithmetic exercise, never a
+// physical circuit measurement or independently authenticated research record.
+export function validateHalfAdderNotebook(value){
+  const errors=[];
+  if(!value||typeof value!=="object"||Array.isArray(value))return ["Half-adder notebook must be an object"];
+  const keys=["schemaVersion","kind","experimentId","courseId","unitId","model","assumptions","coverage","observations","independentlyVerified","academicCredit"];
+  if(Object.keys(value).sort().join(",")!==keys.sort().join(","))errors.push("Unexpected half-adder notebook fields");
+  if(value.schemaVersion!==1||value.kind!=="browser-local-unverified-simulation"
+    ||value.experimentId!=="CFP-101-HALF-001"||value.courseId!=="CFP-101"
+    ||value.unitId!=="CFP-101-U03"||value.model!=="ideal-Boolean-half-adder"
+    ||value.independentlyVerified!==false||value.academicCredit!==false){
+    errors.push("Unsupported or misrepresented half-adder notebook");
+  }
+  const expectedAssumptions=["binary inputs only","no physical propagation delay","no voltage, noise or power measurements"];
+  if(!Array.isArray(value.assumptions)
+    ||JSON.stringify(value.assumptions)!==JSON.stringify(expectedAssumptions))errors.push("Unsupported half-adder assumptions");
+  const rows=value.observations;
+  if(!Array.isArray(rows)||rows.length<1||rows.length>4){
+    errors.push("Expected 1-4 half-adder input states");
+  }else{
+    const visited=new Set();
+    for(const row of rows){
+      if(!row||typeof row!=="object"||Array.isArray(row)
+        ||Object.keys(row).sort().join(",")!=="a,b,carry,sum"){
+        errors.push("Unexpected half-adder observation fields");continue;
+      }
+      if([row.a,row.b,row.sum,row.carry].some(bit=>bit!==0&&bit!==1)){
+        errors.push("Half-adder observations must contain binary integers");continue;
+      }
+      const state=String(row.a)+String(row.b);
+      if(visited.has(state))errors.push("Duplicate half-adder input state: "+state);
+      visited.add(state);
+      if(row.sum!==(row.a^row.b)||row.carry!==(row.a&row.b)){
+        errors.push("Half-adder sum/carry does not match XOR/AND: "+state);
+      }
+    }
+  }
+  const coverage=value.coverage;
+  if(!coverage||typeof coverage!=="object"||Array.isArray(coverage)
+    ||Object.keys(coverage).sort().join(",")!=="complete,observed,possible"
+    ||coverage.possible!==4||coverage.observed!==rows?.length
+    ||coverage.complete!==(coverage.observed===4)){
+    errors.push("Half-adder coverage metadata mismatch");
+  }
+  return errors;
+}
+export function evidenceFromHalfAdderNotebook(value){
+  const errors=validateHalfAdderNotebook(value);
+  if(errors.length)throw new Error(errors.join("; "));
+  const rows=value.observations.map(row=>
+    String(row.a)+String(row.b)+" -> sum "+row.sum+", carry "+row.carry);
+  return canonicalEvidence({
+    courseId:"CFP-101",
+    title:"Ideal half-adder study ("+rows.length+" of 4 input pairs)",
+    question:"For ideal one-bit binary addition, how do XOR and AND determine the sum bit and carry bit for each input pair?",
+    method:"Using the browser-only CFP-101-HALF-001 teaching model, set one-bit inputs A and B and record the XOR sum and AND carry. Visit the recorded input pairs; repeat after restart to inspect each ideal state. This is abstract Boolean arithmetic, not a measured physical circuit.",
+    observations:"SIMULATED ONLY - half-adder output pairs:\n"+rows.join("\n")+"\nCoverage: "+rows.length+" of 4 input combinations. A + B = sum + 2*carry.",
+    limitations:"The notebook is mathematically checked against an ideal XOR/AND model only. It does not measure physical gates, current, voltage, propagation delay, noise, energy or fabricated-circuit behavior. The record is not authenticated, independently reviewed or eligible for academic credit.",
+    references:[]
+  });
+}
+
 /**
  * Validate an untrusted GPU-slot scheduler JSON against a newly recomputed
  * reference from the existing five fixed workloads. This is *mathematical*
@@ -268,9 +330,11 @@ export const EVIDENCE_BROWSER_MODULE=[
   parseEvidenceEnvelope.toString(),
   validateAndLabNotebook.toString(),
   evidenceFromAndLabNotebook.toString(),
+  validateHalfAdderNotebook.toString(),
+  evidenceFromHalfAdderNotebook.toString(),
   validateClusterSchedulerNotebook.toString(),
   evidenceFromClusterSchedulerNotebook.toString(),
   validateNeuronLifNotebook.toString(),
   evidenceFromNeuronLifNotebook.toString(),
-  "export {EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,normalizeEvidence,validateEvidence,canonicalEvidence,digestEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook,validateClusterSchedulerNotebook,evidenceFromClusterSchedulerNotebook,validateNeuronLifNotebook,evidenceFromNeuronLifNotebook};"
+  "export {EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,normalizeEvidence,validateEvidence,canonicalEvidence,digestEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook,validateHalfAdderNotebook,evidenceFromHalfAdderNotebook,validateClusterSchedulerNotebook,evidenceFromClusterSchedulerNotebook,validateNeuronLifNotebook,evidenceFromNeuronLifNotebook};"
 ].join("\n")+"\n";
