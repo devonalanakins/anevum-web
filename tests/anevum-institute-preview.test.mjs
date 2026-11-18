@@ -5,13 +5,15 @@ import {LAB_ART} from "../apps/anevum-public-studio/living-laboratory-art.mjs";
 import worker from "../apps/anevum-institute-preview/worker.mjs";
 import {CFP_101,validateCurriculum} from "../apps/anevum-institute-preview/curriculum.mjs";
 import {studyToolsHtml} from "../apps/anevum-institute-preview/study-tools.mjs";
+import {dossierPage} from "../apps/anevum-institute-preview/dossier-ui.mjs";
+import {EVIDENCE_BROWSER_MODULE,EVIDENCE_FORMAT} from "../apps/anevum-institute-preview/evidence-schema.mjs";
 import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
-const PATHS=["","/recognition","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
+const PATHS=["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
 const req=(path="",init={})=>worker.fetch(new Request(BASE+path,init));
 
-test("seven isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
+test("eight isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
   for(const path of PATHS){
     const response=await req(path);
     assert.equal(response.status,200,path);
@@ -172,6 +174,35 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.doesNotMatch(home+recognition,/<form\b|<iframe|onclick=|onload=|download=".*certificate"/i);
 });
 
+test("personal research dossier provides real editor controls without exposing protected membership operations",async()=>{
+  const response=await req("/dossier");
+  assert.equal(response.status,200);
+  const html=await response.text();
+  assert.equal(dossierPage("/institute-preview").includes("data-evidence-workbench"),true);
+  assert.match(html,/Give your work a <em>method/);
+  assert.match(html,/data-evidence-workbench/);
+  assert.match(html,/No reviewer, award, or external validation/);
+  for(const name of ["title","question","method","observations","limitations","references"]){
+    assert.match(html,new RegExp('data-evidence-field="'+name+'"'));
+  }
+  for(const control of ["data-evidence-save","data-evidence-export","data-evidence-import","data-evidence-delete","data-evidence-digest"]){
+    assert.match(html,new RegExp(control));
+  }
+  assert.match(html,/type="file"/);
+  assert.match(html,/browser storage is not encrypted/i);
+  assert.equal(EVIDENCE_FORMAT,"anevum-personal-evidence-draft/v1");
+  assert.match(EVIDENCE_BROWSER_MODULE,/function parseEvidenceEnvelope/);
+  for(const path of ["/evidence-schema.js","/evidence-workbench.js"]){
+    const asset=await req(path);
+    assert.equal(asset.status,200);
+    assert.equal(asset.headers.get("Content-Type"),"text/javascript; charset=utf-8");
+    assert.match(asset.headers.get("X-Robots-Tag"),/noindex/);
+  }
+  assert.equal((await req("/api/evidence")).status,404);
+  assert.equal((await req("/accounts")).status,404);
+  assert.equal((await req("/awards")).status,404);
+});
+
 test("logic laboratory exposes four correct truth-table rows and accessible controls",async()=>{
   const html=await(await req("/laboratory/and-gate")).text();
   const rows=[...html.matchAll(/<tr data-bits="([01]{2})"><td>([01])<\/td><td>([01])<\/td><td>([01])<\/td><\/tr>/g)];
@@ -215,6 +246,7 @@ test("preview client parses, and uses only local browser state",async()=>{
   assert.match(source,/prefers-reduced-motion: reduce/);
   assert.match(source,/navigator\.connection\.saveData/);
   assert.match(source,/visibilitychange/);
+  assert.match(source,/import\("\/institute-preview\/evidence-workbench\.js"\)/);
   assert.match(source,/no analog voltage|analog voltage/i);
   assert.doesNotMatch(source,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.serviceWorker/);
 });
@@ -234,6 +266,9 @@ test("styles are complete, mobile responsive and reduced-motion safe",async()=>{
   assert.match(css,/\.frontier-evidence-list/);
   assert.match(css,/\.frontier-poster/);
   assert.match(css,/\.frontier-video/);
+  assert.match(css,/\.dossier-grid/);
+  assert.match(css,/\.dossier-receipt/);
+  assert.match(css,/\.dossier-field input:focus-visible/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.frontier-atmosphere/);
   assert.match(css,/\/institute-preview\/assets\/lab-hero-v1\.webp/);
   assert.doesNotMatch(css,/https?:\/\//);
@@ -265,7 +300,8 @@ test("new institute identity is an original isolated vector system",async()=>{
   assert.match(home,/Design review:/);
   assert.match(lesson,/class="lesson-article"/);
   const nav=home.match(/<nav class="desk-nav" aria-label="Primary navigation">([\s\S]*?)<\/nav>/)?.[1]||"";
-  assert.equal((nav.match(/<a /g)||[]).length,4);
+  assert.equal((nav.match(/<a /g)||[]).length,5);
+  assert.match(nav,/My Desk/);
   assert.match(nav,/Society/);
   assert.match(nav,/Recognition/);
   assert.match(nav,/Academy/);
@@ -299,7 +335,7 @@ test("unowned routes, origins, methods and data endpoints are rejected",async()=
   const post=await req("",{method:"POST",body:"x"});
   assert.equal(post.status,405);
   assert.equal(post.headers.get("Allow"),"GET, HEAD");
-  for(const path of ["","/recognition","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/curriculum/cfp-101.json","/styles.css","/client.js","/assets/lab-hero-v1.webp"]){
+  for(const path of ["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/curriculum/cfp-101.json","/styles.css","/client.js","/evidence-schema.js","/evidence-workbench.js","/assets/lab-hero-v1.webp"]){
     const get=await req(path),head=await req(path,{method:"HEAD"});
     assert.equal(head.status,200,path);
     assert.equal((await head.arrayBuffer()).byteLength,0);
