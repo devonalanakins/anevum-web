@@ -471,6 +471,35 @@ test("AND-to-Research Desk handoff requires full coverage and explicit draft app
   assert.doesNotMatch(workbench,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon/);
 });
 
+test("GPU and neuron same-tab research handoffs stay untrusted and require explicit Apply",async()=>{
+  const gpu=await(await req("/laboratory/cluster-scheduling")).text();
+  const neuron=await(await req("/laboratory/neuron-dynamics")).text();
+  assert.match(gpu,/data-cluster-to-dossier disabled>Use result in Research Desk/);
+  assert.match(neuron,/data-neuron-to-dossier disabled>Use result in Research Desk/);
+  const clusterClient=await(await req("/cluster-scheduler-client.js")).text();
+  const neuronClient=await(await req("/neuron-lif-client.js")).text();
+  const workbench=await(await req("/evidence-workbench.js")).text();
+  assert.match(clusterClient,/anevum\.institute\.handoff\.cluster\.v1/);
+  assert.match(neuronClient,/anevum\.institute\.handoff\.neuron\.v1/);
+  for(const [client,selector,hash] of [
+    [clusterClient,"cluster","#cluster-import"],[neuronClient,"neuron","#neuron-import"]
+  ]){
+    assert.ok(client.includes("sessionStorage.setItem(transferKey,raw)"),"No local staging "+selector);
+    assert.ok(client.includes("sessionStorage.getItem(transferKey)!==raw"),"Missing write-check "+selector);
+    assert.ok(client.includes("window.location.assign(\"/institute-preview/dossier"+hash+"\")"),"Wrong same-tab route "+selector);
+    assert.doesNotMatch(client,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.sendBeacon/);
+  }
+  assert.match(workbench,/function consumeModelHandoff\(kind\)/);
+  assert.match(workbench,/sessionStorage\.removeItem\(config\.key\)/);
+  assert.match(workbench,/window\.location\.hash!==config\.hash/);
+  assert.match(workbench,/stagedCluster=evidenceFromClusterSchedulerNotebook\(source,expected\)/);
+  assert.match(workbench,/stagedNeuron=evidenceFromNeuronLifNotebook\(source,expected\)/);
+  assert.match(workbench,/simulateCluster\(\{capacity:source\.capacity,policy:source\.policy\}\)/);
+  assert.match(workbench,/simulateNeuron\(\{tauMs:source\.settings\.tauMs,driveMv:source\.settings\.driveMv\}\)/);
+  assert.match(workbench,/Your current editor and saved draft remain unchanged/);
+  assert.doesNotMatch(workbench,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon/);
+});
+
 test("preview client parses, and uses only local browser state",async()=>{
   const response=await req("/client.js");
   assert.equal(response.status,200);
