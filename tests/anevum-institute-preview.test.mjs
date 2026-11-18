@@ -432,7 +432,7 @@ test("new institute identity is an original isolated vector system",async()=>{
   assert.match(nav,/Recognition/);
   assert.match(nav,/Academy/);
   assert.match(nav,/Laboratory/);
-  for(const [name,part] of [["mark.svg","Three converging tapered pathways"],["observatory.svg","The ANEVUM observatory"]]){
+  for(const [name,part] of [["mark.svg","The Confluence"],["mark-small.svg","The Confluence"],["observatory.svg","The ANEVUM observatory"]]){
     const response=await req("/"+name);
     assert.equal(response.status,200,name);
     assert.match(response.headers.get("Content-Type"),/image\/svg\+xml/);
@@ -445,6 +445,9 @@ test("new institute identity is an original isolated vector system",async()=>{
     assert.equal(head.status,200);
     assert.equal(await head.text(),"");
   }
+  const home=await (await req("")).text();
+  assert.match(home,/rel="icon" type="image\/svg\+xml" href="\/institute-preview\/mark-small\.svg"/);
+  assert.match(home,/class="identity-mark" src="\/institute-preview\/mark\.svg"/);
   const css=await (await req("/styles.css")).text();
   assert.match(css,/url\("\/institute-preview\/assets\/research-computation-v1\.webp"\)/);
   assert.match(css,/\.lesson-article\{background:#f4f1e8/);

@@ -563,4 +563,11 @@ body[data-area="society"] .mast,body[data-area="recognition"] .mast{background:#
   .studio-intro:not(.studio-intro--profile) .studio-top-actions a{min-height:43px}
 }
 
+/* Owner-approved Confluence for isolated Institute preview: no legacy orbital glow or circle. */
+.mast .identity img.identity-mark{width:56px;height:56px;padding:0;object-fit:contain;border:0;border-radius:0;box-shadow:none;filter:none}
+.identity:hover .identity-mark{opacity:.92}
+.identity:focus-visible{outline:3px solid #e9c58d;outline-offset:5px}
+@media(max-width:750px){.mast .identity img.identity-mark{width:46px;height:46px}}
+@media(max-width:350px){.mast .identity img.identity-mark{width:40px;height:40px}}
+
 `;

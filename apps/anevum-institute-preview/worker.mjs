@@ -16,7 +16,7 @@ import {EVIDENCE_WORKBENCH_CLIENT} from "./evidence-workbench.mjs";
 import {localStudioPage,localProfilePage} from "./learner-ui.mjs";
 import {LOCAL_MEMBER_BROWSER_MODULE} from "./local-member-schema.mjs";
 import {LOCAL_MEMBER_CLIENT} from "./local-member-client.mjs";
-import {ANEVUM_MARK_SVG, ANEVUM_OBSERVATORY_SVG} from "./artwork.mjs";
+import {ANEVUM_MARK_SVG, ANEVUM_FAVICON_SVG, ANEVUM_OBSERVATORY_SVG} from "./artwork.mjs";
 import {LAB_ART} from "../anevum-public-studio/living-laboratory-art.mjs";
 
 const BASE="/institute-preview";
@@ -49,7 +49,7 @@ function footer(){
 function layout(title,active,body){
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow,noarchive"><meta name="color-scheme" content="dark"><link rel="icon" type="image/svg+xml" href="${BASE}/mark.svg">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="color-scheme" content="dark"><link rel="icon" type="image/svg+xml" href="${BASE}/mark-small.svg"><meta name="theme-color" content="#071016">
 <meta name="description" content="ANEVUM design preview: free scientific learning, independent experiments, and evidence-based recognition.">
 <title>${title} — ANEVUM Open Research Society (Design Preview)</title>
 <link rel="stylesheet" href="${BASE}/styles.css"><script defer src="${BASE}/client.js"></script>
@@ -187,6 +187,7 @@ const ASSETS=new Map([
   [BASE+"/local-member-schema.js",["text/javascript; charset=utf-8",LOCAL_MEMBER_BROWSER_MODULE]],
   [BASE+"/local-member-client.js",["text/javascript; charset=utf-8",LOCAL_MEMBER_CLIENT]],
   [BASE+"/mark.svg",["image/svg+xml; charset=utf-8",ANEVUM_MARK_SVG]],
+  [BASE+"/mark-small.svg",["image/svg+xml; charset=utf-8",ANEVUM_FAVICON_SVG]],
   [BASE+"/observatory.svg",["image/svg+xml; charset=utf-8",ANEVUM_OBSERVATORY_SVG]]
 ]);
 

@@ -27,9 +27,12 @@ test("identity review masters are accessible vector-only drafts, not published m
 test("refinement removes fragile detail while leaving currently served identity untouched",()=>{
   const original=readFileSync(new URL("../apps/anevum-institute-preview/mark.svg",import.meta.url),"utf8");
   const exported=readFileSync(new URL("../apps/anevum-institute-preview/artwork.mjs",import.meta.url),"utf8");
-  assert.match(original,/Three converging tapered pathways/);
-  assert.match(original,/<circle /);
-  assert.ok(exported.includes(original.trim()),"Existing source-coupled identity must not change without owner approval");
+  assert.match(original,/The Confluence/);
+  assert.doesNotMatch(original,/Three converging tapered pathways/);
+  assert.ok(exported.includes(original.trim()),"Approved Confluence mark and embedded output must match");
+  const archive=source("open-aperture-original-archived.svg");
+  assert.match(archive,/Three converging tapered pathways/);
+  assert.match(archive,/<circle /);
   const revised=source("open-aperture-refined-color.svg");
   assert.doesNotMatch(revised,/<circle|stroke-width="[0-4](?:\.|")/);
   assert.equal((revised.match(/<path /g)||[]).length,4);
@@ -60,5 +63,10 @@ test("owner-selected Confluence vector suite has full, compact and true one-ink 
     }
   }
   const served=readFileSync(new URL("../apps/anevum-institute-preview/mark.svg",import.meta.url),"utf8");
-  assert.match(served,/Three converging tapered pathways/,"Current served mark must not change before public approval");
+  assert.match(served,/The Confluence/,"Draft should serve owner-approved Confluence");
+  assert.doesNotMatch(served,/Three converging tapered pathways/);
+  const small=readFileSync(new URL("../apps/anevum-institute-preview/mark-small.svg",import.meta.url),"utf8");
+  assert.match(small,/Confluence/);
+  const artwork=readFileSync(new URL("../apps/anevum-institute-preview/artwork.mjs",import.meta.url),"utf8");
+  assert.ok(artwork.includes(small.trim()),"The compact favicon must be source-coupled too");
 });

@@ -1,15 +1,37 @@
-// Portable source-coupled ANEVUM identity and observatory artwork.
+// Portable source-coupled ANEVUM Confluence identity and historical observatory artwork.
 // Exported from the reviewed vector masters. No network fonts, scripts or external references.
 export const ANEVUM_MARK_SVG=String.raw`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-labelledby="title desc">
-<title id="title">ANEVUM open-aperture symbol</title>
-<desc id="desc">Three converging tapered pathways within an unfinished orbital circle: learning, experimentation, and collective discovery.</desc>
-<path d="M14 89C14 48 45 16 86 14C112 13 137 27 149 50" fill="none" stroke="#D8AE70" stroke-width="3.2" stroke-linecap="round"/>
-<path d="M146 99C139 127 113 146 84 146" fill="none" stroke="#6B978E" stroke-width="2.4" stroke-linecap="round" opacity=".86"/>
-<path d="M14 127L81 36L95 36L48 127Z" fill="#F1E7D5"/>
-<path d="M59 127L104 59L112 88L89 127Z" fill="#D6AA70"/>
-<path d="M106 127L124 99L146 127Z" fill="#A3BEB6"/>
-<path d="M100 28L108 16" fill="none" stroke="#F1E7D5" stroke-width="2.4" stroke-linecap="round"/>
-<circle cx="149" cy="50" r="3.2" fill="#D8AE70"/>
+<title id="title">ANEVUM — The Confluence / full mark — color</title>
+<desc id="desc">The Confluence: paired scientific field lines meeting at a central discovery point, with a calibrated axis. Owner-approved identity design for the isolated ANEVUM Institute preview; separate public release pending.</desc>
+<path d="M28 57 C41 17 119 17 132 57" fill="none" stroke="#D9B17A" stroke-width="1.8" stroke-linecap="round" opacity=".8"/>
+<g stroke="#D9B17A" fill="none" stroke-linecap="round">
+<path d="M80 11 V147" stroke-width="1.8" opacity=".92"/>
+<path d="M74 27 H86 M76 40 H84 M73 53 H87 M76 115 H84 M73 129 H87" stroke-width="1.7" opacity=".88"/>
+</g>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M80 85 C61 54 31 49 17 67 C3 85 23 105 44 98 C56 95 69 90 80 85" stroke="#D9B17A" stroke-width="3.3"/>
+<path d="M80 85 C64 66 41 63 30 76 C20 88 34 98 52 95 C66 92 74 88 80 85" stroke="#95B9AB" stroke-width="2.5"/>
+<path d="M80 85 C65 75 54 74 47 80 C40 86 51 92 80 85" stroke="#D9B17A" stroke-width="1.9" opacity=".72"/>
+<path d="M80 85 C64 102 39 113 17 132" stroke="#95B9AB" stroke-width="2.2"/>
+</g>
+<g transform="translate(160 0) scale(-1 1)"><g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M80 85 C61 54 31 49 17 67 C3 85 23 105 44 98 C56 95 69 90 80 85" stroke="#D9B17A" stroke-width="3.3"/>
+<path d="M80 85 C64 66 41 63 30 76 C20 88 34 98 52 95 C66 92 74 88 80 85" stroke="#95B9AB" stroke-width="2.5"/>
+<path d="M80 85 C65 75 54 74 47 80 C40 86 51 92 80 85" stroke="#D9B17A" stroke-width="1.9" opacity=".72"/>
+<path d="M80 85 C64 102 39 113 17 132" stroke="#95B9AB" stroke-width="2.2"/>
+</g></g>
+<path d="M80 71 Q83 82 95 85 Q83 88 80 100 Q77 88 65 85 Q77 82 80 71Z" fill="#F4F1E8"/>
+<circle cx="80" cy="85" r="3.6" fill="#D9B17A"/>
+</svg>`;
+export const ANEVUM_FAVICON_SVG=String.raw`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-labelledby="title desc">
+<title id="title">ANEVUM — The Confluence / small icon — color</title>
+<desc id="desc">The Confluence: paired scientific field lines meeting at a central discovery point, with a calibrated axis. Owner-approved compact identity for the isolated ANEVUM Institute preview; separate public release pending.</desc>
+<path d="M80 28 V65 M80 106 V133" stroke="#D9B17A" stroke-width="5.4" stroke-linecap="round"/>
+<path d="M80 85 C61 52 33 49 19 70 C8 87 25 104 48 95 C60 91 70 86 80 85" fill="none" stroke="#F4F1E8" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<g transform="translate(160 0) scale(-1 1)"><path d="M80 85 C61 52 33 49 19 70 C8 87 25 104 48 95 C60 91 70 86 80 85" fill="none" stroke="#F4F1E8" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/></g>
+<path d="M80 85 C64 107 39 117 25 128" fill="none" stroke="#D9B17A" stroke-width="5.7" stroke-linecap="round"/>
+<g transform="translate(160 0) scale(-1 1)"><path d="M80 85 C64 107 39 117 25 128" fill="none" stroke="#D9B17A" stroke-width="5.7" stroke-linecap="round"/></g>
+<path d="M80 65 L86 79 L100 85 L86 91 L80 106 L74 91 L60 85 L74 79Z" fill="#D9B17A"/>
 </svg>`;
 export const ANEVUM_OBSERVATORY_SVG=String.raw`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-labelledby="title desc">
 <title id="title">The ANEVUM observatory</title>

@@ -1,6 +1,6 @@
 # The Confluence — selected ANEVUM identity direction
 
-Status: **OWNER-SELECTED DIRECTION / VECTOR REFINEMENT FOR REVIEW**. Not finalized, trademark-cleared, deployed, or the public institution's live mark.
+Status: **OWNER-APPROVED FOR ISOLATED DESIGN PREVIEW / IMPLEMENTED**. The Confluence is in the draft header and favicon. Not trademark-cleared, production-deployed, or authorized for public rollout.
 
 Canonical session: `ANEVUM.WEB.DESIGN.2026-11-18.001.CONFLUENCE-IDENTITY`
 Owning PR: #816 (isolated Open Institute design draft).
@@ -31,3 +31,7 @@ The previous three-tier wedge/Adidas-like aperture family is **REJECTED**. The O
 ## Next action
 
 Owner reviews the actual full/compact vector render. If accepted, integrate a final approved source into the isolated *review preview*, update source-coupled artwork and favicon proofs, run responsive/a11y tests, and separately request authorization for public branding. Do not merge or deploy this selection automatically.
+
+## Owner approval and development integration — November 18, 2026
+
+Owner explicitly approved **The Confluence** and authorized continuing source-level implementation. The draft now serves `../mark.svg` (full Confluence) in its header and `../mark-small.svg` (optically simplified Confluence) in the favicon. Both are source-coupled to `artwork.mjs` and their original master SVGs remain in this folder. The superseded open-aperture file is archived here and retained in Git history. No production ANEVUM branding, DNS, authentication, authorization or unrelated route was changed. Browser/CI evidence must be attached to PR #816 before calling this verified. Public release and external trademark clearance remain separate gates.
