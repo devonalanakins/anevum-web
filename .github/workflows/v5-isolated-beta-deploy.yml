@@ -66,6 +66,27 @@ jobs:
         run: npm run build
       - name: Check generated Worker can target only the new beta service
         run: node scripts/verify-v5-beta-deploy.mjs --generated
+      - name: Check isolated beta workers.dev exposure (read-only, never enable)
+        if: github.event_name == 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          endpoint="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/anevum-v5-beta/subdomain"
+          curl --fail --silent --show-error --max-time 20 \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "$endpoint" -o "$RUNNER_TEMP/v5-beta-subdomain.json"
+          if ! jq -e '.success == true and .result.enabled == true' \
+            "$RUNNER_TEMP/v5-beta-subdomain.json" > /dev/null; then
+            echo "::error title=V5 beta URL intentionally unavailable::The isolated anevum-v5-beta workers.dev subdomain is not enabled in Cloudflare. All live paths can return 404 even when source builds and Worker deployments exist. Do not treat this PR check as authorization to enable public exposure or deploy; use the separately gated exact-main release procedure."
+            exit 1
+          fi
+          echo "BETA_WORKERS_DEV_ENABLED_READ_ONLY"
       - name: Verify live isolated beta signup and protected targets read-only
         if: github.event_name == 'pull_request'
         env:
