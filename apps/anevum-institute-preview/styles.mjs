@@ -711,4 +711,17 @@ body[data-area="course"] .unit[hidden]{display:none!important}
 .dossier-scope{color:#354b44;background:#e6e8dc;border:1px solid #b9c7b7;border-radius:6px;padding:10px 13px;margin:13px 0 19px;font-size:12px;line-height:1.55}
 .dossier-scope strong{color:#20463d;font:750 12px ui-monospace,Consolas,monospace;letter-spacing:.01em}
 
+
+/* NEURO / MODEL 001 — optional import control on shared research workbench. */
+.dossier-neuron-import{border:1px solid #a7bbad;border-radius:7px;background:#e7e8de;margin:12px 0 19px;color:#2c5349}
+.dossier-neuron-import summary{cursor:pointer;min-height:44px;display:list-item;list-style-position:inside;padding:12px 13px;font-size:12px;font-weight:750}
+.dossier-neuron-import summary:hover{background:#dce3d7}
+.dossier-neuron-import summary:focus-visible,.dossier-neuron-import input:focus-visible,.dossier-neuron-import button:focus-visible{outline:3px solid #8d6e40;outline-offset:3px}
+.dossier-neuron-inner{padding:4px 14px 14px;border-top:1px solid #b5c5b5}
+.dossier-neuron-inner label{display:block;font-size:12px;line-height:1.5;font-weight:650;margin:8px 0 6px}
+.dossier-neuron-inner input{display:block;min-height:44px;max-width:100%;width:100%;font-size:12px;padding:8px;border:1px solid #b1bfb1;border-radius:4px;color:#264b41;background:#f7f6ef}
+.dossier-neuron-inner p{font-size:12px;line-height:1.65;color:#41645b;margin:11px 0 0}
+.dossier-neuron-inner .dossier-lab-apply{margin-top:11px;min-height:44px}
+.dossier-neuron-inner button[hidden]{display:none!important}
+
 `;

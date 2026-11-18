@@ -254,6 +254,42 @@ async function clusterSchedulerBrowserQA(){
 }
 
 
+
+async function neuronResearchBrowserQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await navigate("/institute-preview/laboratory/neuron-dynamics");
+  await waitFor(()=>evaluate("document.querySelector('[data-neuron-lab]')?.dataset.neuronReady==='true'"),"neuron model ready to export");
+  const sample=await evaluate("(async()=>{let record=null,name='';const orig=URL.createObjectURL;const intercept=e=>{const a=e.target.closest('a[download]');if(a){e.preventDefault();name=a.download;}};document.addEventListener('click',intercept,true);URL.createObjectURL=blob=>{record=blob;return 'blob:neuron-record-qa';};try{document.querySelector('[data-neuron-run]').click();document.querySelector('[data-neuron-export]').click();return {name,data:record?JSON.parse(await record.text()):null};}finally{URL.createObjectURL=orig;document.removeEventListener('click',intercept,true);}})()");
+  verify(sample.name==="anevum-neuron-lif-simulation.json"&&sample.data?.trace.length===401&&sample.data.metrics.spikeCount>0,"Neuron simulation failed to export its actual deterministic trace",{name:sample.name});
+  await navigate("/institute-preview/dossier");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"neuroscience evidence workbench");
+  const prior=await evaluate("(()=>{const raw=localStorage.getItem('anevum.institute.evidence-draft.v1');return {scope:document.querySelector('[data-evidence-course]').textContent,title:document.querySelector('[data-evidence-field=title]').value,raw};})()");
+  verify(prior.scope==="COMPUTE-LAB-001"&&prior.raw,"Previous GPU research draft must remain intact until explicitly replaced",{scope:prior.scope});
+  async function importSample(record){
+    const encoded=JSON.stringify(JSON.stringify(record));
+    return evaluate("(async()=>{const section=document.querySelector('#neuron-import');section.open=true;const input=document.querySelector('[data-neuron-import]');const file=new File(["+encoded+"],'neuron-trace.json',{type:'application/json'});const dt=new DataTransfer();dt.items.add(file);input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));for(let i=0;i<140&&document.querySelector('[data-neuron-feedback]').textContent.startsWith('Checking');i++)await new Promise(r=>setTimeout(r,15));return {text:document.querySelector('[data-neuron-feedback]').textContent,staged:!document.querySelector('[data-neuron-apply]').hidden,scope:document.querySelector('[data-evidence-course]').textContent,title:document.querySelector('[data-evidence-field=title]').value,saved:localStorage.getItem('anevum.institute.evidence-draft.v1')};})()");
+  }
+  const tampered=structuredClone(sample.data);
+  tampered.metrics.spikeCount+=2;
+  const denied=await importSample(tampered);
+  verify(denied.text.startsWith("Neuron simulation import rejected")&&!denied.staged&&denied.scope===prior.scope&&denied.title===prior.title&&denied.saved===prior.raw,"Modified neuron trace must not replace previously saved research",{denied:denied.text});
+  const staged=await importSample(sample.data);
+  verify(staged.text.startsWith("The 401 voltage samples")&&staged.staged&&staged.scope===prior.scope&&staged.title===prior.title&&staged.saved===prior.raw,"Valid mathematical result must only stage for explicit review",{feedback:staged.text});
+  const applied=await evaluate("(()=>{document.querySelector('[data-neuron-apply]').click();return {scope:document.querySelector('[data-evidence-course]').textContent,title:document.querySelector('[data-evidence-field=title]').value,observations:document.querySelector('[data-evidence-field=observations]').value,limits:document.querySelector('[data-evidence-field=limitations]').value,stored:localStorage.getItem('anevum.institute.evidence-draft.v1')};})()");
+  verify(applied.scope==="NEURO-LAB-001"&&applied.title.includes("Simulated point-neuron")&&applied.observations.includes("SIMULATED ONLY")&&applied.limits.includes("no.*")===false&&applied.limits.includes("not a measured electric current")&&applied.stored===prior.raw,"Neuron file must not overwrite saved GPU draft automatically",{scope:applied.scope,limit:applied.limits});
+  await evaluate("document.querySelector('[data-evidence-save]').click()");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-status]').textContent.startsWith('Personal draft saved')"),"explicit neuron evidence draft save");
+  const saved=await evaluate("(()=>{const data=JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1'));return {scope:data.record.courseId,kind:data.record.kind,title:data.record.title,digest:data.digest};})()");
+  verify(saved.scope==="NEURO-LAB-001"&&saved.kind==="personal-unreviewed-draft"&&/^sha256:[0-9a-f]{64}$/.test(saved.digest),"Saved neuron draft must be scoped and integrity checked",saved);
+  await navigate("/institute-preview/dossier");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"neuron record reload");
+  const restored=await evaluate("(()=>({scope:document.querySelector('[data-evidence-course]').textContent,title:document.querySelector('[data-evidence-field=title]').value,digest:document.querySelector('[data-evidence-digest]').textContent}))()");
+  verify(restored.scope==="NEURO-LAB-001"&&restored.title===saved.title&&restored.digest===saved.digest,"Neuroscience record failed to survive integrity-checked local reload",restored);
+  const exported=await evaluate("(async()=>{let blob=null,name='';const old=URL.createObjectURL;const intercept=e=>{const a=e.target.closest('a[download]');if(a){name=a.download;e.preventDefault();}};document.addEventListener('click',intercept,true);URL.createObjectURL=x=>{blob=x;return 'blob:neuro-evidence-qa';};try{document.querySelector('[data-evidence-export]').click();for(let i=0;i<40&&!blob;i++)await new Promise(r=>setTimeout(r,15));return {name,record:blob?JSON.parse(await blob.text()):null};}finally{URL.createObjectURL=old;document.removeEventListener('click',intercept,true);}})()");
+  verify(exported.name==="anevum-personal-evidence-NEURO-LAB-001.json"&&exported.record?.record?.courseId==="NEURO-LAB-001"&&exported.record?.digest===saved.digest,"Portable neuroscience research envelope missing honest scope or digest",{name:exported.name});
+  console.log("ANEVUM_NEURON_TO_RESEARCH_QA_PASS",JSON.stringify({trace:sample.data.trace.length,tamperDenied:true,preservedPrevious:true,scope:saved.scope,restored:true,exported:exported.name}));
+}
+
 async function clusterResearchBrowserQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await navigate("/institute-preview/laboratory/cluster-scheduling");
@@ -477,6 +513,7 @@ try{
   await neuronDynamicsBrowserQA();
   await interactions();
   await clusterResearchBrowserQA();
+  await neuronResearchBrowserQA();
   console.log("ANEVUM_INSTITUTE_BROWSER_QA_PASS");
 }finally{
   for(const item of pending.values()){clearTimeout(item.timer);item.reject(Error("Browser ending"));}pending.clear();

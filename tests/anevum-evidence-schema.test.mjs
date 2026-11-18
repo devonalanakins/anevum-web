@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   EVIDENCE_BROWSER_MODULE,EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,
-  normalizeEvidence,canonicalEvidence,validateEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook,validateClusterSchedulerNotebook,evidenceFromClusterSchedulerNotebook
+  normalizeEvidence,canonicalEvidence,validateEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook,validateClusterSchedulerNotebook,evidenceFromClusterSchedulerNotebook,validateNeuronLifNotebook,evidenceFromNeuronLifNotebook
 } from "../apps/anevum-institute-preview/evidence-schema.mjs";
 import {CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE} from "../apps/anevum-institute-preview/cluster-scheduler-model.mjs";
+import {NEURON_LIF_MODEL_BROWSER_MODULE} from "../apps/anevum-institute-preview/neuron-lif-model.mjs";
 
 const example=()=>({
   schemaVersion:1,
@@ -211,4 +212,77 @@ test("forged scheduling metrics, altered workload, claims of review or hidden fi
   const notes=evidenceFromClusterSchedulerNotebook(original,original);
   assert.ok(!/measured by|credential|peer-reviewed/.test(notes.title));
   assert.match(notes.limitations,/not an independent observation/);
+});
+
+
+test("neuron-model notebook imports validate every sample and retain independent neuroscience draft scope",async()=>{
+  const {simulateNeuron,NEURON_TAUS,NEURON_DRIVES}=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(NEURON_LIF_MODEL_BROWSER_MODULE));
+  const browser=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(EVIDENCE_BROWSER_MODULE));
+  for(const tauMs of NEURON_TAUS){
+    for(const driveMv of NEURON_DRIVES){
+      const original=simulateNeuron({tauMs,driveMv});
+      const trusted=simulateNeuron({tauMs,driveMv});
+      assert.equal(original.trace.length,401);
+      assert.deepEqual(validateNeuronLifNotebook(original,trusted),[]);
+      assert.deepEqual(browser.validateNeuronLifNotebook(original,trusted),[]);
+      const record=evidenceFromNeuronLifNotebook(original,trusted);
+      assert.deepEqual(browser.evidenceFromNeuronLifNotebook(original,trusted),record);
+      assert.equal(record.courseId,"NEURO-LAB-001");
+      assert.equal(record.kind,"personal-unreviewed-draft");
+      assert.match(record.title,/Simulated point-neuron dynamics/);
+      assert.match(record.observations,/SIMULATED ONLY — no neuronal or clinical measurements/);
+      assert.match(record.observations,/Time samples: 401/);
+      assert.match(record.limitations,/not a measured electric current/);
+      assert.match(record.limitations,/no.*research credential/i);
+      assert.deepEqual(validateEvidence(record),[]);
+      const envelope=await createEvidenceEnvelope(record);
+      assert.equal(envelope.record.courseId,"NEURO-LAB-001");
+      assert.deepEqual(await parseEvidenceEnvelope(envelope),envelope);
+      assert.deepEqual(await browser.createEvidenceEnvelope(record),envelope);
+    }
+  }
+  assert.throws(()=>canonicalEvidence({...example(),courseId:"NEURO-DIAGNOSED"}),/Unknown course identifier/);
+});
+
+test("edited neural traces and fabricated medical or reviewer claims cannot become Research Desk evidence",async()=>{
+  const {simulateNeuron}=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(NEURON_LIF_MODEL_BROWSER_MODULE));
+  const original=simulateNeuron({tauMs:20,driveMv:20});
+  function change(f){const changed=structuredClone(original);f(changed);return changed;}
+  const altered=[
+    change(x=>{x.metrics.spikeCount+=1;}),
+    change(x=>{x.metrics.firstSpikeMs=0;}),
+    change(x=>{x.metrics.peakRecordedVoltageMv=45;}),
+    change(x=>{x.trace[30].voltageMv=10;}),
+    change(x=>{x.trace[30].timeMs=15.5;}),
+    change(x=>{x.trace.pop();}),
+    change(x=>{x.spikeTimesMs[0]=20;}),
+    change(x=>{x.constants.thresholdMv=-42;}),
+    change(x=>{x.assumptions[0]="Measured from a human brain";}),
+    change(x=>{x.clinicalUse=true;}),
+    change(x=>{x.independentlyReviewed=true;}),
+    change(x=>{x.reviewerName="verified clinician";}),
+    change(x=>{x.provenance="hospital EEG";}),
+    change(x=>{x.settings.driveMv=30;}),
+    change(x=>{x.settings.tauMs=40;}),
+    change(x=>{x.settings.driveMv=15;}),
+    change(x=>{delete x.trace;}),
+    change(x=>{x.outcome="diagnostic certainty";})
+  ];
+  for(const modified of altered){
+    const s=modified.settings;
+    const expected=simulateNeuron({
+      tauMs:[5,10,20,40].includes(s.tauMs)?s.tauMs:20,
+      driveMv:[0,10,20,30].includes(s.driveMv)?s.driveMv:20
+    });
+    assert.ok(validateNeuronLifNotebook(modified,expected).length>0,"Modified file incorrectly passed deterministic validation");
+    assert.throws(()=>evidenceFromNeuronLifNotebook(modified,expected));
+  }
+  assert.ok(validateNeuronLifNotebook(null,original).length>0);
+  assert.ok(validateNeuronLifNotebook(original,null).length>0);
+  assert.ok(validateNeuronLifNotebook(original,simulateNeuron({tauMs:5,driveMv:20})).length>0);
+  const silent=simulateNeuron({tauMs:20,driveMv:0});
+  const record=evidenceFromNeuronLifNotebook(silent,silent);
+  assert.match(record.observations,/Numerical threshold crossings: 0/);
+  assert.match(record.observations,/no threshold event/);
+  assert.match(record.observations,/not defined for fewer than two events/);
 });
