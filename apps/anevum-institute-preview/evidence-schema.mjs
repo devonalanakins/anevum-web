@@ -78,6 +78,56 @@ export async function parseEvidenceEnvelope(value){
   return {format:EVIDENCE_FORMAT,record:canonical,digest:expected};
 }
 
+// Strictly parse the browser's ideal AND lab JSON without treating it as physical evidence.
+export function validateAndLabNotebook(value){
+  const errors=[];
+  if(!value||typeof value!=="object"||Array.isArray(value))return ["Laboratory notebook must be a JSON object"];
+  const keys=["schemaVersion","experimentId","model","modelDefinition","provenance","limitations","observations","coverage"];
+  if(Object.keys(value).sort().join(",")!==keys.sort().join(","))errors.push("Unexpected laboratory notebook fields");
+  if(value.schemaVersion!==1||value.experimentId!=="CFP-101-AND-001")errors.push("Unsupported laboratory notebook schema or experiment");
+  if(value.model!=="ideal-two-input-boolean-and"||value.modelDefinition!=="Q = A AND B")errors.push("Unsupported laboratory model");
+  if(value.provenance!=="ANEVUM Open Institute design preview; generated in this browser session")errors.push("Unknown laboratory export provenance");
+  if(typeof value.limitations!=="string"||!value.limitations.includes("no analog voltage")||value.limitations.length>250)errors.push("Missing model limitations");
+  if(!Array.isArray(value.observations)||value.observations.length<1||value.observations.length>4){
+    errors.push("Expected 1-4 simulated observations");
+  }else{
+    const visited=new Set();
+    for(const row of value.observations){
+      if(!row||typeof row!=="object"||Array.isArray(row)){
+        errors.push("Invalid observation row");continue;
+      }
+      if(Object.keys(row).sort().join(",")!=="inputA,inputB,outputQ")errors.push("Unexpected observation fields");
+      const bits=[row.inputA,row.inputB,row.outputQ];
+      if(bits.some(bit=>!Number.isInteger(bit)||(bit!==0&&bit!==1))){
+        errors.push("Observations require Boolean bits");continue;
+      }
+      const key=String(row.inputA)+String(row.inputB);
+      if(visited.has(key))errors.push("Duplicate laboratory input state: "+key);
+      visited.add(key);
+      if(row.outputQ!==(row.inputA&&row.inputB?1:0))errors.push("Observation is inconsistent with ideal Boolean AND: "+key);
+    }
+  }
+  const c=value.coverage;
+  if(!c||typeof c!=="object"||Array.isArray(c)
+    ||Object.keys(c).sort().join(",")!=="complete,observed,possible"
+    ||c.possible!==4||c.observed!==value.observations?.length
+    ||c.complete!==(c.observed===4))errors.push("Laboratory coverage metadata mismatch");
+  return errors;
+}
+export function evidenceFromAndLabNotebook(value){
+  const errors=validateAndLabNotebook(value);
+  if(errors.length)throw new Error(errors.join("; "));
+  const rows=value.observations.map(row=>String(row.inputA)+String(row.inputB)+" -> "+String(row.outputQ));
+  return canonicalEvidence({
+    title:"Boolean AND study ("+rows.length+" of 4 states)",
+    question:"Which ideal Boolean input combinations produce Q = 1 when Q = A AND B?",
+    method:"Using the ANEVUM CFP-101-AND-001 browser simulation, set A and B to each recorded input pair, inspect the resulting Q, and compare it with the ideal AND truth table. Repeat from reset to verify each state. No physical equipment was used.",
+    observations:"Simulated (not measured) input and output records:\n"+rows.join("\n")+"\nCoverage: "+rows.length+" of 4 input combinations.",
+    limitations:"These are ideal Boolean simulation states, not measurements of voltage, current, semiconductor behavior, energy, propagation delay or uncertainty. This local export is not independently reviewed, signed or validated as research.",
+    references:[]
+  });
+}
+
 /** The exact same schema functions run in Node tests and the browser sandbox. */
 export const EVIDENCE_BROWSER_MODULE=[
   "const EVIDENCE_FORMAT="+JSON.stringify(EVIDENCE_FORMAT)+";",
@@ -91,5 +141,7 @@ export const EVIDENCE_BROWSER_MODULE=[
   digestEvidence.toString(),
   createEvidenceEnvelope.toString(),
   parseEvidenceEnvelope.toString(),
-  "export {EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,normalizeEvidence,validateEvidence,canonicalEvidence,digestEvidence,createEvidenceEnvelope,parseEvidenceEnvelope};"
+  validateAndLabNotebook.toString(),
+  evidenceFromAndLabNotebook.toString(),
+  "export {EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,normalizeEvidence,validateEvidence,canonicalEvidence,digestEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook};"
 ].join("\n")+"\n";
