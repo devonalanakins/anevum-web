@@ -188,6 +188,7 @@ async function compactCourseUsabilityQA(){
   verify(restoredNote==="Local test notebook for combinational arithmetic","Lesson 03 notebook must restore on reload",restoredNote);
   await evaluate("localStorage.removeItem('anevum.institute.study.v1.CFP-101-U03')");
   console.log("ANEVUM_STUDY_PATH_AND_U03_NOTES_QA_PASS");
+  await navigate("/institute-preview/academy/cfp-101");
   const toggled=await evaluate("(()=>{const b=document.querySelector('[data-unit-filter=available]');b.click();return {pressed:b.getAttribute('aria-pressed'),shown:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,hidden:document.querySelectorAll('[data-unit-availability][hidden]').length,status:document.querySelector('[data-unit-filter-status]').textContent};})()");
   verify(toggled.pressed==="true"&&toggled.shown===3&&toggled.hidden===5&&toggled.status.includes("hidden, not removed"),"Available-only course filtering is inaccurate",toggled);
   const restored=await evaluate("(()=>{document.querySelector('[data-unit-filter=all]').click();return {shown:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,selected:document.querySelector('[data-unit-filter=all]').getAttribute('aria-pressed')};})()");
