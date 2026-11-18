@@ -17,7 +17,7 @@ export function validateMemberCard(value){
   if(value.version!==1)errors.push("Unsupported member-card version");
   for(const [key,min,max] of [["displayName",2,60],["tagline",0,180]]){
     const field=value[key];
-    if(typeof field!=="string"||field.length<min||field.length>max||field!==field?.trim()||/[\\u0000-\\u001f\\u007f]/.test(field||""))errors.push(key+" must be "+min+"-"+max+" characters without control characters");
+    if(typeof field!=="string"||field.length<min||field.length>max||field!==field?.trim()||/[\u0000-\u001f\u007f]/.test(field||""))errors.push(key+" must be "+min+"-"+max+" characters without control characters");
   }
   if(!Array.isArray(value.interests)||value.interests.length>5||new Set(value.interests).size!==value.interests.length||value.interests.some(x=>!INTERESTS.includes(x)))errors.push("Choose up to five supported research interests");
   return errors;
@@ -39,7 +39,7 @@ export function parseMemberCard(source){
   return normalizeMemberCard(obj.profile);
 }
 export function exportMemberCard(input){
-  return JSON.stringify({format:LOCAL_MEMBER_FORMAT,profile:normalizeMemberCard(input)},null,2)+"\\n";
+  return JSON.stringify({format:LOCAL_MEMBER_FORMAT,profile:normalizeMemberCard(input)},null,2)+"\n";
 }
 export const LOCAL_MEMBER_BROWSER_MODULE=[
   "const LOCAL_MEMBER_FORMAT="+JSON.stringify(LOCAL_MEMBER_FORMAT)+";",
@@ -49,4 +49,4 @@ export const LOCAL_MEMBER_BROWSER_MODULE=[
   blankMemberCard.toString(),validateMemberCard.toString(),normalizeMemberCard.toString(),
   parseMemberCard.toString(),exportMemberCard.toString(),
   "export {LOCAL_MEMBER_FORMAT,LOCAL_MEMBER_KEY,INTERESTS,blankMemberCard,validateMemberCard,normalizeMemberCard,parseMemberCard,exportMemberCard};"
-].join("\\n")+"\\n";
+].join("\n")+"\n";
