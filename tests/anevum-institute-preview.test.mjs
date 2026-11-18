@@ -239,6 +239,8 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   assert.match(client,/importApply\.addEventListener\("click",function/);
   assert.match(client,/Imported notes applied to editor, not saved/);
   assert.doesNotMatch(client,/localStorage\.setItem\(key,stagedImportedNotes\)/);
+  const css=await(await req("/styles.css")).text();
+  assert.match(css,/\.study-import \[data-study-import-apply\]\[hidden\]\{display:none!important\}/);
 });
 
 test("CFP-101 reader exposes curriculum-grounded navigation without invented completion",async()=>{
