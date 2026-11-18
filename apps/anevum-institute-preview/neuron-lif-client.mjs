@@ -8,12 +8,14 @@ if(root){
   const drive=root.querySelector("[data-neuron-drive]");
   const run=root.querySelector("[data-neuron-run]");
   const exporter=root.querySelector("[data-neuron-export]");
+  const transferButton=root.querySelector("[data-neuron-to-dossier]");
+  const transferKey="anevum.institute.handoff.neuron.v1";
   const status=root.querySelector("[data-neuron-status]");
   const output=root.querySelector("[data-neuron-results]");
   const chart=root.querySelector("[data-neuron-chart]");
   let last=null;
   function invalidate(){
-    last=null;output.hidden=true;exporter.disabled=true;
+    last=null;output.hidden=true;exporter.disabled=true;transferButton.disabled=true;
     status.textContent="Settings changed. Run the local simulation again to update the trace.";
   }
   tau.addEventListener("change",invalidate);
@@ -60,7 +62,7 @@ if(root){
   run.addEventListener("click",function(){
     try{
       const result=simulateNeuron({tauMs:Number(tau.value),driveMv:Number(drive.value)});
-      show(result);last=result;exporter.disabled=false;
+      show(result);last=result;exporter.disabled=false;transferButton.disabled=false;
       status.textContent="Model run completed locally; no physical measurements or remote tasks.";
     }catch(error){
       invalidate();status.textContent="Simulation rejected: "+String(error&&error.message||"invalid settings");
@@ -74,6 +76,23 @@ if(root){
     document.body.appendChild(anchor);anchor.click();anchor.remove();
     setTimeout(()=>URL.revokeObjectURL(url),5000);
     status.textContent="Simulated trace JSON export requested. This is not a validated biological or clinical record.";
+  });
+  transferButton.addEventListener("click",function(){
+    if(!last){
+      status.textContent="Run the neuron model before transferring a research draft.";
+      return;
+    }
+    try{
+      const raw=JSON.stringify(last);
+      if(raw.length>65536)throw new Error("Session model exceeds 64 KiB");
+      sessionStorage.setItem(transferKey,raw);
+      if(sessionStorage.getItem(transferKey)!==raw)throw new Error("Session transfer unavailable");
+      // Personal, same-tab staging only. Research Desk validates the whole trace.
+      // No network, clinical record, auto-apply, save, or credential.
+      window.location.assign("/institute-preview/dossier#neuron-import");
+    }catch(_){
+      status.textContent="Could not prepare the local research handoff. Export JSON and import it manually instead.";
+    }
   });
   root.dataset.neuronReady="true";
 }
