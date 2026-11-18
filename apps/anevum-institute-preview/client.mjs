@@ -399,6 +399,8 @@ export const INSTITUTE_CLIENT = String.raw`
     var meter=bench.querySelector("[data-half-meter]");
     var feedback=bench.querySelector("[data-half-feedback]");
     var exportStatus=bench.querySelector("[data-half-export-status]");
+    var halfTransfer=bench.querySelector("[data-half-to-dossier]");
+    var halfHandoffKey="anevum.institute.handoff.half.v1";
     function model(x,y){return {a:x,b:y,sum:x^y,carry:x&y};}
     function observe(){
       var state=model(a,b);
@@ -421,6 +423,7 @@ export const INSTITUTE_CLIENT = String.raw`
       });
       progress.textContent=visited.size+" of 4 combinations visited in this session."+(visited.size===4?" Complete Boolean coverage; no external review.":"");
       meter.style.width=(visited.size/4*100)+"%";
+      halfTransfer.disabled=visited.size!==4;
     }
     bench.querySelectorAll("[data-half-input]").forEach(function(button){
       button.addEventListener("click",function(){
@@ -432,9 +435,9 @@ export const INSTITUTE_CLIENT = String.raw`
       a=0;b=0;visited.clear();observe();
       exportStatus.textContent="Experiment restarted. Previous session observations were cleared from this page.";
     });
-    bench.querySelector("[data-half-export]").addEventListener("click",function(){
+    function halfNotebook(){
       var rows=[...visited.values()].sort(function(x,y){return x.a*2+x.b-(y.a*2+y.b);});
-      var record={
+      return {
         schemaVersion:1,
         kind:"browser-local-unverified-simulation",
         experimentId:"CFP-101-HALF-001",
@@ -447,17 +450,37 @@ export const INSTITUTE_CLIENT = String.raw`
         independentlyVerified:false,
         academicCredit:false
       };
+    }
+    bench.querySelector("[data-half-export]").addEventListener("click",function(){
+      var record=halfNotebook();
       try{
-        var blob=new Blob([JSON.stringify(record,null,2)+"\n"],{type:"application/json"});
+        var blob=new Blob([JSON.stringify(record,null,2)+"\\n"],{type:"application/json"});
         var url=URL.createObjectURL(blob);
         var anchor=document.createElement("a");
         anchor.download="anevum-cfp101-half-adder-001.json";
         anchor.href=url;anchor.hidden=true;
         document.body.appendChild(anchor);anchor.click();anchor.remove();
         setTimeout(function(){URL.revokeObjectURL(url);},5000);
-        exportStatus.textContent="Download requested for "+rows.length+" ideal simulation states. The record is not independently authenticated.";
+        exportStatus.textContent="Download requested for "+record.observations.length+" ideal simulation states. The record is not independently authenticated.";
       }catch(_){
         exportStatus.textContent="The browser could not create a download. You can still read the complete truth table above.";
+      }
+    });
+    halfTransfer.addEventListener("click",function(){
+      if(visited.size!==4){
+        exportStatus.textContent="Visit all four Boolean input pairs before transferring a research draft.";
+        return;
+      }
+      try{
+        var raw=JSON.stringify(halfNotebook());
+        if(raw.length>8192)throw new Error("Notebook exceeds 8 KiB");
+        sessionStorage.setItem(halfHandoffKey,raw);
+        if(sessionStorage.getItem(halfHandoffKey)!==raw)throw new Error("Session transfer unavailable");
+        // Same-tab handoff is untrusted. The Research Desk independently validates
+        // every sum/carry value and waits for an explicit Apply and Save.
+        window.location.assign("/institute-preview/dossier#half-import");
+      }catch(_){
+        exportStatus.textContent="Could not transfer the local half-adder notebook. Export JSON and import it manually instead.";
       }
     });
     observe();
