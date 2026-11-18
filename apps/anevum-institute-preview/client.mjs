@@ -137,22 +137,38 @@ export const INSTITUTE_CLIENT = String.raw`
       if(deleteButton)deleteButton.textContent="Delete saved notes";
     }
     var initial=readNotes();
+    // Track the last saved text so a bookmark never silently loses typed edits.
+    var persistedNote=initial.note;
     if(textarea)textarea.value=initial.note;
     if(bookmark)setBookmark(initial.bookmark);
+    if(textarea)textarea.addEventListener("input",function(){
+      resetDelete();
+      if(!initial.available){
+        report("Browser storage is unavailable. Export your current notes to keep a copy.");
+      }else if(textarea.value.slice(0,8000)===persistedNote){
+        report("Current notes match the saved browser-local copy.");
+      }else{
+        report("Unsaved notes. Select Save notes or Bookmark this lesson before leaving.");
+      }
+    });
     report(initial.available?(initial.note||initial.bookmark?"Saved study notes loaded from this browser.":"No saved notes for this lesson."):"Browser storage is unavailable. Export your notes to keep a copy.");
     if(saveButton)saveButton.addEventListener("click",function(){
       resetDelete();
       var current=textarea?textarea.value.slice(0,8000):"";
       var starred=bookmark&&bookmark.getAttribute("aria-pressed")==="true";
-      report(writeNotes(current,!!starred)?"Notes saved in this browser profile.":"Save failed: browser storage unavailable. Use Export .txt instead.");
+      var saved=writeNotes(current,!!starred);
+      if(saved)persistedNote=current;
+      report(saved?"Notes saved in this browser profile.":"Save failed: browser storage unavailable. Use Export .txt instead.");
     });
     if(bookmark)bookmark.addEventListener("click",function(){
       resetDelete();
       var next=bookmark.getAttribute("aria-pressed")!=="true";
-      var saved=readNotes();
-      if(writeNotes(saved.note,next)){
+      // Commit both the bookmark and the *currently visible* notes together.
+      var current=textarea?textarea.value.slice(0,8000):"";
+      if(writeNotes(current,next)){
+        persistedNote=current;
         setBookmark(next);
-        report(next?"Lesson bookmarked in this browser.":"Lesson bookmark removed from this browser.");
+        report(next?"Lesson bookmarked and current notes saved in this browser.":"Bookmark removed and current notes saved in this browser.");
       }else{
         report("Bookmark could not be saved. Browser storage may be unavailable.");
       }
@@ -172,7 +188,8 @@ export const INSTITUTE_CLIENT = String.raw`
       link.click();
       link.remove();
       setTimeout(function(){URL.revokeObjectURL(url);},5000);
-      report("Text export requested. Check browser download permissions if the file does not appear.");
+      report("Text export requested. Check browser download permissions if the file does not appear."+
+        (textarea&&textarea.value.slice(0,8000)!==persistedNote?" Your edits are not saved in this browser unless you choose Save notes or Bookmark.":""));
     });
     if(deleteButton)deleteButton.addEventListener("click",function(){
       if(!pendingDeletion){
@@ -184,6 +201,7 @@ export const INSTITUTE_CLIENT = String.raw`
       try{
         localStorage.removeItem(key);
         if(textarea)textarea.value="";
+        persistedNote="";
         if(bookmark)setBookmark(false);
         resetDelete();
         report("Saved notes and bookmark deleted from this browser profile.");
