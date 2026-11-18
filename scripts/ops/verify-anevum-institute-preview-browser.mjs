@@ -41,9 +41,9 @@ async function evaluate(expression){
   if(response.exceptionDetails)throw Error("Browser JavaScript exception: "+response.exceptionDetails.text);
   return response.result?.value;
 }
-async function waitFor(fn,label){
+async function waitFor(fn,label,attempts=125){
   let error;
-  for(let i=0;i<125;i++){
+  for(let i=0;i<attempts;i++){
     try{const result=await fn();if(result)return result;}catch(e){error=e;}
     await sleep(110);
   }
@@ -644,7 +644,7 @@ try{
     if(chrome.exitCode!==null)throw Error("Chrome exited prematurely");
     const file=path.join(profile,"DevToolsActivePort");
     return existsSync(file)?Number(readFileSync(file,"utf8").split(/\r?\n/)[0]):null;
-  },"Chrome DevTools port");
+  },"Chrome DevTools port",350);
   const target=await(await fetch("http://127.0.0.1:"+port+"/json/new?about:blank",{method:"PUT"})).json();
   ws=new WebSocket(target.webSocketDebuggerUrl);
   ws.addEventListener("message",event=>{
