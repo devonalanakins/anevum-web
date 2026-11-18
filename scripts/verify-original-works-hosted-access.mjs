@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
 const EXPECTED_SCRIPT = "anevum-web-nextgen";
-const OWNER_EMAIL = "devon@anevum.com";
+const OWNER_EMAIL = "id@devonakins.com";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 // Cloudflare Worker script tags and Access preview_worker IDs are compact
 // 32-character hex identifiers, not hyphenated Access application UUIDs.

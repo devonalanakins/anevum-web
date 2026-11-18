@@ -14,7 +14,7 @@ const account="c".repeat(32);
 const token="synthetic-readonly-test-token";
 const ownerPolicy=()=>({
   decision:"allow",
-  include:[{email:{email:"devon@anevum.com"}}],
+  include:[{email:{email:"id@devonakins.com"}}],
   exclude:[],
   require:[]
 });
@@ -41,7 +41,7 @@ test("complete synthetic owner-only preview remains read-only, never a release a
     realDeviceVerified:false
   });
   const redacted=JSON.stringify(result);
-  for(const sensitive of [workerTag,otherWorker,appId,account,token,"devon@anevum.com"]){
+  for(const sensitive of [workerTag,otherWorker,appId,account,token,"id@devonakins.com"]){
     assert.ok(!redacted.includes(sensitive),"Diagnostic leaked a raw identity or credential");
   }
 });
@@ -154,4 +154,14 @@ test("partial inventories and remote errors fail closed without making any write
     );
     assert.equal(count,0);
   }
+});
+
+
+test("retired ANEVUM owner mailbox is denied even when a reusable policy remains syntactically valid",()=>{
+  const input=sample();
+  input.policies=[{...ownerPolicy(),include:[{email:{email:"devon@anevum.com"}}]}];
+  const outcome=assessInstitutePreviewReadiness(input);
+  assert.equal(outcome.readyForProtectedReview,false);
+  assert.ok(outcome.blockedBy.includes("ACCESS_ALLOW_NOT_OWNER_ONLY"));
+  assert.equal(outcome.releaseApproved,false);
 });
