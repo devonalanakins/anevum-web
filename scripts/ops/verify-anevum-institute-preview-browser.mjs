@@ -505,6 +505,51 @@ async function interactions(){
   console.log("INSTITUTE_STUDY_NOTES_QA_PASS",JSON.stringify({saved:notesSaved,isolated:notesIsolation.key,exportFilename:notesExport.filename,deleted:notesDelete.stored===null}));
   console.log("INSTITUTE_INTERACTION_QA_PASS",JSON.stringify({inverter,quiz,lab,assets}));
 }
+
+async function andResearchDirectHandoffQA(){
+  const draftKey="anevum.institute.evidence-draft.v1";
+  const handoffKey="anevum.institute.handoff.and.v1";
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await navigate("/institute-preview/dossier");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"Research Desk ready before handoff");
+  const baseline=await evaluate("(async()=>{const m=await import('/institute-preview/evidence-schema.js');const record={schemaVersion:1,kind:'personal-unreviewed-draft',courseId:'CFP-101',title:'Existing personal research draft',question:'Does the unreviewed example provide a credible model result?',method:'This is a synthetic test record created by browser QA, with no physical observation or actual institute publication.',observations:'A previous unreviewed example was saved only in this browser.',limitations:'The example is synthetic and unreviewed and must not be treated as scientific evidence.',references:[]};const envelope=await m.createEvidenceEnvelope(record);localStorage.setItem('anevum.institute.evidence-draft.v1',JSON.stringify(envelope));sessionStorage.removeItem('anevum.institute.handoff.and.v1');return {title:envelope.record.title,digest:envelope.digest};})()");
+  verify(baseline.title==="Existing personal research draft"&&/^sha256:[a-f0-9]{64}$/.test(baseline.digest),"Baseline local evidence draft could not be prepared",baseline);
+  await navigate("/institute-preview/laboratory/and-gate");
+  const initial=await evaluate("(()=>({disabled:document.querySelector('[data-to-dossier]')?.disabled,coverage:document.querySelector('[data-lab-progress]')?.textContent}))()");
+  verify(initial.disabled&&initial.coverage.startsWith("1 of 4"),"Direct handoff must start disabled until full coverage",initial);
+  const completed=await evaluate("(()=>{const root=document.querySelector('[data-and-lab]');const tap=key=>root.querySelector('[data-input="'+key+'"]').click();tap('b');tap('a');tap('b');return {disabled:root.querySelector('[data-to-dossier]').disabled,coverage:root.querySelector('[data-lab-progress]').textContent};})()");
+  verify(completed.disabled===false&&completed.coverage.startsWith("4 of 4"),"Direct handoff did not unlock after all four ideal states",completed);
+  await evaluate("document.querySelector('[data-to-dossier]').click()");
+  await waitFor(()=>evaluate("location.pathname==='/institute-preview/dossier'&&location.hash==='#logic-import'&&document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"same-tab handoff into Research Desk");
+  const staged=await evaluate("(()=>({status:document.querySelector('[data-evidence-status]').textContent,feedback:document.querySelector('[data-lab-feedback]').textContent,apply:!document.querySelector('[data-lab-apply]').hidden,hub:document.querySelector('[data-import-hub]').open,details:document.querySelector('#logic-import').open,title:document.querySelector('[data-evidence-field=title]').value,stored:JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1')).record.title,pending:sessionStorage.getItem('anevum.institute.handoff.and.v1'),receipt:document.querySelector('[data-evidence-digest]').textContent}))()");
+  verify(staged.apply&&staged.hub&&staged.details&&staged.feedback.includes("Validated all four")&&staged.status.includes("existing saved draft remains unchanged")&&staged.title===baseline.title&&staged.stored===baseline.title&&staged.pending===null&&staged.receipt===baseline.digest,"Handoff must remain staged only and preserve saved evidence",staged);
+  await send("Page.navigate",{url:base+"/institute-preview/dossier#logic-import"});
+  await waitFor(()=>evaluate("location.pathname==='/institute-preview/dossier'&&document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"dossier reload for one-time consumption");
+  const oneShot=await evaluate("(()=>({apply:document.querySelector('[data-lab-apply]').hidden,stored:JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1')).record.title,pending:sessionStorage.getItem('anevum.institute.handoff.and.v1')}))()");
+  verify(oneShot.apply&&oneShot.stored===baseline.title&&oneShot.pending===null,"One-time session handoff must not restage on reload",oneShot);
+  // Recreate a valid transfer from the laboratory, approve explicitly and export.
+  await navigate("/institute-preview/laboratory/and-gate");
+  await evaluate("(()=>{const root=document.querySelector('[data-and-lab]');root.querySelector('[data-input="b"]').click();root.querySelector('[data-input="a"]').click();root.querySelector('[data-input="b"]').click();root.querySelector('[data-to-dossier]').click();})()");
+  await waitFor(()=>evaluate("location.pathname==='/institute-preview/dossier'&&document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"second explicit handoff");
+  const applied=await evaluate("(()=>{document.querySelector('[data-lab-apply]').click();return {title:document.querySelector('[data-evidence-field=title]').value,observations:document.querySelector('[data-evidence-field=observations]').value,receipt:document.querySelector('[data-evidence-receipt-state]').textContent,stored:JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1')).record.title};})()");
+  verify(applied.title==="Boolean AND study (4 of 4 states)"&&applied.observations.includes("11 -> 1")&&applied.receipt==="Unsaved changes"&&applied.stored===baseline.title,"Explicit Apply must populate editor without saving or corrupting the existing draft",applied);
+  await evaluate("document.querySelector('[data-evidence-save]').click()");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-status]').textContent.includes('Personal draft saved locally')"),"opt-in local save after handoff");
+  const saved=await evaluate("(()=>({title:JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1')).record.title,receipt:document.querySelector('[data-evidence-digest]').textContent}))()");
+  verify(saved.title===applied.title&&/^sha256:[a-f0-9]{64}$/.test(saved.receipt),"Explicit save did not create a content-addressed personal record",saved);
+  const exported=await evaluate("(async()=>{let blob=null,name='';const old=URL.createObjectURL;const handler=e=>{const a=e.target.closest('a[download]');if(a){e.preventDefault();name=a.download;}};document.addEventListener('click',handler,true);URL.createObjectURL=b=>{blob=b;return 'blob:handoff-qa';};try{document.querySelector('[data-evidence-export]').click();for(let i=0;i<40&&!blob;i++)await new Promise(r=>setTimeout(r,15));return {name,body:blob?JSON.parse(await blob.text()):null};}finally{URL.createObjectURL=old;document.removeEventListener('click',handler,true);}})()");
+  verify(exported.name==="anevum-personal-evidence-CFP-101.json"&&exported.body?.digest===saved.receipt&&exported.body?.record?.kind==="personal-unreviewed-draft"&&exported.body?.record?.title===applied.title,"Opt-in draft export must retain unreviewed provenance and integrity receipt",exported);
+  // The same-tab mailbox is attacker-controllable. Forged logical outputs must fail closed.
+  await navigate("/institute-preview/academy");
+  const forged=await evaluate("(()=>{const record={schemaVersion:1,experimentId:'CFP-101-AND-001',model:'ideal-two-input-boolean-and',modelDefinition:'Q = A AND B',provenance:'ANEVUM Open Institute design preview; generated in this browser session',limitations:'Ideal logical states only; no analog voltage, propagation delay, transistor physics or uncertainty is modeled.',observations:[{inputA:0,inputB:0,outputQ:1},{inputA:0,inputB:1,outputQ:0},{inputA:1,inputB:1,outputQ:1},{inputA:1,inputB:0,outputQ:0}],coverage:{observed:4,possible:4,complete:true}};sessionStorage.setItem('anevum.institute.handoff.and.v1',JSON.stringify(record));return JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1')).record.title;})()");
+  await send("Page.navigate",{url:base+"/institute-preview/dossier#logic-import"});
+  await waitFor(()=>evaluate("location.pathname==='/institute-preview/dossier'&&document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"forged handoff safely rejected");
+  const rejected=await evaluate("(()=>({feedback:document.querySelector('[data-lab-feedback]').textContent,hidden:document.querySelector('[data-lab-apply]').hidden,title:document.querySelector('[data-evidence-field=title]').value,saved:JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1')).record.title,pending:sessionStorage.getItem('anevum.institute.handoff.and.v1')}))()");
+  verify(rejected.feedback.includes("inconsistent with ideal Boolean AND")&&rejected.hidden&&rejected.title===forged&&rejected.saved===forged&&rejected.pending===null,"Forged sessionStorage input must not stage, replace or save research data",rejected);
+  await evaluate("localStorage.removeItem('anevum.institute.evidence-draft.v1');sessionStorage.removeItem('anevum.institute.handoff.and.v1')");
+  console.log("ANEVUM_DIRECT_AND_RESEARCH_HANDOFF_QA_PASS",JSON.stringify({fourStatesRequired:true,stagedWithoutSaving:true,oneTime:true,explicitApply:true,explicitSave:true,portableExport:true,forgeryRejected:true}));
+}
+
 try{
   await waitFor(async()=>{
     if(server.exitCode!==null)throw Error("Loopback server exited");
@@ -546,6 +591,7 @@ try{
   await clusterResearchBrowserQA();
   await neuronResearchBrowserQA();
   await compactEvidenceImporterQA();
+  await andResearchDirectHandoffQA();
   console.log("ANEVUM_INSTITUTE_BROWSER_QA_PASS");
 }finally{
   for(const item of pending.values()){clearTimeout(item.timer);item.reject(Error("Browser ending"));}pending.clear();
