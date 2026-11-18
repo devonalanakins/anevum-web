@@ -89,7 +89,7 @@ test("bypass, domain allow, unrelated email, and multi-destination Access are re
   for(const changed of cases){
     const result=inspect(changed);
     assert.equal(result.readyForProtectedReview,false,JSON.stringify(changed));
-    assert.ok(result.blockedBy.some(x=>x.startsWith("ACCESS_")||x.includes("PREVIEW_NOT_BOUND")));
+    assert.ok(result.blockedBy.some(x=>["UNSAFE_ACCESS_DECISIONS","ACCESS_ALLOW_NOT_OWNER_ONLY","PREVIEW_NOT_BOUND_TO_PINNED_WORKER"].includes(x)));
   }
 });
 
