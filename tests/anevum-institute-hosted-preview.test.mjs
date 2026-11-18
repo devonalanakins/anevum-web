@@ -26,7 +26,7 @@ test("host adapter accepts only exact target Worker Preview URL names",()=>{
     "evil.pr-816-anevum-web-nextgen.devonakins.workers.dev",
     "a--b-anevum-web-nextgen.devonakins.workers.dev",
     "pr_816-anevum-web-nextgen.devonakins.workers.dev",
-    "anevum-institute-review-no-production.devonakins.workers.dev"]){
+    "unrelated-preview-worker.devonakins.workers.dev"]){
     assert.equal(isInstituteReviewHost(unsafe),false,"unexpected accepted host: "+unsafe);
   }
   assert.throws(()=>makeInstituteHostedReview({}),/loader/);
@@ -95,7 +95,11 @@ test("four reviewed image assets decode from local repo bytes and arbitrary asse
 test("separate Wrangler file never inherits production routes, D1 or credentials",async()=>{
   const raw=await readFile(new URL("../wrangler.institute-preview.jsonc",import.meta.url),"utf8");
   const conf=JSON.parse(raw);
-  assert.equal(conf.name,"anevum-institute-review-no-production");
+  assert.equal(conf.name,"anevum-web-nextgen");
+  // The *same* configured Worker name is required for the exact Cloudflare Access
+  // preview_worker destination; a different name would bypass that protection.
+  assert.ok(ROOT.includes("-"+conf.name+".devonakins.workers.dev"));
+  assert.equal(isInstituteReviewHost("pr-816-"+conf.name+".devonakins.workers.dev"),true);
   assert.equal(conf.main,"./apps/anevum-institute-preview/hosted-worker.mjs");
   assert.equal(conf.workers_dev,false);
   assert.equal(conf.preview_urls,true);
