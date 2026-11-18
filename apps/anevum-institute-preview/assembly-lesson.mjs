@@ -51,7 +51,7 @@ export const ASSEMBLY_LESSON_HTML=String.raw`<main id="main" tabindex="-1" class
 <div class="callout"><p><strong>Prerequisite:</strong> Lesson 05 modeled four addressed memory words. Its address choices are reused here as two-bit instruction operands. <a href="/institute-preview/learn/cfp-101/addressed-memory">Review addressed memory →</a></p></div>
 <h2 id="isa">1. A CPU interprets bits according to an instruction set</h2>
 <p>Binary digits have no inherent instruction meaning. An <strong>instruction set architecture (ISA)</strong> assigns patterns to operations and operands, while <strong>assembly language</strong> provides human-readable symbols for those patterns. Actual architectures also define machine state, execution semantics and many other details.</p>
-<p>For this lesson only, we define a **fictional 4-bit instruction format** consisting of a 2-bit operation code followed by a 2-bit address. It is deliberately much smaller than a real instruction set. Four addresses exist: 0, 1, 2 and 3.</p>
+<p>For this lesson only, we define a <strong>fictional 4-bit instruction format</strong> consisting of a 2-bit operation code followed by a 2-bit address. It is deliberately much smaller than a real instruction set. Four addresses exist: 0, 1, 2 and 3.</p>
 <p class="mathline">4-bit instruction = 2-bit opcode ∥ 2-bit operand</p>
 <table class="data-table tabular" aria-label="Fictional four-bit instruction coding">
 <thead><tr><th scope="col">Opcode</th><th scope="col">Mnemonic</th><th scope="col">Proposed meaning</th></tr></thead>
