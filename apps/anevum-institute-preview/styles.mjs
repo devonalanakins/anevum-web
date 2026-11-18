@@ -367,6 +367,13 @@ body[data-area="society"] .mast,body[data-area="recognition"] .mast{background:#
 .dossier-field textarea{min-height:78px}
 .dossier-field input::placeholder,.dossier-field textarea::placeholder{color:#6b807c;opacity:1}
 .dossier-field input:focus-visible,.dossier-field textarea:focus-visible,.dossier-import:focus-within{outline:3px solid #986c39;outline-offset:3px}
+.dossier-lab-import{background:#e5ebe1;border:1px solid #afbfad;padding:17px 19px;margin:23px 0 7px;color:#25443d}
+.dossier-lab-import label{font-size:13px;font-weight:750;display:block;margin-bottom:9px}
+.dossier-lab-import input{font:12px ui-sans-serif,system-ui,sans-serif;max-width:100%;display:block}
+.dossier-lab-import p{color:#45645b;font-size:12px;line-height:1.55;margin:12px 0 0}
+.dossier-lab-apply{margin-top:14px;background:#355c50;border:1px solid #22483e;color:#fff8ed;font:750 12px/1.35 ui-sans-serif,system-ui,sans-serif;cursor:pointer;min-height:44px;padding:11px 15px;max-width:100%;white-space:normal}
+.dossier-lab-apply:focus-visible{outline:3px solid #9d7041;outline-offset:3px}
+.dossier-lab-apply[hidden]{display:none!important}
 .dossier-status{font-size:13px;line-height:1.6;background:#e3e8dd;color:#24504b;padding:12px 14px;border-left:4px solid #5c8e78;margin:22px 0 17px}
 .dossier-primary-actions,.dossier-secondary-actions{display:flex;flex-wrap:wrap;gap:12px}
 .dossier-primary-actions .btn{flex:1 1 185px;min-height:48px;text-align:center;white-space:normal}
