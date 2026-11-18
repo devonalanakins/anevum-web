@@ -552,7 +552,6 @@ async function andResearchDirectHandoffQA(){
 }
 
 async function directSimulationHandoffQA(){
-  const savedKey="anevum.institute.evidence-draft.v1";
   const cases=[
     {label:"GPU",path:"/laboratory/cluster-scheduling",root:"[data-cluster-lab]",ready:"clusterReady",run:"[data-cluster-run]",transfer:"[data-cluster-to-dossier]",feedback:"[data-cluster-feedback]",apply:"[data-cluster-apply]",scope:"COMPUTE-LAB-001",title:"Simulated GPU scheduling",hash:"#cluster-import",key:"anevum.institute.handoff.cluster.v1",validText:"GPU scheduling values"},
     {label:"NEURON",path:"/laboratory/neuron-dynamics",root:"[data-neuron-lab]",ready:"neuronReady",run:"[data-neuron-run]",transfer:"[data-neuron-to-dossier]",feedback:"[data-neuron-feedback]",apply:"[data-neuron-apply]",scope:"NEURO-LAB-001",title:"Simulated point-neuron",hash:"#neuron-import",key:"anevum.institute.handoff.neuron.v1",validText:"neuron trace"}
@@ -583,7 +582,7 @@ async function directSimulationHandoffQA(){
     const repeated=await evaluate("(()=>{const spec="+JSON.stringify(spec)+";return {hidden:document.querySelector(spec.apply).hidden,pending:sessionStorage.getItem(spec.key),title:document.querySelector('[data-evidence-field=title]').value}})()");
     verify(repeated.hidden&&repeated.pending===null&&repeated.title===saved.title,"Model transfer must not replay on Research Desk reload",{spec,repeated});
     await navigate("/institute-preview/academy");
-    await evaluate("(async()=>{const spec="+JSON.stringify(spec)+";const model=spec.label==='GPU'?await import('/institute-preview/cluster-scheduler-model.js'):await import('/institute-preview/neuron-lif-model.js');const record=spec.label==='GPU'?model.simulateCluster({capacity:4,policy:'fifo'}):model.simulateNeuron({tauMs:20,driveMv:20});if(spec.label==='GPU')record.metrics.gpuUtilizationPercent=-1;else record.metrics.spikeCount+=3;sessionStorage.setItem(spec.key,JSON.stringify(record));return true;})()");
+    await evaluate("(async()=>{const spec="+JSON.stringify(spec)+";const model=spec.label==='GPU'?await import('/institute-preview/cluster-scheduler-model.js'):await import('/institute-preview/neuron-lif-model.js');const record=structuredClone(spec.label==='GPU'?model.simulateCluster({capacity:4,policy:'fifo'}):model.simulateNeuron({tauMs:20,driveMv:20}));if(spec.label==='GPU')record.metrics.gpuUtilizationPercent=-1;else record.metrics.spikeCount+=3;sessionStorage.setItem(spec.key,JSON.stringify(record));return true;})()");
     await send("Page.navigate",{url:base+"/institute-preview/dossier"+spec.hash});
     await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),spec.label+" tampered session handoff");
     const forged=await evaluate("(()=>{const spec="+JSON.stringify(spec)+";return {feedback:document.querySelector(spec.feedback).textContent,hidden:document.querySelector(spec.apply).hidden,title:document.querySelector('[data-evidence-field=title]').value,pending:sessionStorage.getItem(spec.key),saved:JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1')).record.title}})()");
