@@ -129,6 +129,10 @@ body[data-area="academy"] .course-card{border-left:4px solid #2d6961}
 @media(max-width:420px){.preview-ribbon{padding:4px 10px;font-size:10px;line-height:1.35}.academic-study-card{padding:16px}.academic-pathways a{gap:10px}.academic-path-num{font-size:23px}.academic-method-grid{gap:9px}.academic-method-grid h3{font-size:21px}.academic-offering h3{font-size:26px}.academic-topline{font-size:9px}}
 
 
+/* Direct AND laboratory handoff is inactive until the full four-state model is visited. */
+[data-and-lab] [data-to-dossier]:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(.25)}
+[data-and-lab] [data-to-dossier]:not(:disabled){background:#295c4c;color:#fffefa;border-color:#78a894}
+[data-and-lab] [data-to-dossier]:not(:disabled):hover{background:#35735e}
 /* Available-first Academy directory: no fabricated schools, enrollments or awards. */
 body[data-area="academy"] .academy-learning-directory,body[data-area="academy"] .academy-laboratory-directory{margin:20px 0 0;padding:22px;background:#fffefa;border:1px solid #d6ddd5;color:#1c3634}
 body[data-area="academy"] .academy-directory-heading{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:9px 18px}
