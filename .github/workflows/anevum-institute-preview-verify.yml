@@ -9,6 +9,10 @@ on:
       - "scripts/ops/verify-anevum-institute-preview-browser.mjs"
       - "tests/anevum-institute-preview.test.mjs"
       - "tests/anevum-identity-review.test.mjs"
+      - "tests/member-learning-profile.test.mjs"
+      - "src/server/member-learning-profile.mjs"
+      - "src/server/member.mjs"
+      - "migrations-learning-preview/**"
       - "tests/anevum-local-member-card.test.mjs"
       - "docs/design/ANEVUM.WEB.DESIGN.2026-11-17.001.OPEN-INSTITUTE-LEARNING-PREVIEW.md"
       - ".github/workflows/anevum-institute-preview-verify.yml"
@@ -41,10 +45,11 @@ jobs:
           node --check apps/anevum-institute-preview/learner-ui.mjs
           node --check apps/anevum-institute-preview/local-member-schema.mjs
           node --check apps/anevum-institute-preview/local-member-client.mjs
+          node --check src/server/member-learning-profile.mjs
           node --check scripts/ops/anevum-institute-preview-server.mjs
           node --check scripts/ops/verify-anevum-institute-preview-browser.mjs
       - name: Verify isolated educational content and route contracts
-        run: node --test tests/anevum-institute-preview.test.mjs tests/anevum-evidence-schema.test.mjs tests/anevum-local-member-card.test.mjs tests/anevum-local-member.test.mjs tests/anevum-identity-review.test.mjs
+        run: node --test tests/anevum-institute-preview.test.mjs tests/anevum-evidence-schema.test.mjs tests/anevum-local-member-card.test.mjs tests/anevum-local-member.test.mjs tests/anevum-identity-review.test.mjs tests/member-learning-profile.test.mjs
       - name: Verify real Chromium interaction, accessibility and responsiveness
         run: node scripts/ops/verify-anevum-institute-preview-browser.mjs
       - name: Retain screenshots for visual review
@@ -56,4 +61,4 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-# No production route, DNS, Worker, account, auth or deployment operations.
+# Source-only private preview member-profile contracts; no production route, DNS, auth configuration or deployment operations.
