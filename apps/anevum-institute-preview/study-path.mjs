@@ -27,3 +27,33 @@ export function studyPathNav(activeUnitId,base="/institute-preview"){
     <p class="study-path-disclaimer"><span data-study-path-progress>0 of 3 practice checks recorded on this device.</span> This is not a course completion record or academic credit. Five units remain in development.</p>
   </nav>`;
 }
+
+/**
+ * Academy discovery uses the same source-controlled available units as the lesson reader.
+ * Practice labels are populated from existing device-local flags by client.mjs.
+ * No account, completion, credential or enrolled-student status is implied.
+ */
+export function academyLearningDirectory(base="/institute-preview"){
+  if(base!=="/institute-preview")throw new RangeError("Invalid preview base");
+  const planned=CFP_101.units.length-available.length;
+  const links=available.map(unit=>{
+    const tracked=unit.id!=="CFP-101-U03";
+    const label=tracked?"Check not recorded":"Preview lesson · not tracked";
+    return `<li class="academy-unit">
+      <a class="academy-unit-link" href="${base}${unit.lessonPath}" aria-label="Open lesson ${unit.number}: ${unit.title}">
+        <span class="academy-unit-number" aria-hidden="true">${unit.number}</span>
+        <span class="academy-unit-copy"><strong>${unit.title}</strong><small data-study-path-status="${unit.id}"${tracked?' data-practice-status="not-recorded"':''}>${label}</small></span>
+        <span class="academy-unit-arrow" aria-hidden="true">↗</span>
+      </a>
+    </li>`;
+  }).join("");
+  return `<section class="academy-learning-directory" data-study-path aria-labelledby="academy-available-title">
+    <div class="academy-directory-heading"><div><div class="kicker">01 / Available coursework</div>
+      <h2 id="academy-available-title">Choose a real lesson.</h2></div>
+      <span class="academy-directory-count">${available.length} published previews / ${planned} planned units</span></div>
+    <p class="academy-directory-intro">All three introductory CFP-101 lessons are available without an account. Each explains the underlying model and includes practice; this is not a completed eight-unit course.</p>
+    <ol class="academy-unit-list">${links}</ol>
+    <div class="academy-directory-foot"><span data-study-path-progress>0 of 3 practice checks recorded on this device.</span><span>Local practice only · No course credit or verified completion</span></div>
+    <a class="academy-directory-syllabus" href="${base}/academy/cfp-101">Inspect all ${CFP_101.units.length} syllabus units, including planned topics →</a>
+  </section>`;
+}
