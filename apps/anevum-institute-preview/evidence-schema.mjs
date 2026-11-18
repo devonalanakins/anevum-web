@@ -128,6 +128,69 @@ export function evidenceFromAndLabNotebook(value){
   });
 }
 
+
+/**
+ * Validate an untrusted GPU-slot scheduler JSON against a newly recomputed
+ * reference from the existing five fixed workloads. This is *mathematical*
+ * consistency checking only; neither file origin nor reviewer identity is
+ * authenticated. The caller MUST construct expected using the fixed,
+ * repository-owned CLUSTER_WORKLOADS and simulateCluster() implementation.
+ */
+export function validateClusterSchedulerNotebook(value, expected){
+  const errors=[];
+  if(!value||typeof value!=="object"||Array.isArray(value)){
+    return ["Cluster notebook must be a JSON object"];
+  }
+  if(value.format!=="anevum-cluster-scheduler-simulation/v1"
+    ||value.model!=="ideal-discrete-time-nonpreemptive-gpu-slots"
+    ||value.independentReview!==false){
+    errors.push("Unsupported or misrepresented simulated scheduling notebook");
+  }
+  if(![4,8].includes(value.capacity)||!["fifo","shortest"].includes(value.policy)){
+    errors.push("Unsupported simulated cluster capacity or scheduling policy");
+  }
+  if(!expected||typeof expected!=="object"||Array.isArray(expected)
+    ||expected.format!=="anevum-cluster-scheduler-simulation/v1"
+    ||expected.capacity!==value.capacity||expected.policy!==value.policy){
+    errors.push("Reference scheduling model does not match the notebook configuration");
+  }else if(JSON.stringify(value)!==JSON.stringify(expected)){
+    // This also denies unrecognized fields, forged claims, edited metrics,
+    // missing jobs, modified job order and altered timeline/provenance strings.
+    errors.push("Simulated scheduling results differ from the expected deterministic model");
+  }
+  return errors;
+}
+export function evidenceFromClusterSchedulerNotebook(value,expected){
+  const errors=validateClusterSchedulerNotebook(value,expected);
+  if(errors.length)throw new Error(errors.join("; "));
+  const name=value.policy==="fifo"?"strict FIFO":"shortest eligible job first";
+  const m=value.metrics;
+  const jobs=value.jobs.map(job=>
+    job.id.toUpperCase()+" "+job.label+": start "+job.startTick+
+    ", finish "+job.finishTick+", wait "+job.waitTicks+
+    " abstract ticks ("+job.gpus+" slots)"
+  );
+  return canonicalEvidence({
+    title:"Simulated GPU scheduling: "+name+" / "+value.capacity+" slots",
+    question:"For five simultaneous illustrative compute jobs, how does the selected GPU-slot scheduling policy affect waiting time, makespan and ideal slot utilization?",
+    method:"In the ANEVUM browser-only GPU scheduling simulator, select "+value.capacity+
+      " abstract GPU slots and "+name+". All five fixed example workloads arrive at tick 0."+
+      " Use the nonpreemptive discrete-time scheduling model, run the simulation and"+
+      " record each job's start, finish and queue wait. Repeat the same fixed settings."+
+      " No actual compute or networking occurs.",
+    observations:"SIMULATED ONLY — no hardware measurements.\n"+
+      "Policy: "+name+"; modeled GPU slots: "+value.capacity+"."+
+      "\nMakespan: "+m.makespanTicks+" abstract ticks; mean queue wait: "+m.meanWaitTicks+
+      " ticks; occupied slot-ticks: "+m.busyGpuTicks+
+      "; ideal modeled utilization: "+m.gpuUtilizationPercent+"%."+
+      "\n"+jobs.join("\n"),
+    limitations:"The imported file matched a fresh execution of the same deterministic educational model, not an independent observation."+
+      " Jobs arrive simultaneously and have fixed integer durations; there is no preemption, GPU memory, topology, network overhead, energy use, failure, queue priority or sustained-arrival workload."+
+      " These results are not GPU benchmarks, real training runs, authenticated evidence, external validation or a research credential.",
+    references:[]
+  });
+}
+
 /** The exact same schema functions run in Node tests and the browser sandbox. */
 export const EVIDENCE_BROWSER_MODULE=[
   "const EVIDENCE_FORMAT="+JSON.stringify(EVIDENCE_FORMAT)+";",
@@ -143,5 +206,7 @@ export const EVIDENCE_BROWSER_MODULE=[
   parseEvidenceEnvelope.toString(),
   validateAndLabNotebook.toString(),
   evidenceFromAndLabNotebook.toString(),
-  "export {EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,normalizeEvidence,validateEvidence,canonicalEvidence,digestEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook};"
+  validateClusterSchedulerNotebook.toString(),
+  evidenceFromClusterSchedulerNotebook.toString(),
+  "export {EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,normalizeEvidence,validateEvidence,canonicalEvidence,digestEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook,validateClusterSchedulerNotebook,evidenceFromClusterSchedulerNotebook};"
 ].join("\n")+"\n";
