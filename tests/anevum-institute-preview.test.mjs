@@ -141,7 +141,7 @@ test("versioned curriculum JSON is portable, accurate and fail-closed on invalid
   assert.match(manifestPage,/Download portable curriculum metadata/);
   assert.match(manifestPage,/version 0\.3\.0/);
   const invalid=structuredClone(manifest);
-  invalid.units[2].availability="preview";
+  invalid.units[3].availability="preview";
   assert.ok(validateCurriculum(invalid).some(error=>error.includes("Lesson availability mismatch")));
   const badPrerequisite=structuredClone(manifest);
   badPrerequisite.units[0].prerequisites=["CFP-101-U02"];
