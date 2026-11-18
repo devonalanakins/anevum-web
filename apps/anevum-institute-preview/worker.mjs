@@ -5,6 +5,7 @@
 import {INSTITUTE_CSS} from "./styles.mjs";
 
 import {INSTITUTE_CLIENT} from "./client.mjs";
+import {FRONTIER_GL_CLIENT} from "./frontier-gl.mjs";
 import {TRANSISTOR_LESSON_HTML} from "./transistor-lesson.mjs";
 import {CFP_101} from "./curriculum.mjs";
 import {studyToolsHtml} from "./study-tools.mjs";
@@ -175,6 +176,7 @@ const ASSETS=new Map([
   [BASE+"/curriculum/cfp-101.json",["application/json; charset=utf-8",JSON.stringify(CFP_101,null,2)+"\n"]],
   [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS]],
   [BASE+"/client.js",["text/javascript; charset=utf-8",INSTITUTE_CLIENT]],
+  [BASE+"/frontier-gl.js",["text/javascript; charset=utf-8",FRONTIER_GL_CLIENT]],
   [BASE+"/evidence-schema.js",["text/javascript; charset=utf-8",EVIDENCE_BROWSER_MODULE]],
   [BASE+"/evidence-workbench.js",["text/javascript; charset=utf-8",EVIDENCE_WORKBENCH_CLIENT]],
   [BASE+"/mark.svg",["image/svg+xml; charset=utf-8",ANEVUM_MARK_SVG]],
