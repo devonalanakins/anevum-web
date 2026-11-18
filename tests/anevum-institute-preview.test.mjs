@@ -38,7 +38,7 @@ test("owner Safari release checklist matches implemented preview and makes no re
   assert.match(guide,/\*\*PENDING\*\*/);
   assert.match(guide,/NO-GO/);
   assert.match(guide,/Do not enter client\/patient records/);
-  assert.match(guide,/not a public production site/);
+  assert.match(guide,/is \\*\\*not\\*\\* a public production site/);
   assert.match(guide,/V5 separate beta workers.dev availability/);
   assert.doesNotMatch(guide,/\b(iPhone Safari|actual owner acceptance) (?:is|was) (?:approved|completed|verified)\b/i);
 });
