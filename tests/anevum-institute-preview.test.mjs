@@ -246,7 +246,7 @@ test("new institute identity is an original isolated vector system",async()=>{
   assert.match(home,/Don\x27t just study the frontier/);
   assert.match(home,/NO PHYSICAL FACILITIES CLAIMED/);
   assert.match(home,/RECOGNITION \/ 003/);
-  assert.match(home,/MEMBER/);
+  assert.match(home,/Document the evidence/);
   assert.match(home,/Design review:/);
   assert.match(lesson,/class="lesson-article"/);
   const nav=home.match(/<nav class="desk-nav" aria-label="Primary navigation">([\s\S]*?)<\/nav>/)?.[1]||"";
