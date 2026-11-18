@@ -7,7 +7,9 @@ const host="127.0.0.1",port=4183;
 const mediaDir=new URL("../../apps/anevum-institute-preview/media/",import.meta.url);
 const REVIEW_BLOBS=Object.freeze({
   "observatory-review-desktop.webp":"af1e38f88853c67a1c98b0d6b01ff83f8f192bb5",
-  "observatory-review-mobile.webp":"408331d10e3e618ca10be55ce8e85925cafe3051"
+  "observatory-review-mobile.webp":"408331d10e3e618ca10be55ce8e85925cafe3051",
+  "facility-concept-v2-desktop.webp":"75724819a8243e72c71a3ca807cdbe70d04bc2d6",
+  "facility-concept-v2-mobile.webp":"7991d4919788079f56f05e94a132cd46f3be5592"
 });
 async function loadReviewMedia(name){
   if(!Object.hasOwn(REVIEW_BLOBS,name))return null;
