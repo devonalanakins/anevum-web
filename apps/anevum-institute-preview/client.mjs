@@ -163,6 +163,25 @@ export const INSTITUTE_CLIENT = String.raw`
       }
     });
   });
+  // Cinematic MP4 only exists after reviewed assets have been bundled.
+  // No remote video, simulated 3D, or motion for reduced-motion/Save-Data users.
+  var frontierVideo=document.querySelector("[data-frontier-video]");
+  if(frontierVideo){
+    var preferStill=window.matchMedia("(prefers-reduced-motion: reduce)");
+    var conserveData=navigator.connection&&navigator.connection.saveData===true;
+    function syncFrontierMotion(){
+      if(preferStill.matches||conserveData||document.hidden){
+        frontierVideo.pause();
+        frontierVideo.currentTime=0;
+      }else{
+        var attempt=frontierVideo.play();
+        if(attempt&&typeof attempt.catch==="function")attempt.catch(function(){});
+      }
+    }
+    if(typeof preferStill.addEventListener==="function")preferStill.addEventListener("change",syncFrontierMotion);
+    document.addEventListener("visibilitychange",syncFrontierMotion);
+    syncFrontierMotion();
+  }
   var answers=[].slice.call(document.querySelectorAll("[data-answer]"));
   if(answers.length){
     var feedback=document.getElementById("answer-feedback");
