@@ -9,7 +9,7 @@ import {FRONTIER_GL_CLIENT} from "./frontier-gl.mjs";
 import {TRANSISTOR_LESSON_HTML} from "./transistor-lesson.mjs";
 import {CFP_101} from "./curriculum.mjs";
 import {studyToolsHtml} from "./study-tools.mjs";
-import {frontierHome,frontierRecognition,FRONTIER_REVIEW_ART} from "./frontier-society.mjs";
+import {frontierHome,frontierRecognition,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART} from "./frontier-society.mjs";
 import {dossierPage} from "./dossier-ui.mjs";
 import {EVIDENCE_BROWSER_MODULE} from "./evidence-schema.mjs";
 import {EVIDENCE_WORKBENCH_CLIENT} from "./evidence-workbench.mjs";
@@ -183,7 +183,7 @@ const ASSETS=new Map([
   [BASE+"/observatory.svg",["image/svg+xml; charset=utf-8",ANEVUM_OBSERVATORY_SVG]]
 ]);
 
-const REVIEW_MEDIA_FILES=new Set([FRONTIER_REVIEW_ART.desktop.name,FRONTIER_REVIEW_ART.mobile.name]);
+const REVIEW_MEDIA_FILES=new Set([FRONTIER_REVIEW_ART.desktop.name,FRONTIER_REVIEW_ART.mobile.name,FACILITY_DESIGN_ART.desktop.name,FACILITY_DESIGN_ART.mobile.name]);
 const IMAGE_ASSETS=new Set(["lab-hero-v1.webp","lab-archive-v1.webp","research-generation-v1.webp","research-computation-v1.webp","research-worlds-v1.webp","rhen-generative-v1.webp"]);
 const SECURITY={"Content-Security-Policy":"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; media-src 'self'; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'","X-Frame-Options":"DENY","X-Content-Type-Options":"nosniff","Referrer-Policy":"no-referrer","X-Robots-Tag":"noindex, nofollow, noarchive","Cache-Control":"no-store","X-Anevum-Surface":"open-institute-design-review-v1"};
 
