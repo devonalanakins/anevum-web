@@ -356,35 +356,12 @@ async function interactions(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
   await navigate("/institute-preview");
-  await waitFor(()=>evaluate("['active','fallback'].includes(document.querySelector('[data-frontier-gl]')?.dataset.fxStatus)"),"WebGL startup or clean fallback");
-  const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,frames:Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0),shader:document.querySelector('[data-frontier-gl]').width>0,opacity:Number(getComputedStyle(document.querySelector('[data-frontier-gl]')).opacity),still:document.querySelector('.facility-poster').naturalWidth>700}))()");
-  verify(["active","fallback"].includes(fx.status)&&fx.still&&(fx.status!=="active"||fx.opacity<=0.18),"WebGL must draw or fall back without obscuring high-definition facility art",fx);
-  if(fx.status==="active"){
-    await waitFor(()=>evaluate("Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0)>=2"),"shader animation frames");
-    await screenshot("home-webgl-active-390",false);
-    await send("Emulation.setDeviceMetricsOverride",{width:1440,height:900,deviceScaleFactor:1,mobile:false});
-    await navigate("/institute-preview");
-    await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='active'&&Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0)>=2"),"desktop WebGL shader frames");
-    await screenshot("home-webgl-active-1440",false);
-    await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
-    console.log("INSTITUTE_WEBGL_RENDER_QA_PASS",JSON.stringify({...fx,desktopFrames:true,mobileScreenshot:true,desktopScreenshot:true}));
-  }else console.log("INSTITUTE_WEBGL_FALLBACK_QA_PASS",JSON.stringify(fx));
+  const institution=await evaluate("(()=>({hero:!!document.querySelector('.institution-home'),canvas:document.querySelectorAll('.institution-home canvas').length,video:document.querySelectorAll('.institution-home video').length,images:document.querySelectorAll('.institution-home img').length,primary:!!document.querySelector('.academic-primary[href=\"/institute-preview/academy\"]'),fieldCount:document.querySelectorAll('.academic-field-list li').length,background:getComputedStyle(document.querySelector('.academic-intro')).backgroundImage}))()");
+  verify(institution.hero&&institution.canvas===0&&institution.video===0&&institution.images===0&&institution.primary&&institution.fieldCount===6&&institution.background==="none","University-style homepage must not run decorative visual rendering",institution);
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
-  await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='reduced-motion'"),"WebGL runtime preference switch");
-  const stopped=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,display:getComputedStyle(document.querySelector('[data-frontier-gl]')).display}))()");
-  verify(stopped.status==="reduced-motion"&&stopped.display==="none","WebGL must stop and hide immediately when user enables reduced motion",stopped);
-  console.log("INSTITUTE_WEBGL_ACCESSIBILITY_QA_PASS",JSON.stringify({initial:fx.status,motionStopped:true,stillAvailable:true}));
-  // Force a genuine missing GPU context before page scripts run: the still must stay usable.
-  const blockedGL=await send("Page.addScriptToEvaluateOnNewDocument",{source:"(()=>{const previous=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl')return null;return previous.apply(this,[type,...args]);};})()"});
-  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
-  await navigate("/institute-preview");
-  await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='fallback'"),"no-WebGL fallback");
-  const disabledGL=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,art:document.querySelector('.facility-poster').naturalWidth>700,title:document.querySelector('main h1').textContent}))()");
-  verify(disabledGL.status==="fallback"&&disabledGL.art&&disabledGL.title.includes("frontier"),"WebGL absence must preserve readable architecture and learning entry",disabledGL);
-  await send("Page.removeScriptToEvaluateOnNewDocument",{identifier:blockedGL.identifier});
-  console.log("INSTITUTE_WEBGL_NO_GPU_QA_PASS",JSON.stringify(disabledGL));
-  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
-
+  const reduced=await evaluate("(()=>({motion:getComputedStyle(document.querySelector('.academic-hero-copy')).animationDuration,canvas:document.querySelectorAll('.institution-home canvas').length,primary:document.querySelector('.academic-primary').textContent.trim()}))()");
+  verify(reduced.canvas===0&&reduced.primary.includes("academic catalogue"),"Reduced-motion academic homepage must retain real navigation",reduced);
+  console.log("ANEVUM_INSTITUTION_EDITORIAL_QA_PASS",JSON.stringify({noVisualMedia:true,realAcademicRoutes:true,reducedMotionAccessible:true}));
   await navigate("/institute-preview/learn/cfp-101/transistor-switching");
   const inverter=await evaluate("(()=>{const root=document.querySelector('[data-inverter-demo]');const t=root.querySelector('[data-inverter-toggle]');const a=root.querySelector('[data-inverter-input]');const q=root.querySelector('[data-inverter-output]');const states=[];const snapshot=()=>states.push([a.textContent,q.textContent]);snapshot();t.click();snapshot();const high=t.getAttribute('aria-pressed');t.click();snapshot();const wrong=document.querySelector('[data-inverter-answer=high]');wrong.click();const incorrect=document.querySelector('#inverter-feedback').textContent;const correct=document.querySelector('[data-inverter-answer=low]');correct.click();return {states,high,incorrect,feedback:document.querySelector('#inverter-feedback').textContent,progress:document.querySelector('[data-local-progress]').textContent,completed:JSON.parse(localStorage.getItem('anevum.institute.cfp101.preview.v1')).transistor};})()");
   verify(JSON.stringify(inverter.states)===JSON.stringify([["0","1"],["1","0"],["0","1"]])&&inverter.high==="true","Ideal inverter toggle or truth table invalid",inverter);
