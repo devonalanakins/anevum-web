@@ -420,6 +420,8 @@ body[data-area="society"] .mast,body[data-area="recognition"] .mast{background:#
 .frontier-media[data-art-source="generated-facility-v2-review"] .frontier-facility-silhouette{display:none}
 .frontier-media[data-art-source="generated-facility-v2-review"] .frontier-atmosphere{z-index:2;opacity:.25}
 .frontier-media[data-art-source="generated-facility-v2-review"] .frontier-gl{z-index:3}
+.frontier-media[data-art-source="generated-facility-v2-review"][data-fx-status="active"] .frontier-gl{opacity:.17;mix-blend-mode:screen}
+@media(max-width:750px){.frontier-media[data-art-source="generated-facility-v2-review"][data-fx-status="active"] .frontier-gl{opacity:.12}}
 
 .frontier-facility-art{position:absolute;inset:0;background:
   radial-gradient(ellipse at 78% 38%,#608b9444 0,transparent 28%),
