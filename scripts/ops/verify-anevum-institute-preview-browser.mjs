@@ -224,6 +224,40 @@ async function clusterSchedulerBrowserQA(){
   console.log("ANEVUM_CLUSTER_SCHEDULER_BROWSER_QA_PASS",JSON.stringify({initial,model:result,comparison:compared,export:download.name,rerun:newCapacity}));
 }
 
+
+async function clusterResearchBrowserQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await navigate("/institute-preview/laboratory/cluster-scheduling");
+  await waitFor(()=>evaluate("document.querySelector('[data-cluster-lab]')?.dataset.clusterReady==='true'"),"GPU model module ready");
+  const notebook=await evaluate("(async()=>{let contents=null,filename='';const prev=URL.createObjectURL;const intercept=e=>{if(e.target.matches('a[download]')){filename=e.target.download;e.preventDefault();}};document.addEventListener('click',intercept,true);URL.createObjectURL=blob=>{contents=blob;return 'blob:compute-research-qa';};try{document.querySelector('[data-cluster-run]').click();document.querySelector('[data-cluster-export]').click();return {filename,record:contents?JSON.parse(await contents.text()):null};}finally{URL.createObjectURL=prev;document.removeEventListener('click',intercept,true);}})()");
+  verify(notebook.filename==="anevum-cluster-scheduler-simulation.json"&&notebook.record?.jobs?.length===5&&notebook.record?.independentReview===false,"Browser simulator failed to export research notebook",notebook);
+  await navigate("/institute-preview/dossier");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.getAttribute('data-evidence-ready')==='true'"),"Research Desk ready for GPU import");
+  async function stage(data){
+    const raw=JSON.stringify(JSON.stringify(data));
+    return evaluate("(async()=>{const input=document.querySelector('[data-cluster-import]');const file=new File(["+raw+"],'gpu-schedule.json',{type:'application/json'});const dt=new DataTransfer();dt.items.add(file);input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));for(let i=0;i<80&&document.querySelector('[data-cluster-feedback]').textContent.startsWith('Checking');i++)await new Promise(r=>setTimeout(r,15));return {feedback:document.querySelector('[data-cluster-feedback]').textContent,staged:!document.querySelector('[data-cluster-apply]').hidden,title:document.querySelector('[data-evidence-field=title]').value,scope:document.querySelector('[data-evidence-course]').textContent,saved:localStorage.getItem('anevum.institute.evidence-draft.v1')};})()");
+  }
+  const changed=structuredClone(notebook.record);
+  changed.metrics.gpuUtilizationPercent=100;
+  const rejected=await stage(changed);
+  verify(rejected.feedback.includes("GPU scheduling import rejected")&&!rejected.staged&&rejected.title===""&&rejected.scope==="CFP-101"&&rejected.saved===null,"Tampered scheduling metrics changed local Research Desk",rejected);
+  const verified=await stage(notebook.record);
+  verify(verified.feedback.startsWith("Checked all five workloads")&&verified.staged&&verified.title===""&&verified.saved===null,"Verified GPU simulation must stage without replacing draft",verified);
+  const applied=await evaluate("(()=>{document.querySelector('[data-cluster-apply]').click();return {title:document.querySelector('[data-evidence-field=title]').value,scope:document.querySelector('[data-evidence-course]').textContent,observations:document.querySelector('[data-evidence-field=observations]').value,limitations:document.querySelector('[data-evidence-field=limitations]').value,stored:localStorage.getItem('anevum.institute.evidence-draft.v1')};})()");
+  verify(applied.title.includes("Simulated GPU scheduling")&&applied.scope==="COMPUTE-LAB-001"&&applied.observations.includes("SIMULATED ONLY")&&applied.limitations.includes("not GPU benchmarks")&&applied.stored===null,"GPU export did not produce truthful, unsaved scientific draft",applied);
+  await evaluate("document.querySelector('[data-evidence-save]').click()");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-status]').textContent.startsWith('Personal draft saved')"),"GPU draft explicit browser-local save");
+  const saved=await evaluate("(()=>{const r=JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1'));return {kind:r.record.kind,scope:r.record.courseId,hash:r.digest,title:r.record.title};})()");
+  verify(saved.kind==="personal-unreviewed-draft"&&saved.scope==="COMPUTE-LAB-001"&&/^sha256:[0-9a-f]{64}$/.test(saved.hash),"Saved GPU draft had incorrect scope, review status or integrity format",saved);
+  await navigate("/institute-preview/dossier");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.getAttribute('data-evidence-ready')==='true'"),"GPU draft reload");
+  const restored=await evaluate("(()=>({scope:document.querySelector('[data-evidence-course]').textContent,title:document.querySelector('[data-evidence-field=title]').value,hash:document.querySelector('[data-evidence-digest]').textContent}))()");
+  verify(restored.scope==="COMPUTE-LAB-001"&&restored.title===saved.title&&restored.hash===saved.hash,"Saved GPU evidence draft did not restore consistently",restored);
+  const exported=await evaluate("(async()=>{let blob=null,name='';const before=URL.createObjectURL;const intercept=e=>{if(e.target.matches('a[download]')){e.preventDefault();name=e.target.download;}};document.addEventListener('click',intercept,true);URL.createObjectURL=data=>{blob=data;return 'blob:gpu-evidence-qa';};try{document.querySelector('[data-evidence-export]').click();for(let i=0;i<40&&!blob;i++)await new Promise(r=>setTimeout(r,15));return {name,record:blob?JSON.parse(await blob.text()):null};}finally{URL.createObjectURL=before;document.removeEventListener('click',intercept,true);}})()");
+  verify(exported.name==="anevum-personal-evidence-COMPUTE-LAB-001.json"&&exported.record?.digest===saved.hash&&exported.record?.record?.courseId==="COMPUTE-LAB-001","Portable research record did not retain laboratory scope",exported);
+  console.log("ANEVUM_CLUSTER_TO_RESEARCH_QA_PASS",JSON.stringify({tamperRejected:true,stagedWithoutSaving:true,scope:saved.scope,restored:true,exported:exported.name}));
+}
+
 async function interactions(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
@@ -409,6 +443,7 @@ try{
   await halfAdderBrowserQA();
   await clusterSchedulerBrowserQA();
   await interactions();
+  await clusterResearchBrowserQA();
   console.log("ANEVUM_INSTITUTE_BROWSER_QA_PASS");
 }finally{
   for(const item of pending.values()){clearTimeout(item.timer);item.reject(Error("Browser ending"));}pending.clear();
