@@ -471,7 +471,8 @@ export const INSTITUTE_CLIENT = String.raw`
     var previous=null;
     var root="/institute-preview";
     var pages=[
-      ["Society",root,"institute overview"],
+      ["Institute",root,"institute overview"],
+      ["Research & Methods",root+"/research","research models method scientific simulation inquiry"],
       ["Academy",root+"/academy","disciplines schools catalog"],
       ["Computing From First Principles",root+"/academy/cfp-101","cfp 101 syllabus curriculum"],
       ["Transistor switching",root+"/learn/cfp-101/transistor-switching","semiconductor cmos lesson 01"],
