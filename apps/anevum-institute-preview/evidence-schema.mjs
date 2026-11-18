@@ -15,7 +15,7 @@ export function normalizeEvidence(input){
   return {
     schemaVersion:1,
     kind:"personal-unreviewed-draft",
-    courseId:"CFP-101",
+    courseId:typeof input.courseId==="string"?input.courseId:"CFP-101",
     title:typeof input.title==="string"?input.title.trim():"",
     question:typeof input.question==="string"?input.question.trim():"",
     method:typeof input.method==="string"?input.method.trim():"",
@@ -30,7 +30,7 @@ export function validateEvidence(input){
   for(const key of Object.keys(input))if(!FIELDS.includes(key))errors.push("Unsupported evidence field: "+key);
   if(input.schemaVersion!==1)errors.push("Unsupported schema version");
   if(input.kind!=="personal-unreviewed-draft")errors.push("Record must remain an unreviewed personal draft");
-  if(input.courseId!=="CFP-101")errors.push("Unknown course identifier");
+  if(input.courseId!=="CFP-101"&&input.courseId!=="COMPUTE-LAB-001")errors.push("Unknown course identifier");
   for(const [name,min,max] of [["title",8,EVIDENCE_LIMITS.title],["question",12,EVIDENCE_LIMITS.question],["method",35,EVIDENCE_LIMITS.method],["observations",15,EVIDENCE_LIMITS.observations],["limitations",12,EVIDENCE_LIMITS.limitations]]){
     const value=input[name];
     if(typeof value!=="string"||value.trim().length<min||value.length>max)errors.push(name+" must be "+min+"-"+max+" characters");
@@ -171,6 +171,7 @@ export function evidenceFromClusterSchedulerNotebook(value,expected){
     " abstract ticks ("+job.gpus+" slots)"
   );
   return canonicalEvidence({
+    courseId:"COMPUTE-LAB-001",
     title:"Simulated GPU scheduling: "+name+" / "+value.capacity+" slots",
     question:"For five simultaneous illustrative compute jobs, how does the selected GPU-slot scheduling policy affect waiting time, makespan and ideal slot utilization?",
     method:"In the ANEVUM browser-only GPU scheduling simulator, select "+value.capacity+
