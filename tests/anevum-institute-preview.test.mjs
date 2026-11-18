@@ -143,10 +143,13 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
 test("frontier society and evidence-based recognition distinguish working activities from future claims",async()=>{
   const home=await(await req("")).text();
   const recognition=await(await req("/recognition")).text();
-  assert.match(home,/Don't just study the frontier/);
-  assert.match(home,/Work on it\.<\/em>/);
+  assert.match(home,/The frontier <em>is open\.<\/em>/);
+  assert.match(home,/Begin CFP-101/);
+  assert.match(home,/Enter the laboratory/);
+  assert.match(home,/class="facility-link-dock"/);
   assert.match(home,/frontier-hero-inner/);
-  assert.match(home,/research is a verb/i);
+  assert.match(home,/ANEVUM \/ 001/);
+  assert.match(home,/INDEPENDENT SCIENTIFIC EDUCATION/);
   assert.match(home,/The work is the <em>curriculum/);
   assert.match(home,/NOT ISSUED/);
   assert.match(home,/TWO PREVIEW LESSONS AVAILABLE/);
@@ -164,18 +167,21 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.equal(RECOGNITION_POLICY.profilesEnabled,false);
   assert.equal(RECOGNITION_POLICY.reviewEnabled,false);
   assert.equal(FRONTIER_MEDIA.assetsBundled,false);
-  assert.equal(FRONTIER_REVIEW_ART.previewEnabled,true);
+  assert.equal(FRONTIER_REVIEW_ART.previewEnabled,false);
   assert.equal(FRONTIER_REVIEW_ART.productionApproved,false);
   assert.equal(FRONTIER_MEDIA.ownerApproved,false);
   assert.match(FRONTIER_MEDIA.desktop.name,/\.webp$/);
   assert.match(FRONTIER_MEDIA.overlay.name,/\.mp4$/);
   assert.match(FRONTIER_MEDIA.desktop.sha256,/^[a-f0-9]{64}$/);
   assert.match(FRONTIER_MEDIA.overlay.sha256,/^[a-f0-9]{64}$/);
-  assert.match(frontierMediaMarkup("/institute-preview"),/class="frontier-art"/);
+  assert.match(frontierMediaMarkup("/institute-preview"),/class="frontier-facility-art"/);
+  assert.doesNotMatch(frontierHome("/institute-preview"),/observatory-review-desktop\.webp|observatory-review-mobile\.webp/);
   assert.match(frontierMediaMarkup("/institute-preview"),/data-frontier-gl/);
   assert.match(home,/data-frontier-visual/);
   assert.doesNotMatch(frontierHome("/institute-preview"),/<video\b|frontier-cavern-desktop\.webp|atmosphere-screenblend\.mp4/);
-  assert.match(home,/src="\/institute-preview\/media\/observatory-review-desktop\.webp"/);
+  assert.match(home,/data-art-source="facility-revision-pending-photo"/);
+  assert.match(home,/class="hero frontier-hero frontier-hero--facility"/);
+  assert.match(home,/href="\/institute-preview\/dossier"/);
   assert.doesNotMatch(home,/frontier-cavern-desktop\.webp/);
   assert.match(frontierHome("/institute-preview"),/href="\/institute-preview\/academy/);
   assert.match(frontierRecognition("/institute-preview"),/data-evidence-panel/);
@@ -235,9 +241,9 @@ test("archived high-resolution hero review blobs preserve provenance and fail cl
   }
   assert.equal((await req("/media/private.webp")).status,404);
   const html=await(await req("")).text();
-  assert.match(html,/data-art-source="pr813-review"/);
-  assert.match(html,/observatory-review-desktop\.webp/);
-  assert.match(html,/observatory-review-mobile\.webp/);
+  assert.match(html,/data-art-source="facility-revision-pending-photo"/);
+  assert.doesNotMatch(html,/src="\/institute-preview\/media\/observatory-review-desktop\.webp"/);
+  assert.doesNotMatch(html,/srcset="\/institute-preview\/media\/observatory-review-mobile\.webp"/);
   assert.doesNotMatch(html,/frontier-cavern-desktop\.webp/);
 });
 
@@ -325,6 +331,9 @@ test("styles are complete, mobile responsive and reduced-motion safe",async()=>{
   assert.match(css,/\.frontier-hero/);
   assert.match(css,/\.frontier-evidence-list/);
   assert.match(css,/\.frontier-poster/);
+  assert.match(css,/\.frontier-hero--facility/);
+  assert.match(css,/\.frontier-facility-art/);
+  assert.match(css,/\.facility-link-dock/);
   assert.match(css,/\.frontier-gl/);
   assert.match(css,/\[data-fx-status="active"\]/);
   assert.match(css,/\.frontier-gl\{display:none!important/);
@@ -358,8 +367,8 @@ test("new institute identity is an original isolated vector system",async()=>{
   const lesson=await (await req("/learn/cfp-101/logic-gates")).text();
   assert.match(home,/src="\/institute-preview\/mark\.svg"/);
   assert.match(home,/rel="icon" type="image\/svg\+xml"/);
-  assert.match(home,/Don\x27t just study the frontier/);
-  assert.match(home,/NO PHYSICAL FACILITIES CLAIMED/);
+  assert.match(home,/The frontier <em>is open\.<\/em>/);
+  assert.match(home,/NOT A PHYSICAL CAMPUS/);
   assert.match(home,/RECOGNITION \/ 003/);
   assert.match(home,/Document the evidence/);
   assert.match(home,/Design review:/);
