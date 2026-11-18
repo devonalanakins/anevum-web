@@ -193,7 +193,7 @@ test("CFP-101 reader exposes curriculum-grounded navigation without invented com
     assert.equal((html.match(/data-study-path(?: |\>)/g)||[]).length,1);
     assert.match(html,/aria-label="CFP-101 available lesson navigation"/);
     assert.equal((html.match(/class="study-path-link"/g)||[]).length,3);
-    assert.equal((html.match(/aria-current="page"/g)||[]).length,2,"Expected one mast navigation and one current lesson");
+    assert.equal((html.match(/aria-current="page"/g)||[]).length,3,"Expected desktop and mobile mast navigation plus current lesson");
     assert.match(html,/This is not a course completion record or academic credit/);
     assert.match(html,/Five units remain in development/);
     assert.match(html,/data-study-path-progress/);
@@ -205,7 +205,7 @@ test("CFP-101 reader exposes curriculum-grounded navigation without invented com
     assert.ok(html.includes('data-study-lesson="'+id+'"'),"Notes must exist for "+id);
   }
   const js=await (await req("/client.js")).text();
-  assert.match(js,/CFP-101-U0\\[123\\]/,"All three local notebooks must be initialized");
+  assert.ok(js.includes('/^CFP-101-U0[123]$/'),"All three local notebooks must be initialized");
   assert.match(js,/data-study-path-status/);
   assert.match(js,/Lesson U03 remains untracked/);
   const css=await (await req("/styles.css")).text();
