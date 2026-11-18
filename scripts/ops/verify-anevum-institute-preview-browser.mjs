@@ -170,6 +170,24 @@ async function compactCourseUsabilityQA(){
     const course=await evaluate("(()=>{const a=document.querySelector('[data-course-resume]');return {href:a?.getAttribute('href'),text:a?.textContent,display:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,planned:document.querySelectorAll('[data-unit-availability=planned]').length};})()");
     verify(course.href==="/institute-preview"+entry[1]&&course.text.includes(entry[2])&&course.display===8&&course.planned===5,"Course syllabus continuation or availability incorrect",{stage:entry[0],course});
   }
+  // The learner can move among three real lessons, with only existing local checks recorded.
+  for(const [lessonPath,unitId] of [
+    ["/learn/cfp-101/transistor-switching","CFP-101-U01"],
+    ["/learn/cfp-101/logic-gates","CFP-101-U02"],
+    ["/learn/cfp-101/half-adders","CFP-101-U03"]
+  ]){
+    await navigate("/institute-preview"+lessonPath);
+    const nav=await evaluate("(()=>{const root=document.querySelector('[data-study-path]');return {current:root?.querySelector('[aria-current=page]')?.getAttribute('href'),count:root?.querySelectorAll('.study-path-link').length,labels:[...root.querySelectorAll('[data-study-path-status]')].map(x=>({unit:x.getAttribute('data-study-path-status'),text:x.textContent.trim()})),note:document.querySelector('[data-study-lesson]')?.getAttribute('data-study-lesson'),scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}})()");
+    verify(nav.current==="/institute-preview"+lessonPath&&nav.count===3&&nav.note===unitId&&nav.scroll<=nav.width+1&&nav.labels[2].text.includes("not tracked"),"Accessible study path must show three real lessons without inventing lesson 03 completion",{lessonPath,nav});
+  }
+  await navigate("/institute-preview/learn/cfp-101/half-adders");
+  const notes=await evaluate("(()=>{const p=document.querySelector('[data-study-lesson=CFP-101-U03]');const t=p?.querySelector('[data-study-text]');const save=p?.querySelector('[data-study-save]');if(!t||!save)return null;t.value='Local test notebook for combinational arithmetic';t.dispatchEvent(new Event('input',{bubbles:true}));save.click();return {message:p.querySelector('[data-study-status]')?.textContent,value:t.value,stored:localStorage.getItem('anevum.institute.study.v1.CFP-101-U03')}})()");
+  verify(notes&&notes.stored?.includes("Local test notebook")&&notes.message?.includes("saved"),"Lesson 03 personal notebook save must work without a backend",notes);
+  await navigate("/institute-preview/learn/cfp-101/half-adders");
+  const restoredNote=await evaluate("document.querySelector('[data-study-lesson=CFP-101-U03] [data-study-text]')?.value");
+  verify(restoredNote==="Local test notebook for combinational arithmetic","Lesson 03 notebook must restore on reload",restoredNote);
+  await evaluate("localStorage.removeItem('anevum.institute.study.v1.CFP-101-U03')");
+  console.log("ANEVUM_STUDY_PATH_AND_U03_NOTES_QA_PASS");
   const toggled=await evaluate("(()=>{const b=document.querySelector('[data-unit-filter=available]');b.click();return {pressed:b.getAttribute('aria-pressed'),shown:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,hidden:document.querySelectorAll('[data-unit-availability][hidden]').length,status:document.querySelector('[data-unit-filter-status]').textContent};})()");
   verify(toggled.pressed==="true"&&toggled.shown===3&&toggled.hidden===5&&toggled.status.includes("hidden, not removed"),"Available-only course filtering is inaccurate",toggled);
   const restored=await evaluate("(()=>{document.querySelector('[data-unit-filter=all]').click();return {shown:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,selected:document.querySelector('[data-unit-filter=all]').getAttribute('aria-pressed')};})()");
