@@ -269,9 +269,13 @@ body[data-area="society"] .mast,body[data-area="recognition"] .mast{background:#
 .frontier-art{position:absolute;inset:0;background:linear-gradient(95deg,#0710164d,transparent 55%),url("/institute-preview/assets/research-computation-v1.webp") 63% 52%/cover no-repeat;background-color:#0b1a21;filter:contrast(1.12) saturate(.82)}
 .frontier-atmosphere{position:absolute;inset:0;background:radial-gradient(ellipse at 84% 40%,#d9a56b33,transparent 39%),radial-gradient(ellipse at 52% 95%,#618e9f40,transparent 56%);opacity:.77;mix-blend-mode:screen;animation:frontier-atmosphere 15s ease-in-out infinite alternate}
 @keyframes frontier-atmosphere{from{transform:translate3d(-1.2%,0,0);opacity:.46}to{transform:translate3d(1.2%,-.7%,0);opacity:.82}}
-.frontier-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:64% 50%;filter:contrast(1.08) saturate(.84)}
+.frontier-picture{position:absolute;inset:0;z-index:1;display:block;overflow:hidden}
+.frontier-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:56% 49%;filter:contrast(1.035) saturate(.89) brightness(.89)}
+.frontier-media[data-art-source="pr813-review"] .frontier-atmosphere{z-index:2}
+.frontier-media[data-art-source="pr813-review"] .frontier-art{z-index:0}
+.frontier-media[data-art-source="pr813-review"][data-fx-status="active"] .frontier-poster{filter:contrast(1.045) saturate(.9) brightness(.9)}
 .frontier-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:screen;opacity:.47;pointer-events:none}
-@media(max-width:650px){.frontier-poster{object-position:60% 36%}}
+@media(max-width:650px){.frontier-poster{object-position:50% 43%;filter:brightness(.66) saturate(.88)}}
 @media(prefers-reduced-motion:reduce){.frontier-video{display:none}}
 .frontier-hero-inner{z-index:2;max-width:var(--max);width:100%;padding-block:clamp(105px,15vh,175px) clamp(140px,17vh,205px)}
 .frontier-hero-inner .kicker{color:#b7cfcd;font-size:10px;letter-spacing:.17em;margin-top:35px}
