@@ -2,8 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   EVIDENCE_BROWSER_MODULE,EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,
-  normalizeEvidence,canonicalEvidence,validateEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook
+  normalizeEvidence,canonicalEvidence,validateEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook,validateClusterSchedulerNotebook,evidenceFromClusterSchedulerNotebook
 } from "../apps/anevum-institute-preview/evidence-schema.mjs";
+import {CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE} from "../apps/anevum-institute-preview/cluster-scheduler-model.mjs";
 
 const example=()=>({
   schemaVersion:1,
@@ -141,4 +142,73 @@ test("rejects manipulated AND gate output, duplicate inputs, fake model, incompl
   partial.coverage={observed:2,possible:4,complete:false};
   assert.deepEqual(validateAndLabNotebook(partial),[]);
   assert.match(evidenceFromAndLabNotebook(partial).observations,/2 of 4/);
+});
+
+
+test("GPU scheduler notebook imports are model-checked and never mislabeled as CFP-101 coursework",async()=>{
+  const simulator=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE));
+  const browser=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(EVIDENCE_BROWSER_MODULE));
+  for(const capacity of [4,8]){
+    for(const policy of ["fifo","shortest"]){
+      const exported=simulator.simulateCluster({capacity,policy});
+      const expected=simulator.simulateCluster({capacity,policy});
+      assert.deepEqual(validateClusterSchedulerNotebook(exported,expected),[]);
+      const node=evidenceFromClusterSchedulerNotebook(exported,expected);
+      const inBrowser=browser.evidenceFromClusterSchedulerNotebook(exported,expected);
+      assert.deepEqual(node,inBrowser);
+      assert.equal(node.schemaVersion,1);
+      assert.equal(node.courseId,"COMPUTE-LAB-001");
+      assert.equal(node.kind,"personal-unreviewed-draft");
+      assert.match(node.title,/Simulated GPU scheduling/);
+      assert.match(node.observations,/SIMULATED ONLY — no hardware measurements/);
+      assert.match(node.limitations,/not GPU benchmarks/);
+      assert.ok(!node.references.length);
+      assert.deepEqual(validateEvidence(node),[]);
+      const envelope=await createEvidenceEnvelope(node);
+      assert.equal(envelope.record.courseId,"COMPUTE-LAB-001");
+      assert.deepEqual(await parseEvidenceEnvelope(envelope),envelope);
+      assert.deepEqual(await browser.createEvidenceEnvelope(node),envelope);
+    }
+  }
+  const invalidCourse={...example(),courseId:"PRIVATE-ACCREDITED-DEGREE"};
+  assert.throws(()=>canonicalEvidence(invalidCourse),/Unknown course identifier/);
+  assert.equal(canonicalEvidence(example()).courseId,"CFP-101");
+});
+
+test("forged scheduling metrics, altered workload, claims of review or hidden fields fail closed",async()=>{
+  const simulator=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE));
+  const original=simulator.simulateCluster({policy:"fifo",capacity:4});
+  function mutated(change){const copy=structuredClone(original);change(copy);return copy;}
+  const candidates=[
+    mutated(x=>{x.metrics.gpuUtilizationPercent=100;}),
+    mutated(x=>{x.metrics.meanWaitTicks=0;}),
+    mutated(x=>{x.jobs[1].startTick=0;}),
+    mutated(x=>{x.jobs[1].gpus=1;}),
+    mutated(x=>{x.timeline[0].usedGpus=4;}),
+    mutated(x=>{x.timeline[0].running.push({id:"j9",gpus:4});}),
+    mutated(x=>{x.assumptions[0]="Measured from real GPU hardware";}),
+    mutated(x=>{x.independentReview=true;}),
+    mutated(x=>{x.reviewerSignature="verified";}),
+    mutated(x=>{x.metrics["medicalData"]=true;}),
+    mutated(x=>{x.capacity=8;}),
+    mutated(x=>{x.policy="shortest";}),
+    mutated(x=>{x.policy="admin";}),
+    mutated(x=>{delete x.jobs;}),
+    mutated(x=>{x.timeline=[];})
+  ];
+  for(const candidate of candidates){
+    const expected=simulator.simulateCluster({
+      capacity:[4,8].includes(candidate.capacity)?candidate.capacity:4,
+      policy:["fifo","shortest"].includes(candidate.policy)?candidate.policy:"fifo"
+    });
+    assert.ok(validateClusterSchedulerNotebook(candidate,expected).length>0,
+      "An edited simulated export was incorrectly accepted");
+    assert.throws(()=>evidenceFromClusterSchedulerNotebook(candidate,expected));
+  }
+  assert.ok(validateClusterSchedulerNotebook(null,original).length>0);
+  assert.ok(validateClusterSchedulerNotebook(original,null).length>0);
+  assert.ok(validateClusterSchedulerNotebook(original,simulator.simulateCluster({capacity:8})).length>0);
+  const notes=evidenceFromClusterSchedulerNotebook(original,original);
+  assert.ok(!/measured by|credential|peer-reviewed/.test(notes.title));
+  assert.match(notes.limitations,/not an independent observation/);
 });
