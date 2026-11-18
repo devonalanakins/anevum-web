@@ -175,7 +175,8 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.match(frontierMediaMarkup("/institute-preview"),/data-frontier-gl/);
   assert.match(home,/data-frontier-visual/);
   assert.doesNotMatch(frontierHome("/institute-preview"),/<video\b|frontier-cavern-desktop\.webp|atmosphere-screenblend\.mp4/);
-  assert.doesNotMatch(home,/src="\/institute-preview\/media\//);
+  assert.match(home,/src="\/institute-preview\/media\/observatory-review-desktop\.webp"/);
+  assert.doesNotMatch(home,/frontier-cavern-desktop\.webp/);
   assert.match(frontierHome("/institute-preview"),/href="\/institute-preview\/academy/);
   assert.match(frontierRecognition("/institute-preview"),/data-evidence-panel/);
   assert.doesNotMatch(home+recognition,/<form\b|<iframe|onclick=|onload=|download=".*certificate"/i);
