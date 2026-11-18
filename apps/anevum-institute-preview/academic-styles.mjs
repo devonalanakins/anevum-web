@@ -213,7 +213,7 @@ body[data-area="research"]{background:var(--academic-paper);color:var(--academic
 .study-path{margin:0 0 30px;padding:16px 18px 14px;border:1px solid #d0dfd5;background:#e8eee8;border-radius:7px;color:#243d3b}
 .study-path-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:11px;font:750 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.045em;text-transform:uppercase;color:#3a5e54}
 .study-path-heading a{color:#235d54;text-transform:none;text-decoration:underline;text-underline-offset:3px}
-.study-path-links{list-style:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0!important;padding:0!important}
+.study-path-links{list-style:none;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:0!important;padding:0!important}
 .study-path-links li{margin:0!important;min-width:0}
 .study-path-link{display:flex;align-items:center;gap:9px;min-height:58px;padding:10px;border:1px solid #c8d9cf;background:#f8f8f4;color:#284a43!important;border-radius:4px;text-decoration:none!important}
 .study-path-link[aria-current="page"]{border-color:#286356;background:#d7e6db;box-shadow:inset 0 0 0 1px #286356}
@@ -225,6 +225,36 @@ body[data-area="research"]{background:var(--academic-paper);color:var(--academic
 .study-path-details [data-practice-status="recorded"]{color:#216352;font-weight:700}
 .study-path-disclaimer{margin:11px 0 0!important;font-size:11px!important;line-height:1.55!important;color:#54695f!important}
 .study-path a:focus-visible{outline:3px solid #a37c3e;outline-offset:3px}
+/* CFP-101-U06: text-first, fictional four-bit instruction decoding desk. */
+.assembly-bench{margin:22px 0 30px;padding:19px;border:1px solid #bed1c4;background:#e8eee8;border-radius:7px;color:#24443a}
+.assembly-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;font:700 10px/1.5 ui-monospace,Consolas,monospace;color:#46665c}
+.lesson-article .assembly-bench h3{font:normal 27px/1.2 Georgia,serif;color:#24473f;margin:13px 0 15px}
+.assembly-layout{display:grid;grid-template-columns:1.18fr .82fr;gap:12px}
+.assembly-control,.assembly-output{padding:15px;border-radius:5px;border:1px solid #d1dfd3;background:#fffef9;min-width:0}
+.assembly-control form{margin:0 0 13px}
+.assembly-control label{display:block;font:700 12px/1.5 system-ui,sans-serif;color:#2c594e;margin:0 0 7px}
+.assembly-input-row{display:flex;flex-wrap:wrap;gap:6px}
+.assembly-input-row input{min-width:0;flex:1 1 135px;min-height:44px;border:1px solid #afc4b4;background:#fff;border-radius:4px;padding:9px 10px;font:700 16px/1.5 ui-monospace,Consolas,monospace;color:#265143}
+.assembly-input-row button{flex:0 0 auto;min-height:44px;padding:9px 13px;border:1px solid #295d4e;background:#295d4e;color:white;border-radius:4px;font-weight:700;font-size:12px}
+.lesson-article .assembly-fine{font-size:11px;line-height:1.55;color:#5e7066;margin:8px 0 11px}
+.assembly-examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0 16px}
+.assembly-examples button{min-height:43px;padding:7px 9px;border:1px solid #bad0c0;background:#eff5ed;border-radius:4px;color:#315549;font:700 11px/1.4 ui-monospace,Consolas,monospace}
+.assembly-output-title{font:700 11px/1.5 system-ui,sans-serif;color:#2c5e4b;margin-bottom:12px}
+.assembly-bit-pair{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.assembly-bit-pair span{text-align:center;border-radius:4px;padding:10px 5px;font:700 clamp(29px,4vw,40px)/1.1 ui-monospace,Consolas,monospace;letter-spacing:.07em;background:#dcead9;color:#21564a}
+.assembly-bit-pair span+span{background:#e9e3d6;color:#72543c}
+.assembly-bit-labels{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center;margin:7px 0 18px;font:700 9px/1.3 ui-monospace,Consolas,monospace;letter-spacing:.03em;color:#627366}
+.lesson-article .assembly-decoded,.lesson-article .assembly-mapping{font:500 12px/1.7 system-ui,sans-serif;color:#315549;margin:10px 0}
+.lesson-article .assembly-decoded strong,.lesson-article .assembly-mapping strong{font:700 14px/1.5 ui-monospace,Consolas,monospace}
+.lesson-article .assembly-output-disclaimer{margin:16px 0 0;font-size:11px;line-height:1.6;color:#596e65}
+.lesson-article .assembly-status{border-left:3px solid #307a63;background:#d9e7d9;padding:11px 13px;color:#275648;font-size:12px;line-height:1.6;margin:13px 0 17px}
+.lesson-article .assembly-bench h4{font:700 13px/1.5 system-ui,sans-serif;color:#2b5146;margin:8px 0}
+.assembly-history{padding-left:22px;color:#365c50;font:500 11px/1.85 ui-monospace,Consolas,monospace;max-height:190px;overflow:auto}
+.assembly-actions{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0}
+.assembly-actions button{min-height:44px;flex:1 1 145px;padding:9px 12px;border-radius:4px;border:1px solid #b9ccbc;background:#f5f8f2;color:#255648;font-size:12px;font-weight:700}
+.assembly-bench button:focus-visible,.assembly-bench input:focus-visible{outline:3px solid #af7b48;outline-offset:3px}
+@media(max-width:780px){.assembly-layout{grid-template-columns:1fr}.assembly-bench{padding:12px}}
+@media(max-width:420px){.assembly-control,.assembly-output{padding:10px}.assembly-input-row button{flex:1 1 100%}.assembly-bit-pair span{font-size:30px}}
 /* CFP-101-U05: original, input-first addressed memory workbench. */
 .memory-bench{margin:20px 0 28px;padding:19px;border:1px solid #bfd2c4;border-radius:7px;background:#e8eee8;color:#263f3b}
 .memory-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;font:700 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.025em;color:#3f645a}
