@@ -617,6 +617,111 @@ export const INSTITUTE_CLIENT = String.raw`
     });
   })();
 
+
+  // CFP-101 Unit 04: ideal four-bit edge-triggered register, browser only.
+  // Input edits never update Q. One explicit rising-edge event samples D.
+  (function(){
+    var bench=document.querySelector("[data-register-bench]");
+    if(!bench)return;
+    var d=[0,0,0,0],q=[0,0,0,0],cycles=0,events=[];
+    var toggles=bench.querySelectorAll("[data-register-bit]");
+    var output=bench.querySelector("[data-register-q]");
+    var inputWord=bench.querySelector("[data-register-d]");
+    var count=bench.querySelector("[data-register-count]");
+    var status=bench.querySelector("[data-register-status]");
+    var history=bench.querySelector("[data-register-history]");
+    var exportStatus=bench.querySelector("[data-register-export-status]");
+    function word(bits){return bits.join("");}
+    function refresh(){
+      toggles.forEach(function(button){
+        var index=Number(button.getAttribute("data-register-bit"));
+        var active=d[index]===1;
+        button.setAttribute("aria-pressed",active?"true":"false");
+        button.querySelector("[data-register-bit-value]").textContent=String(d[index]);
+      });
+      inputWord.textContent=word(d);
+      output.textContent=word(q);
+      count.textContent=String(cycles);
+    }
+    function refreshHistory(){
+      history.replaceChildren();
+      if(!events.length){
+        var empty=document.createElement("li");
+        empty.textContent="No clock events recorded yet.";
+        history.appendChild(empty);return;
+      }
+      events.slice(-8).reverse().forEach(function(item){
+        var li=document.createElement("li");
+        li.textContent="Clock "+item.cycle+": D = "+item.d+" → Q = "+item.q;
+        history.appendChild(li);
+      });
+    }
+    toggles.forEach(function(button){
+      button.addEventListener("click",function(){
+        var index=Number(button.getAttribute("data-register-bit"));
+        if(!Number.isInteger(index)||index<0||index>=4)return;
+        d[index]=1-d[index];
+        refresh();
+        status.textContent="D changed to "+word(d)+". Q remains "+word(q)+"; no rising clock edge occurred.";
+      });
+    });
+    bench.querySelector("[data-register-clock]").addEventListener("click",function(){
+      q=d.slice();cycles++;
+      events.push({cycle:cycles,d:word(d),q:word(q)});
+      if(events.length>32)events.shift();
+      refresh();refreshHistory();
+      status.textContent="Rising-edge event "+cycles+": sampled D = "+word(d)+", stored Q = "+word(q)+".";
+    });
+    bench.querySelector("[data-register-reset]").addEventListener("click",function(){
+      d=[0,0,0,0];q=[0,0,0,0];cycles=0;events=[];
+      refresh();refreshHistory();
+      status.textContent="Ideal teaching model reset to D = 0000 and Q = 0000. No physical reset timing was simulated.";
+      exportStatus.textContent="The page-session history was cleared. No external records changed.";
+    });
+    bench.querySelector("[data-register-export]").addEventListener("click",function(){
+      try{
+        var record={
+          schemaVersion:1,kind:"browser-local-unverified-simulation",
+          experimentId:"CFP-101-REG-001",unitId:"CFP-101-U04",
+          model:"ideal-four-bit-rising-edge-register",
+          assumptions:["discrete rising-edge events","no propagation, setup or hold timing","no physical flip-flop measurements"],
+          clockEventCount:cycles,recentEvents:events.slice(),
+          independentlyVerified:false,academicCredit:false
+        };
+        var blob=new Blob([JSON.stringify(record,null,2)+"\n"],{type:"application/json"});
+        var url=URL.createObjectURL(blob);
+        var anchor=document.createElement("a");anchor.href=url;
+        anchor.download="anevum-cfp101-register-001.json";anchor.hidden=true;
+        document.body.appendChild(anchor);anchor.click();anchor.remove();
+        setTimeout(function(){URL.revokeObjectURL(url);},5000);
+        exportStatus.textContent="JSON download requested. These are unverified teaching-model events, not measured hardware data or a Research Desk submission.";
+      }catch(_){
+        exportStatus.textContent="The browser could not export this page session. No data was transmitted.";
+      }
+    });
+    var quiz= document.querySelector("[data-register-quiz]");
+    if(quiz){
+      var feedback=quiz.querySelector("[data-register-quiz-status]");
+      quiz.querySelectorAll("[data-register-answer]").forEach(function(button){
+        button.addEventListener("click",function(){
+          quiz.querySelectorAll("[data-register-answer]").forEach(function(choice){
+            choice.setAttribute("aria-pressed","false");
+            choice.classList.remove("selected","correct");
+          });
+          button.setAttribute("aria-pressed","true");
+          button.classList.add("selected");
+          if(button.getAttribute("data-register-answer")==="0011"){
+            button.classList.add("correct");
+            feedback.textContent="Correct. Q holds 0011 until a rising clock event samples the new input D = 1010.";
+          }else{
+            feedback.textContent="The input bus does not directly drive stored Q. Without a rising clock event Q stays at 0011.";
+          }
+        });
+      });
+    }
+    refresh();
+  })();
+
   // The GPU scheduling simulator is a browser-only, lazily loaded module.
   if(document.querySelector("[data-cluster-lab]")){
     import("/institute-preview/cluster-scheduler-client.js").catch(function(){
