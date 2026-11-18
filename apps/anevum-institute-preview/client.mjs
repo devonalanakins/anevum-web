@@ -152,6 +152,37 @@ export const INSTITUTE_CLIENT = String.raw`
     // Track the last saved text so a bookmark never silently loses typed edits.
     var persistedNote=initial.note;
     if(textarea)textarea.value=initial.note;
+    function hasUnsavedStudyNotes(){
+      return !!textarea&&textarea.value.slice(0,8000)!==persistedNote;
+    }
+    // Safari may not display beforeunload prompts during app switch/termination.
+    // This is a best-effort fallback; ordinary links get a direct confirmation.
+    var approvedLeave=false;
+    window.addEventListener("beforeunload",function(event){
+      if(approvedLeave||!hasUnsavedStudyNotes())return;
+      event.preventDefault();
+      event.returnValue="";
+    });
+    document.addEventListener("click",function(event){
+      if(!hasUnsavedStudyNotes()||approvedLeave||event.defaultPrevented||
+         event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+      var source=event.target instanceof Element?event.target:null;
+      var link=source?.closest("a[href]");
+      if(!link||link.hasAttribute("download")||link.target==="_blank")return;
+      var href=link.getAttribute("href");
+      if(!href||href.startsWith("#"))return;
+      var target;
+      try{target=new URL(href,window.location.href);}catch(_){return;}
+      if(target.protocol!=="http:"&&target.protocol!=="https:")return;
+      if(target.origin===location.origin&&target.pathname===location.pathname&&
+        target.search===location.search)return;
+      if(!window.confirm("You have unsaved lesson notes. Leave this page and discard these edits?")){
+        event.preventDefault();
+        report("Navigation cancelled. Save notes, bookmark the lesson, or export your text before leaving.");
+        return;
+      }
+      approvedLeave=true;
+    },true);
     if(bookmark)setBookmark(initial.bookmark);
     if(textarea)textarea.addEventListener("input",function(){
       resetDelete();
