@@ -378,7 +378,7 @@ body[data-area="society"] .mast,body[data-area="recognition"] .mast{background:#
 .dossier-receipt .frontier-proof-head span:last-child{color:#815a36}
 .dossier-receipt p{font-size:12px;line-height:1.65;color:#48615a}
 .dossier-receipt code{display:inline;overflow-wrap:anywhere;word-break:break-word;font-size:11px;color:#284b4b}
-@media(max-width:900px){.dossier-grid{grid-template-columns:1fr}.dossier-intro h2{max-width:720px}.dossier-intro>p{max-width:760px}}
+@media(max-width:900px){.dossier-grid{grid-template-columns:1fr}.dossier-panel{order:-1}.dossier-intro h2{max-width:720px}.dossier-intro>p{max-width:760px}}
 @media(max-width:420px){.dossier-panel{padding:17px}.dossier-primary-actions .btn,.dossier-import,.dossier-delete{flex-basis:100%}.dossier-field input,.dossier-field textarea{font-size:16px}}
 
 @media(prefers-reduced-motion:reduce){.space-card::before,.btn{transition:none!important;transform:none!important}}
