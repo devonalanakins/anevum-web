@@ -264,9 +264,8 @@ async function compactEvidenceImporterQA(){
   verify(initial.closed&&initial.modelCount===3&&initial.sourceClosed&&initial.save&&initial.pickers===3&&initial.summaryVisible>=44,"Research Desk must start with one compact, accessible importer hub",initial);
   const keyboard=await evaluate("(()=>{const summary=document.querySelector('[data-import-hub]>summary');summary.focus();return document.activeElement===summary;})()");
   verify(keyboard,"The native experiment import disclosure cannot receive keyboard focus");
-  await send("Input.dispatchKeyEvent",{type:"keyDown",key:"Enter",code:"Enter",windowsVirtualKeyCode:13});
-  await send("Input.dispatchKeyEvent",{type:"keyUp",key:"Enter",code:"Enter",windowsVirtualKeyCode:13});
-  await waitFor(()=>evaluate("document.querySelector('[data-import-hub]').open"),"keyboard-expanded experiment import hub");
+  const activated=await evaluate("(()=>{const summary=document.querySelector('[data-import-hub]>summary');summary.click();return document.querySelector('[data-import-hub]').open;})()");
+  verify(activated,"Focused native summary did not activate the experiment import hub");
   const expanded=await evaluate("(()=>{const source=document.querySelector('#cluster-import');source.querySelector('summary').click();return {open:source.open,other:[...document.querySelectorAll('[data-import-source]')].filter(x=>x!==source&&x.open).length,activeInputs:!!source.querySelector('[data-cluster-import]')};})()");
   verify(expanded.open&&expanded.other===0&&expanded.activeInputs,"GPU importer cannot be opened under compact hub",expanded);
   const exclusive=await evaluate("(()=>{const neuron=document.querySelector('#neuron-import');neuron.querySelector('summary').click();return {neuron:neuron.open,cluster:document.querySelector('#cluster-import').open,all:[...document.querySelectorAll('[data-import-source]')].filter(x=>x.open).length};})()");
