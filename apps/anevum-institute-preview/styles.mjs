@@ -549,4 +549,18 @@ body[data-area="society"] .mast,body[data-area="recognition"] .mast{background:#
 @media(max-width:350px){.studio-interests{grid-template-columns:1fr}.studio-notes-list>div{grid-template-columns:1fr}.studio-notes-list a{grid-column:1;grid-row:3}}
 @media(prefers-reduced-motion:reduce){.studio-meter>span{transition:none!important}}
 
+
+/* Task-first mobile learning: course card comes before the long privacy notice.
+   The eyebrow and existing site review ribbon continue to state device-only status. */
+@media(max-width:650px){
+  .studio-body[data-member-studio]{display:flex;flex-direction:column}
+  .studio-body[data-member-studio] .studio-section-label{order:0}
+  .studio-body[data-member-studio] .studio-layout{order:1}
+  .studio-body[data-member-studio] .studio-banner{order:2;margin:24px 0 0}
+  .studio-body[data-member-studio] .studio-section-label{margin-bottom:10px}
+  .studio-intro:not(.studio-intro--profile) .studio-intro-inner{padding-bottom:0}
+  .studio-intro:not(.studio-intro--profile) .studio-top-actions{margin-top:16px;gap:8px}
+  .studio-intro:not(.studio-intro--profile) .studio-top-actions a{min-height:43px}
+}
+
 `;
