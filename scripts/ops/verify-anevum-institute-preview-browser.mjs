@@ -551,6 +551,48 @@ async function andResearchDirectHandoffQA(){
   console.log("ANEVUM_DIRECT_AND_RESEARCH_HANDOFF_QA_PASS",JSON.stringify({fourStatesRequired:true,stagedWithoutSaving:true,oneTime:true,explicitApply:true,explicitSave:true,portableExport:true,forgeryRejected:true}));
 }
 
+async function directSimulationHandoffQA(){
+  const savedKey="anevum.institute.evidence-draft.v1";
+  const cases=[
+    {label:"GPU",path:"/laboratory/cluster-scheduling",root:"[data-cluster-lab]",ready:"clusterReady",run:"[data-cluster-run]",transfer:"[data-cluster-to-dossier]",feedback:"[data-cluster-feedback]",apply:"[data-cluster-apply]",scope:"COMPUTE-LAB-001",title:"Simulated GPU scheduling",hash:"#cluster-import",key:"anevum.institute.handoff.cluster.v1",validText:"GPU scheduling values"},
+    {label:"NEURON",path:"/laboratory/neuron-dynamics",root:"[data-neuron-lab]",ready:"neuronReady",run:"[data-neuron-run]",transfer:"[data-neuron-to-dossier]",feedback:"[data-neuron-feedback]",apply:"[data-neuron-apply]",scope:"NEURO-LAB-001",title:"Simulated point-neuron",hash:"#neuron-import",key:"anevum.institute.handoff.neuron.v1",validText:"neuron trace"}
+  ];
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  for(const spec of cases){
+    await navigate("/institute-preview"+spec.path);
+    await waitFor(()=>evaluate("document.querySelector("+JSON.stringify(spec.root)+")?.dataset."+spec.ready+"==='true'"),spec.label+" simulation module");
+    const initial=await evaluate("document.querySelector("+JSON.stringify(spec.transfer)+")?.disabled");
+    verify(initial===true,"Same-tab model transfer must start disabled",spec);
+    await evaluate("document.querySelector("+JSON.stringify(spec.run)+").click()");
+    const ready=await evaluate("document.querySelector("+JSON.stringify(spec.transfer)+")?.disabled");
+    verify(ready===false,"Same-tab model transfer must unlock only after a fresh simulation",spec);
+    await evaluate("document.querySelector("+JSON.stringify(spec.transfer)+").click()");
+    await waitFor(()=>evaluate("location.pathname==='/institute-preview/dossier'&&location.hash==="+JSON.stringify(spec.hash)+"&&document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),spec.label+" same-tab Research Desk arrival");
+    const staged=await evaluate("(()=>{const spec="+JSON.stringify(spec)+";return {feedback:document.querySelector(spec.feedback)?.textContent,apply:!document.querySelector(spec.apply)?.hidden,hub:document.querySelector('[data-import-hub]')?.open,source:document.querySelector(spec.hash)?.open,scope:document.querySelector('[data-evidence-course]')?.textContent,title:document.querySelector('[data-evidence-field=title]')?.value,saved:localStorage.getItem('anevum.institute.evidence-draft.v1'),pending:sessionStorage.getItem(spec.key)}})()");
+    verify(staged.feedback?.includes(spec.validText)&&staged.apply&&staged.hub&&staged.source&&staged.scope==="CFP-101"&&staged.title===""&&staged.saved===null&&staged.pending===null,"Same-tab transfer must stage only, consume once and preserve the unsaved draft",{spec,staged});
+    await evaluate("document.querySelector("+JSON.stringify(spec.apply)+").click()");
+    const applied=await evaluate("(()=>({scope:document.querySelector('[data-evidence-course]').textContent,title:document.querySelector('[data-evidence-field=title]').value,saved:localStorage.getItem('anevum.institute.evidence-draft.v1'),receipt:document.querySelector('[data-evidence-receipt-state]').textContent}))()");
+    verify(applied.scope===spec.scope&&applied.title.includes(spec.title)&&applied.saved===null&&applied.receipt==="Unsaved changes","Explicit Apply must not persist a laboratory record",{spec,applied});
+    await evaluate("document.querySelector('[data-evidence-save]').click()");
+    await waitFor(()=>evaluate("document.querySelector('[data-evidence-status]')?.textContent.startsWith('Personal draft saved')"),spec.label+" explicit local evidence save");
+    const saved=await evaluate("(()=>{const data=JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1'));return {title:data.record.title,scope:data.record.courseId,kind:data.record.kind,digest:data.digest}})()");
+    verify(saved.scope===spec.scope&&saved.title===applied.title&&saved.kind==="personal-unreviewed-draft"&&/^sha256:[a-f0-9]{64}$/.test(saved.digest),"Explicit Save must retain local unreviewed provenance",{spec,saved});
+    await navigate("/institute-preview/academy");
+    await send("Page.navigate",{url:base+"/institute-preview/dossier"+spec.hash});
+    await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"one-use model handoff check");
+    const repeated=await evaluate("(()=>{const spec="+JSON.stringify(spec)+";return {hidden:document.querySelector(spec.apply).hidden,pending:sessionStorage.getItem(spec.key),title:document.querySelector('[data-evidence-field=title]').value}})()");
+    verify(repeated.hidden&&repeated.pending===null&&repeated.title===saved.title,"Model transfer must not replay on Research Desk reload",{spec,repeated});
+    await navigate("/institute-preview/academy");
+    await evaluate("(async()=>{const spec="+JSON.stringify(spec)+";const model=spec.label==='GPU'?await import('/institute-preview/cluster-scheduler-model.js'):await import('/institute-preview/neuron-lif-model.js');const record=spec.label==='GPU'?model.simulateCluster({capacity:4,policy:'fifo'}):model.simulateNeuron({tauMs:20,driveMv:20});if(spec.label==='GPU')record.metrics.gpuUtilizationPercent=-1;else record.metrics.spikeCount+=3;sessionStorage.setItem(spec.key,JSON.stringify(record));return true;})()");
+    await send("Page.navigate",{url:base+"/institute-preview/dossier"+spec.hash});
+    await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),spec.label+" tampered session handoff");
+    const forged=await evaluate("(()=>{const spec="+JSON.stringify(spec)+";return {feedback:document.querySelector(spec.feedback).textContent,hidden:document.querySelector(spec.apply).hidden,title:document.querySelector('[data-evidence-field=title]').value,pending:sessionStorage.getItem(spec.key),saved:JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1')).record.title}})()");
+    verify(forged.feedback.startsWith("Same-tab handoff rejected")&&forged.hidden&&forged.title===saved.title&&forged.saved===saved.title&&forged.pending===null,"Tampered model output must not change editor or saved research",{spec,forged});
+    await evaluate("localStorage.removeItem('anevum.institute.evidence-draft.v1')");
+    console.log("ANEVUM_DIRECT_"+spec.label+"_RESEARCH_HANDOFF_QA_PASS",JSON.stringify({explicitReview:true,singleUse:true,revalidated:true,tamperRejected:true,scope:saved.scope}));
+  }
+}
+
 try{
   await waitFor(async()=>{
     if(server.exitCode!==null)throw Error("Loopback server exited");
@@ -593,6 +635,7 @@ try{
   await neuronResearchBrowserQA();
   await compactEvidenceImporterQA();
   await andResearchDirectHandoffQA();
+  await directSimulationHandoffQA();
   console.log("ANEVUM_INSTITUTE_BROWSER_QA_PASS");
 }finally{
   for(const item of pending.values()){clearTimeout(item.timer);item.reject(Error("Browser ending"));}pending.clear();
