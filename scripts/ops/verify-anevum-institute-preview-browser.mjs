@@ -111,8 +111,8 @@ async function interactions(){
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
   await navigate("/institute-preview");
   await waitFor(()=>evaluate("['active','fallback'].includes(document.querySelector('[data-frontier-gl]')?.dataset.fxStatus)"),"WebGL startup or clean fallback");
-  const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,frames:Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0),shader:document.querySelector('[data-frontier-gl]').width>0,still:document.querySelector('.facility-poster').naturalWidth>700}))()");
-  verify(["active","fallback"].includes(fx.status)&&fx.still,"WebGL must draw or reliably fall back to the existing art",fx);
+  const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,frames:Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0),shader:document.querySelector('[data-frontier-gl]').width>0,opacity:Number(getComputedStyle(document.querySelector('[data-frontier-gl]')).opacity),still:document.querySelector('.facility-poster').naturalWidth>700}))()");
+  verify(["active","fallback"].includes(fx.status)&&fx.still&&(fx.status!=="active"||fx.opacity<=0.18),"WebGL must draw or fall back without obscuring high-definition facility art",fx);
   if(fx.status==="active"){
     await waitFor(()=>evaluate("Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0)>=2"),"shader animation frames");
     await screenshot("home-webgl-active-390",false);
