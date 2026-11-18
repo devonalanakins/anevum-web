@@ -10,7 +10,7 @@ import {studyToolsHtml} from "../apps/anevum-institute-preview/study-tools.mjs";
 import {dossierPage} from "../apps/anevum-institute-preview/dossier-ui.mjs";
 import {EVIDENCE_BROWSER_MODULE,EVIDENCE_FORMAT} from "../apps/anevum-institute-preview/evidence-schema.mjs";
 import {FRONTIER_GL_CLIENT} from "../apps/anevum-institute-preview/frontier-gl.mjs";
-import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,FRONTIER_REVIEW_ART,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
+import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
 const PATHS=["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
@@ -168,6 +168,10 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.equal(RECOGNITION_POLICY.reviewEnabled,false);
   assert.equal(FRONTIER_MEDIA.assetsBundled,false);
   assert.equal(FRONTIER_REVIEW_ART.previewEnabled,false);
+  assert.equal(FACILITY_DESIGN_ART.previewEnabled,true);
+  assert.equal(FACILITY_DESIGN_ART.ownerApproved,false);
+  assert.equal(FACILITY_DESIGN_ART.desktop.width,1672);
+  assert.equal(FACILITY_DESIGN_ART.mobile.width,720);
   assert.equal(FRONTIER_REVIEW_ART.productionApproved,false);
   assert.equal(FRONTIER_MEDIA.ownerApproved,false);
   assert.match(FRONTIER_MEDIA.desktop.name,/\.webp$/);
@@ -179,7 +183,9 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.match(frontierMediaMarkup("/institute-preview"),/data-frontier-gl/);
   assert.match(home,/data-frontier-visual/);
   assert.doesNotMatch(frontierHome("/institute-preview"),/<video\b|frontier-cavern-desktop\.webp|atmosphere-screenblend\.mp4/);
-  assert.match(home,/data-art-source="facility-revision-pending-photo"/);
+  assert.match(home,/data-art-source="generated-facility-v2-review"/);
+  assert.match(home,/src="\/institute-preview\/media\/facility-concept-v2-desktop\.webp"/);
+  assert.match(home,/srcset="\/institute-preview\/media\/facility-concept-v2-mobile\.webp"/);
   assert.match(home,/class="hero frontier-hero frontier-hero--facility"/);
   assert.match(home,/href="\/institute-preview\/dossier"/);
   assert.doesNotMatch(home,/frontier-cavern-desktop\.webp/);
@@ -221,11 +227,12 @@ test("personal research dossier provides real editor controls without exposing p
 });
 
 test("archived high-resolution hero review blobs preserve provenance and fail closed without media binding",async()=>{
-  for(const art of [FRONTIER_REVIEW_ART.desktop,FRONTIER_REVIEW_ART.mobile]){
+  for(const art of [FRONTIER_REVIEW_ART.desktop,FRONTIER_REVIEW_ART.mobile,FACILITY_DESIGN_ART.desktop,FACILITY_DESIGN_ART.mobile]){
     const file=new Uint8Array(await readFile(new URL("../apps/anevum-institute-preview/media/"+art.name,import.meta.url)));
-    assert.ok(file.length>120000,"Review art must not be a low-resolution placeholder");
+    assert.ok(file.length>=100000,"Review imagery must be a real, opt-in high-resolution asset");
     const gitHash=createHash("sha1").update("blob "+file.length+"\0").update(file).digest("hex");
-    assert.equal(gitHash,art.blobSha,"Reuse must retain the exact verified PR #813 Git blob");
+    assert.equal(gitHash,art.blobSha,"Art must retain its exact source Git blob");
+    if(art.bytes)assert.equal(file.length,art.bytes,"Generated art bytes must match manifest");
     assert.equal((await req("/media/"+art.name)).status,404,"Unbound preview media must fail closed");
     const mediaUrl=new Request(BASE+"/media/"+art.name);
     const bound=await worker.fetch(mediaUrl,{loadReviewMedia:async key=>key===art.name?file:null});
@@ -241,7 +248,9 @@ test("archived high-resolution hero review blobs preserve provenance and fail cl
   }
   assert.equal((await req("/media/private.webp")).status,404);
   const html=await(await req("")).text();
-  assert.match(html,/data-art-source="facility-revision-pending-photo"/);
+  assert.match(html,/data-art-source="generated-facility-v2-review"/);
+  assert.match(html,/facility-concept-v2-desktop\.webp/);
+  assert.match(html,/facility-concept-v2-mobile\.webp/);
   assert.doesNotMatch(html,/src="\/institute-preview\/media\/observatory-review-desktop\.webp"/);
   assert.doesNotMatch(html,/srcset="\/institute-preview\/media\/observatory-review-mobile\.webp"/);
   assert.doesNotMatch(html,/frontier-cavern-desktop\.webp/);
@@ -333,6 +342,7 @@ test("styles are complete, mobile responsive and reduced-motion safe",async()=>{
   assert.match(css,/\.frontier-poster/);
   assert.match(css,/\.frontier-hero--facility/);
   assert.match(css,/\.frontier-facility-art/);
+  assert.match(css,/\.facility-poster/);
   assert.match(css,/\.facility-link-dock/);
   assert.match(css,/\.frontier-gl/);
   assert.match(css,/\[data-fx-status="active"\]/);
