@@ -10,6 +10,7 @@ const output=process.env.RUNNER_TEMP||tmpdir();
 const base="http://127.0.0.1:4183";
 const pages=[
   ["/institute-preview","home"],
+  ["/institute-preview/research","research"],
   ["/institute-preview/recognition","recognition"],
   ["/institute-preview/dossier","dossier"],
   ["/institute-preview/studio","studio"],
@@ -84,6 +85,10 @@ async function testPage(pathname,label,width,height){
       verify(visual.headingHeight>=65&&visual.headingRight<=width+1&&visual.ctaTop<height-35&&visual.ctaBottom<height+15,"Mobile academic home must show the main action in the first viewport",{width,visual});
     }
   }
+  if(label==="research"){
+    const models=await evaluate("(()=>({count:document.querySelectorAll('.research-experiment').length,heading:document.querySelector('.research-index h1')?.textContent,source:document.querySelector('nav.desk-nav a[aria-current=page]')?.getAttribute('href'),links:[...document.querySelectorAll('.research-experiment>a')].map(a=>a.getAttribute('href')),images:document.querySelectorAll('.research-index img,.research-index canvas,.research-index video').length}))()");
+    verify(models.count===3&&models.heading?.includes("testable question")&&models.source==="/institute-preview/research"&&models.images===0&&models.links.every(link=>link.startsWith("/institute-preview/laboratory/")),"Research page must expose actual labeled local models",{width,models});
+  }
   if(label==="recognition"&&width===390){
     const evidence=await evaluate("(()=>({count:document.querySelector('[data-evidence-count]')?.textContent,labels:[...document.querySelectorAll('[data-evidence-activity]')].map(x=>x.getAttribute('data-evidence-state')),status:document.querySelector('[data-evidence-label]')?.textContent}))()");
     verify(evidence.count==="0 / 3"&&evidence.labels.length===3&&evidence.labels.every(x=>x==="incomplete")&&evidence.status.includes("No completed"),"Fresh visitor must not see invented recognition",evidence);
@@ -121,7 +126,7 @@ async function testPage(pathname,label,width,height){
   verify(link,"Skip link cannot receive keyboard focus",{label,width});
   if((width===390||width===1440)){
     await screenshot(label+"-"+width);
-    if(label==="home"||label==="recognition"||label==="dossier"||label==="laboratory"||label==="lesson"||label==="transistor"||label==="adder")await screenshot(label+"-"+width+"-full",true);
+    if(label==="home"||label==="research"||label==="recognition"||label==="dossier"||label==="laboratory"||label==="lesson"||label==="transistor"||label==="adder")await screenshot(label+"-"+width+"-full",true);
   }
   console.log("INSTITUTE_PAGE_QA_PASS",label,width,state.heading);
 }
@@ -130,7 +135,7 @@ async function compactShellQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await navigate("/institute-preview/academy");
   const open=await evaluate("(()=>{const trigger=document.querySelector('[data-search-open]');trigger.click();const d=document.querySelector('[data-command-dialog]');return {modal:d.open,focused:document.activeElement===d.querySelector('[data-command-query]'),count:d.querySelectorAll('.command-result').length};})()");
-  verify(open.modal&&open.focused&&open.count===13,"Compact palette did not open with actual routes",open);
+  verify(open.modal&&open.focused&&open.count===14,"Compact palette did not open with actual routes",open);
   const search=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');const q=d.querySelector('[data-command-query]');q.value='transistor';q.dispatchEvent(new Event('input',{bubbles:true}));return [...d.querySelectorAll('.command-result')].map(a=>a.getAttribute('href'));})()");
   verify(search.includes("/institute-preview/learn/cfp-101/transistor-switching")&&search.every(url=>url.startsWith("/institute-preview/")),"Search did not resolve the existing lesson",search);
   const closed=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');d.querySelector('[data-command-close]').click();return !d.open;})()");
