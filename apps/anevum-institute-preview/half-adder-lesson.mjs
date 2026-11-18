@@ -92,8 +92,9 @@ export const HALF_ADDER_LESSON_HTML = String.raw`
         <div class="half-actions">
           <button type="button" data-half-reset>Restart experiment</button>
           <button type="button" data-half-export>Export observations (.json)</button>
+          <button type="button" data-half-to-dossier disabled>Review in Research Desk →</button>
         </div>
-        <p class="half-fine" data-half-export-status role="status" aria-live="polite">Results stay in this browser session unless you export them. No network request, enrollment, scientific attestation or independent verification occurs.</p>
+        <p class="half-fine" data-half-export-status role="status" aria-live="polite">After observing all four input pairs, you can transfer a single-use notebook to the Research Desk for local validation. No automatic saving, network request, enrollment, or independent verification occurs.</p>
         <noscript><p class="half-fine">This simulator requires JavaScript; the equations and full truth table above remain readable.</p></noscript>
       </section>
 
@@ -112,7 +113,7 @@ export const HALF_ADDER_LESSON_HTML = String.raw`
       <h2 id="limits">6. What this proves—and what it does not</h2>
       <p>Exhaustively checking the four ideal input pairs verifies the implemented Boolean mapping in this browser for those cases. It does <strong>not</strong> measure semiconductor behavior, switching delay, energy use, reliability, or the correctness of a fabricated circuit.</p>
       <p>A full adder introduces a third input, the carry from a previous column. Larger adders combine stages, with practical tradeoffs in carry propagation and timing. Those systems are later topics—not capabilities claimed by this lesson.</p>
-      <div class="callout"><p><strong>Research practice:</strong> Export a record of your simulated observations and state the model assumptions when citing it. The current Research Desk's automatic notebook import accepts the original AND-gate experiment only; this new half-adder export is a separate, independently inspectable format.</p></div>
+      <div class="callout"><p><strong>Research practice:</strong> Export a record of your simulated observations and state the model assumptions when citing it. The Research Desk can check this half-adder notebook and stage it for your explicit approval, either through the same-tab transfer or by importing a downloaded JSON file. It remains independently inspectable but unverified.</p></div>
       <h3>Further reading</h3>
       <ul>
         <li><a href="https://www.nand2tetris.org/project02">Nand2Tetris — Project 02: Boolean Arithmetic</a> (half-adder, full-adder, adders, ALU).</li>
