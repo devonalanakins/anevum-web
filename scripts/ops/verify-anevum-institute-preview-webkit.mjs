@@ -182,9 +182,9 @@ async function studyNotePortability(page){
   // cancel the earlier import, even if its Promise settles afterward.
   await page.evaluate(()=>{
     const original=File.prototype.text;
-    const imported="ANEVUM Open Institute / CFP-101-U02 / Personal study notes\\n"+
-      "Browser-local export; not an institutional transcript.\\n\\n"+
-      "Stale delayed file must never overwrite newer user work.\\n";
+    const imported="ANEVUM Open Institute / CFP-101-U02 / Personal study notes\n"+
+      "Browser-local export; not an institutional transcript.\n\n"+
+      "Stale delayed file must never overwrite newer user work.\n";
     const delayed={original,imported,resolve:null};
     window.__anevumDelayedImport=delayed;
     File.prototype.text=function(){
