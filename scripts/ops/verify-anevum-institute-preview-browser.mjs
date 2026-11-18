@@ -282,7 +282,7 @@ async function compactEvidenceImporterQA(){
   await waitFor(()=>evaluate("document.querySelector('[data-import-hub]').open&&document.querySelector('#neuron-import').open"),"neuron fragment expansion");
   const focus=await evaluate("(()=>{const summary=document.querySelector('#neuron-import>summary');summary.focus();return {focused:document.activeElement===summary,visible:summary.getBoundingClientRect().height>=40};})()");
   verify(focus.focused&&focus.visible,"Deep-linked neuron importer is not keyboard accessible",focus);
-  console.log("ANEVUM_COMPACT_IMPORT_HUB_QA_PASS",JSON.stringify({modelCount:3,keyboard:true,exclusive:true,deepLinks:true,saveRetained:true}));
+  console.log("ANEVUM_COMPACT_IMPORT_HUB_QA_PASS",JSON.stringify({modelCount:3,focusable:true,nativeSummaryActivated:true,exclusive:true,deepLinks:true,saveRetained:true}));
 }
 
 async function neuronResearchBrowserQA(){
