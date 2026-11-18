@@ -18,7 +18,7 @@ import {dossierPage} from "../apps/anevum-institute-preview/dossier-ui.mjs";
 import {localStudioPage,localProfilePage} from "../apps/anevum-institute-preview/learner-ui.mjs";
 import {LOCAL_MEMBER_CLIENT} from "../apps/anevum-institute-preview/local-member-client.mjs";
 import {LOCAL_MEMBER_BROWSER_MODULE} from "../apps/anevum-institute-preview/local-member-schema.mjs";
-import {EVIDENCE_BROWSER_MODULE,EVIDENCE_FORMAT} from "../apps/anevum-institute-preview/evidence-schema.mjs";
+import {EVIDENCE_BROWSER_MODULE,EVIDENCE_FORMAT,validateHalfAdderNotebook,evidenceFromHalfAdderNotebook} from "../apps/anevum-institute-preview/evidence-schema.mjs";
 import {FRONTIER_GL_CLIENT} from "../apps/anevum-institute-preview/frontier-gl.mjs";
 import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
@@ -471,6 +471,65 @@ test("AND-to-Research Desk handoff requires full coverage and explicit draft app
   assert.doesNotMatch(workbench,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon/);
 });
 
+test("half-adder research notebook validates XOR/AND and requires explicit approval",async()=>{
+  const rows=[
+    {a:0,b:0,sum:0,carry:0},
+    {a:0,b:1,sum:1,carry:0},
+    {a:1,b:0,sum:1,carry:0},
+    {a:1,b:1,sum:0,carry:1}
+  ];
+  const notebook={
+    schemaVersion:1,kind:"browser-local-unverified-simulation",
+    experimentId:"CFP-101-HALF-001",courseId:"CFP-101",unitId:"CFP-101-U03",
+    model:"ideal-Boolean-half-adder",
+    assumptions:["binary inputs only","no physical propagation delay","no voltage, noise or power measurements"],
+    coverage:{observed:4,possible:4,complete:true},
+    observations:rows,independentlyVerified:false,academicCredit:false
+  };
+  assert.deepEqual(validateHalfAdderNotebook(notebook),[]);
+  const record=evidenceFromHalfAdderNotebook(notebook);
+  assert.equal(record.kind,"personal-unreviewed-draft");
+  assert.equal(record.courseId,"CFP-101");
+  assert.match(record.title,/half-adder/i);
+  assert.match(record.observations,/SIMULATED ONLY/);
+  assert.match(record.limitations,/not authenticated/);
+  const partial=structuredClone(notebook);partial.observations=rows.slice(0,2);partial.coverage={observed:2,possible:4,complete:false};
+  assert.deepEqual(validateHalfAdderNotebook(partial),[],"Partial manual imports may be used but are labeled incomplete");
+  for(const variant of [
+    {...notebook,observations:[...rows.slice(0,3),{a:1,b:1,sum:1,carry:1}]},
+    {...notebook,observations:[...rows.slice(0,3),{a:0,b:0,sum:0,carry:0}]},
+    {...notebook,observations:[...rows.slice(0,3),{a:1,b:1,sum:0,carry:1,physicalMeasured:true}]},
+    {...notebook,coverage:{observed:4,possible:4,complete:false}},
+    {...notebook,independentlyVerified:true},
+    {...notebook,academicCredit:true},
+    {...notebook,assumptions:["verified hardware"]},
+    {...notebook,provenance:"accredited university"},
+    {...notebook,observations:[...rows.slice(0,3),{a:"1",b:1,sum:0,carry:1}]}
+  ]){
+    assert.notDeepEqual(validateHalfAdderNotebook(variant),[],"Tampered half-adder record must fail");
+    assert.throws(()=>evidenceFromHalfAdderNotebook(variant),Error);
+  }
+  for(const invalid of [null,[],42,"not-json",{}])assert.notDeepEqual(validateHalfAdderNotebook(invalid),[]);
+  const lesson=await(await req("/learn/cfp-101/half-adders")).text();
+  const dossier=await(await req("/dossier")).text();
+  const client=await(await req("/client.js")).text();
+  const workbench=await(await req("/evidence-workbench.js")).text();
+  assert.match(lesson,/data-half-to-dossier disabled>Review in Research Desk/);
+  assert.match(dossier,/id="half-import"/);
+  assert.match(dossier,/data-half-import/);
+  assert.match(dossier,/data-half-apply hidden/);
+  assert.match(client,/halfTransfer\.disabled=visited\.size!==4/);
+  assert.match(client,/sessionStorage\.setItem\(halfHandoffKey,raw\)/);
+  assert.match(client,/window\.location\.assign\("\/institute-preview\/dossier#half-import"\)/);
+  assert.match(workbench,/function consumeHalfHandoff\(\)/);
+  assert.match(workbench,/sessionStorage\.removeItem\(key\)/);
+  assert.match(workbench,/stagedHalf=evidenceFromHalfAdderNotebook\(source\)/);
+  assert.match(workbench,/if\(source\?\.coverage\?\.complete!==true/);
+  assert.match(EVIDENCE_BROWSER_MODULE,/function validateHalfAdderNotebook/);
+  assert.match(EVIDENCE_BROWSER_MODULE,/function evidenceFromHalfAdderNotebook/);
+  assert.doesNotMatch(client+workbench,/XMLHttpRequest|WebSocket|sendBeacon|navigator\.sendBeacon/);
+});
+
 test("GPU and neuron same-tab research handoffs stay untrusted and require explicit Apply",async()=>{
   const gpu=await(await req("/laboratory/cluster-scheduling")).text();
   const neuron=await(await req("/laboratory/neuron-dynamics")).text();
@@ -771,12 +830,12 @@ test("neuron LIF simulator is deterministic, mathematically bounded and not a cl
   assert.equal((await req("/api/neuron-data")).status,404);
 });
 
-test("Research Desk groups all three locally checked teaching exports in native keyboard disclosures",async()=>{
+test("Research Desk groups all four locally checked teaching exports in native keyboard disclosures",async()=>{
   const dossier=await(await req("/dossier")).text();
   assert.match(dossier,/data-import-hub/);
-  assert.equal((dossier.match(/\bdata-import-source(?=[\s=>])/g)||[]).length,3);
-  for(const id of ["logic-import","cluster-import","neuron-import"])assert.match(dossier,new RegExp('id="'+id+'"'));
-  for(const picker of ["data-lab-import","data-cluster-import","data-neuron-import"])assert.match(dossier,new RegExp(picker));
+  assert.equal((dossier.match(/\bdata-import-source(?=[\s=>])/g)||[]).length,4);
+  for(const id of ["logic-import","half-import","cluster-import","neuron-import"])assert.match(dossier,new RegExp('id="'+id+'"'));
+  for(const picker of ["data-lab-import","data-half-import","data-cluster-import","data-neuron-import"])assert.match(dossier,new RegExp(picker));
   assert.match(dossier,/Import experiment results|Bring in experiment results/);
   assert.match(dossier,/data-evidence-save/);
   assert.match(dossier,/data-evidence-export/);
