@@ -8,15 +8,18 @@ import worker from "../apps/anevum-institute-preview/worker.mjs";
 import {CFP_101,validateCurriculum} from "../apps/anevum-institute-preview/curriculum.mjs";
 import {studyToolsHtml} from "../apps/anevum-institute-preview/study-tools.mjs";
 import {dossierPage} from "../apps/anevum-institute-preview/dossier-ui.mjs";
+import {localStudioPage,localProfilePage} from "../apps/anevum-institute-preview/learner-ui.mjs";
+import {LOCAL_MEMBER_CLIENT} from "../apps/anevum-institute-preview/local-member-client.mjs";
+import {LOCAL_MEMBER_BROWSER_MODULE} from "../apps/anevum-institute-preview/local-member-schema.mjs";
 import {EVIDENCE_BROWSER_MODULE,EVIDENCE_FORMAT} from "../apps/anevum-institute-preview/evidence-schema.mjs";
 import {FRONTIER_GL_CLIENT} from "../apps/anevum-institute-preview/frontier-gl.mjs";
 import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
-const PATHS=["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
+const PATHS=["","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
 const req=(path="",init={})=>worker.fetch(new Request(BASE+path,init));
 
-test("eight isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
+test("ten isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
   for(const path of PATHS){
     const response=await req(path);
     assert.equal(response.status,200,path);
@@ -194,6 +197,41 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.doesNotMatch(home+recognition,/<form\b|<iframe|onclick=|onload=|download=".*certificate"/i);
 });
 
+test("working private learner workspace and profile expose real known course, notes and identity controls",async()=>{
+  const studio=await(await req("/studio")).text();
+  const profile=await(await req("/profile")).text();
+  assert.equal(localStudioPage("/institute-preview").includes("data-member-studio"),true);
+  assert.equal(localProfilePage("/institute-preview").includes("data-member-profile"),true);
+  assert.match(studio,/data-studio-meter/);
+  assert.match(studio,/data-studio-resume/);
+  assert.match(studio,/data-studio-evidence-state/);
+  assert.match(studio,/CFP-101-U02/);
+  assert.match(studio,/Six additional units remain unpublished/);
+  assert.match(studio,/private|Private/);
+  assert.match(profile,/data-member-field="displayName"/);
+  assert.match(profile,/data-member-field="tagline"/);
+  assert.match(profile,/data-member-save/);
+  assert.match(profile,/data-member-export/);
+  assert.match(profile,/data-member-import/);
+  assert.match(profile,/data-member-delete/);
+  assert.match(profile,/data-member-interests/);
+  assert.match(profile,/unpublished/i);
+  for(const path of ["/local-member-schema.js","/local-member-client.js"]){
+    const response=await req(path);
+    assert.equal(response.status,200);
+    assert.equal(response.headers.get("Content-Type"),"text/javascript; charset=utf-8");
+    assert.match(response.headers.get("X-Robots-Tag"),/noindex/);
+    const js=await response.text();
+    assert.doesNotThrow(()=>new Script(js,{filename:path}),path);
+  }
+  assert.match(LOCAL_MEMBER_BROWSER_MODULE,/parseMemberCard/);
+  assert.match(LOCAL_MEMBER_CLIENT,/textContent/);
+  assert.doesNotMatch(LOCAL_MEMBER_CLIENT,/innerHTML|fetch\(|XMLHttpRequest|WebSocket|sendBeacon/);
+  for(const path of ["/member","/members","/profile/public","/api/member","/api/learning","/api/credentials"]){
+    assert.equal((await req(path)).status,404,path);
+  }
+});
+
 test("personal research dossier provides real editor controls without exposing protected membership operations",async()=>{
   const response=await req("/dossier");
   assert.equal(response.status,200);
@@ -321,6 +359,7 @@ test("preview client parses, and uses only local browser state",async()=>{
   assert.match(source,/navigator\.connection\.saveData/);
   assert.match(source,/visibilitychange/);
   assert.match(source,/import\("\/institute-preview\/evidence-workbench\.js"\)/);
+  assert.match(source,/import\("\/institute-preview\/local-member-client\.js"\)/);
   assert.match(source,/import\("\/institute-preview\/frontier-gl\.js"\)/);
   assert.match(source,/no analog voltage|analog voltage/i);
   assert.doesNotMatch(source,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.serviceWorker/);
@@ -349,6 +388,9 @@ test("styles are complete, mobile responsive and reduced-motion safe",async()=>{
   assert.match(css,/\.frontier-gl\{display:none!important/);
   assert.match(css,/\.frontier-video/);
   assert.match(css,/\.dossier-grid/);
+  assert.match(css,/\.studio-layout/);
+  assert.match(css,/\.studio-profile-grid/);
+  assert.match(css,/\.studio-activity-list/);
   assert.match(css,/\.dossier-receipt/);
   assert.match(css,/\.dossier-lab-import/);
   assert.match(css,/\.dossier-lab-apply\[hidden\]/);
@@ -385,7 +427,7 @@ test("new institute identity is an original isolated vector system",async()=>{
   assert.match(lesson,/class="lesson-article"/);
   const nav=home.match(/<nav class="desk-nav" aria-label="Primary navigation">([\s\S]*?)<\/nav>/)?.[1]||"";
   assert.equal((nav.match(/<a /g)||[]).length,5);
-  assert.match(nav,/My Desk/);
+  assert.match(nav,/My Studio/);
   assert.match(nav,/Society/);
   assert.match(nav,/Recognition/);
   assert.match(nav,/Academy/);
@@ -419,7 +461,7 @@ test("unowned routes, origins, methods and data endpoints are rejected",async()=
   const post=await req("",{method:"POST",body:"x"});
   assert.equal(post.status,405);
   assert.equal(post.headers.get("Allow"),"GET, HEAD");
-  for(const path of ["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/curriculum/cfp-101.json","/styles.css","/client.js","/evidence-schema.js","/evidence-workbench.js","/frontier-gl.js","/assets/lab-hero-v1.webp"]){
+  for(const path of ["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/curriculum/cfp-101.json","/styles.css","/client.js","/evidence-schema.js","/evidence-workbench.js","/local-member-schema.js","/local-member-client.js","/frontier-gl.js","/assets/lab-hero-v1.webp"]){
     const get=await req(path),head=await req(path,{method:"HEAD"});
     assert.equal(head.status,200,path);
     assert.equal((await head.arrayBuffer()).byteLength,0);
