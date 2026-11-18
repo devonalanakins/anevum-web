@@ -48,7 +48,7 @@ export const INSTITUTE_CLIENT = String.raw`
       var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
       var progress=nav.querySelector("[data-study-path-progress]");
       if(progress)progress.textContent=count+" of 3 practice checks recorded on this device.";
-      // Lessons U03, U04 and U05 remain untracked: an answer or model event is not course completion.
+      // Lessons U03–U06 remain untracked: an answer or model event is not course completion.
     });
     // Recognition preview: this is a browser-local practice trace, never an award.
     document.querySelectorAll("[data-evidence-panel]").forEach(function(panel){
@@ -103,7 +103,7 @@ export const INSTITUTE_CLIENT = String.raw`
   // Personal study notes are device-only and scoped to a versioned lesson ID.
   document.querySelectorAll("[data-study-lesson]").forEach(function(panel){
     var unitId=panel.getAttribute("data-study-lesson");
-    if(!/^CFP-101-U0[12345]$/.test(unitId||""))return;
+    if(!/^CFP-101-U0[123456]$/.test(unitId||""))return;
     var key="anevum.institute.study.v1."+unitId;
     var textarea=panel.querySelector("[data-study-text]");
     var feedback=panel.querySelector("[data-study-status]");
@@ -843,6 +843,116 @@ export const INSTITUTE_CLIENT = String.raw`
     render();
   })();
 
+  // CFP-101 Unit 06: one fictional 4-bit instruction encoding, not execution.
+  (function(){
+    var bench=document.querySelector("[data-assembly-bench]");
+    if(!bench)return;
+    var source=bench.querySelector("[data-assembly-source]");
+    var machine=bench.querySelector("[data-assembly-machine]");
+    var status=bench.querySelector("[data-assembly-status]");
+    var binary=bench.querySelector("[data-assembly-bits]");
+    var result=bench.querySelector("[data-assembly-result]");
+    var opcode=bench.querySelector("[data-assembly-opcode]");
+    var operand=bench.querySelector("[data-assembly-operand]");
+    var historyList=bench.querySelector("[data-assembly-history]");
+    var exportStatus=bench.querySelector("[data-assembly-export-status]");
+    var mnemonics=["LOAD","STORE","ADD","HALT"],history=[];
+    function decode(word){
+      if(typeof word!=="string"||!/^[01]{4}$/.test(word))
+        throw new TypeError("Machine word must contain exactly four binary digits");
+      var op=parseInt(word.slice(0,2),2);
+      var addr=parseInt(word.slice(2),2);
+      if(op===3&&addr!==0)throw new RangeError("Reserved encoding: HALT requires operand 00");
+      var name=mnemonics[op];
+      return {bits:word,opcodeBits:word.slice(0,2),operandBits:word.slice(2),
+        assembly:op===3?"HALT":name+" "+addr};
+    }
+    function assemble(line){
+      if(typeof line!=="string"||line.length>32)throw new TypeError("Assembly must be at most 32 characters");
+      var clean=line.trim().toUpperCase().replace(/[ \t]+/g," ");
+      if(clean==="HALT")return "1100";
+      var match=/^(LOAD|STORE|ADD) ([0-3])$/.exec(clean);
+      if(!match)throw new RangeError("Use LOAD, STORE or ADD plus address 0–3; or HALT");
+      var op=mnemonics.indexOf(match[1]);
+      return op.toString(2).padStart(2,"0")+Number(match[2]).toString(2).padStart(2,"0");
+    }
+    function present(item,mode){
+      binary.textContent=item.bits;
+      opcode.textContent=item.opcodeBits;operand.textContent=item.operandBits;
+      result.textContent=item.assembly;
+      source.value=item.assembly;machine.value=item.bits;
+      history.push({direction:mode,assembly:item.assembly,bits:item.bits});
+      if(history.length>32)history.shift();
+      historyList.replaceChildren();
+      history.slice(-8).reverse().forEach(function(entry){
+        var li=document.createElement("li");
+        li.textContent=entry.direction+": "+entry.assembly+" = "+entry.bits;
+        historyList.appendChild(li);
+      });
+      status.textContent=mode+" successful: "+item.assembly+" is "+item.bits+
+        ". This is a fictional encoding, not a computer instruction executed here.";
+    }
+    bench.querySelector("[data-assembly-form]").addEventListener("submit",function(event){
+      event.preventDefault();
+      try{present(decode(assemble(source.value)),"Assembly");}
+      catch(error){status.textContent="Assembly rejected: "+error.message+". Previous valid result unchanged.";}
+    });
+    bench.querySelector("[data-assembly-decode-form]").addEventListener("submit",function(event){
+      event.preventDefault();
+      try{present(decode(machine.value),"Disassembly");}
+      catch(error){status.textContent="Disassembly rejected: "+error.message+". Previous valid result unchanged.";}
+    });
+    bench.querySelectorAll("[data-assembly-example]").forEach(function(button){
+      button.addEventListener("click",function(){
+        source.value=button.getAttribute("data-assembly-example");
+        bench.querySelector("[data-assembly-form]").requestSubmit();
+      });
+    });
+    bench.querySelector("[data-assembly-clear]").addEventListener("click",function(){
+      history=[];historyList.replaceChildren();
+      var li=document.createElement("li");li.textContent="No conversions recorded.";
+      historyList.appendChild(li);
+      status.textContent="Page-session conversion history cleared. Your study notes were not changed.";
+      exportStatus.textContent="Only the conversion history was cleared; no external data was affected.";
+    });
+    bench.querySelector("[data-assembly-export]").addEventListener("click",function(){
+      try{
+        var record={schemaVersion:1,kind:"browser-local-unverified-simulation",
+          experimentId:"CFP-101-ASM-001",courseId:"CFP-101",unitId:"CFP-101-U06",
+          model:"fictional-four-bit-instruction-encoding",
+          operations:["LOAD","STORE","ADD","HALT"],instructionWidthBits:4,
+          reservedEncodings:["1101","1110","1111"],
+          conversionCount:history.length,recentConversions:history.slice(),
+          instructionsExecuted:false,realHardware:false,
+          independentlyVerified:false,academicCredit:false};
+        var blob=new Blob([JSON.stringify(record,null,2)+"\n"],{type:"application/json"});
+        var url=URL.createObjectURL(blob);
+        var link=document.createElement("a");link.href=url;
+        link.download="anevum-cfp101-assembly-001.json";link.hidden=true;
+        document.body.appendChild(link);link.click();link.remove();
+        setTimeout(function(){URL.revokeObjectURL(url);},5000);
+        exportStatus.textContent="JSON download requested. These are fictional conversions, not executed machine code, verified research or academic credit.";
+      }catch(_){exportStatus.textContent="Export failed in this browser. No data was transmitted.";}
+    });
+    var quiz=document.querySelector("[data-assembly-quiz]");
+    if(quiz){
+      var feedback=quiz.querySelector("[data-assembly-quiz-status]");
+      quiz.querySelectorAll("[data-assembly-answer]").forEach(function(button){
+        button.addEventListener("click",function(){
+          quiz.querySelectorAll("[data-assembly-answer]").forEach(function(choice){
+            choice.setAttribute("aria-pressed","false");
+            choice.classList.remove("selected","correct");
+          });
+          button.setAttribute("aria-pressed","true");button.classList.add("selected");
+          if(button.getAttribute("data-assembly-answer")==="0110"){
+            button.classList.add("correct");
+            feedback.textContent="Correct. STORE is 01 and address 2 is 10, producing 0110.";
+          }else feedback.textContent="Review the opcode and the two-bit address independently. STORE is opcode 01.";
+        });
+      });
+    }
+  })();
+
   // The GPU scheduling simulator is a browser-only, lazily loaded module.
   if(document.querySelector("[data-cluster-lab]")){
     import("/institute-preview/cluster-scheduler-client.js").catch(function(){
@@ -878,6 +988,7 @@ export const INSTITUTE_CLIENT = String.raw`
       ["Half adders",root+"/learn/cfp-101/half-adders","binary arithmetic combinational xor and sum carry lesson 03"],
       ["Clocked registers",root+"/learn/cfp-101/registers","sequential circuits memory d flip-flop clock rising edge four bit register lesson 04"],
       ["Addressed memory",root+"/learn/cfp-101/addressed-memory","ram words addresses read write store load memory access instruction concepts lesson 05"],
+      ["Assembly encoding",root+"/learn/cfp-101/assembly-code","four bit instructions fictional ISA opcode operand LOAD STORE ADD HALT assembler decoder machine code lesson 06"],
       ["AND-gate laboratory",root+"/laboratory/and-gate","simulation experiment notebook"],
       ["GPU cluster scheduling",root+"/laboratory/cluster-scheduling","compute gpu allocation fifo shortest job first simulator"],
       ["Neuron dynamics laboratory",root+"/laboratory/neuron-dynamics","neuroscience leaky integrate fire membrane potential threshold spike refractory"],
