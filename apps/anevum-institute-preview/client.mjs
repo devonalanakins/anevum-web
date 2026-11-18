@@ -35,6 +35,21 @@ export const INSTITUTE_CLIENT = String.raw`
     document.querySelectorAll("[data-course-activity-status]").forEach(function(el){
       el.textContent=(Number(result.transistor)+Number(result.lesson)+Number(result.experiment))+" / 3 preview activities recorded on this device · No academic credit";
     });
+    // Read-only lesson navigation: checkpoints correspond only to actual local checks.
+    document.querySelectorAll("[data-study-path]").forEach(function(nav){
+      var checks={"CFP-101-U01":result.transistor,"CFP-101-U02":result.lesson};
+      Object.keys(checks).forEach(function(id){
+        var marker=nav.querySelector('[data-study-path-status="'+id+'"]');
+        if(!marker)return;
+        var recorded=checks[id]===true;
+        marker.setAttribute("data-practice-status",recorded?"recorded":"not-recorded");
+        marker.textContent=recorded?"Check recorded on this device":"Check not recorded";
+      });
+      var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
+      var progress=nav.querySelector("[data-study-path-progress]");
+      if(progress)progress.textContent=count+" of 3 practice checks recorded on this device.";
+      // Lesson U03 remains untracked: a correct single answer is not course completion.
+    });
     // Recognition preview: this is a browser-local practice trace, never an award.
     document.querySelectorAll("[data-evidence-panel]").forEach(function(panel){
       var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
@@ -88,7 +103,7 @@ export const INSTITUTE_CLIENT = String.raw`
   // Personal study notes are device-only and scoped to a versioned lesson ID.
   document.querySelectorAll("[data-study-lesson]").forEach(function(panel){
     var unitId=panel.getAttribute("data-study-lesson");
-    if(!/^CFP-101-U0[12]$/.test(unitId||""))return;
+    if(!/^CFP-101-U0[123]$/.test(unitId||""))return;
     var key="anevum.institute.study.v1."+unitId;
     var textarea=panel.querySelector("[data-study-text]");
     var feedback=panel.querySelector("[data-study-status]");
