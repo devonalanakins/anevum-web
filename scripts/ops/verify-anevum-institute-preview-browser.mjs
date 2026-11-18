@@ -272,7 +272,8 @@ async function compactEvidenceImporterQA(){
   const exclusive=await evaluate("(()=>{const neuron=document.querySelector('#neuron-import');neuron.querySelector('summary').click();return {neuron:neuron.open,cluster:document.querySelector('#cluster-import').open,all:[...document.querySelectorAll('[data-import-source]')].filter(x=>x.open).length};})()");
   await waitFor(()=>evaluate("document.querySelector('#neuron-import').open&&!document.querySelector('#cluster-import').open"),"exclusive nested native disclosures");
   verify(exclusive.neuron,"The neuron importer failed to open",exclusive);
-  await navigate("/institute-preview/dossier#cluster-import");
+  await send("Page.navigate",{url:base+"/institute-preview/dossier#cluster-import"});
+  await waitFor(()=>evaluate("location.pathname==='/institute-preview/dossier'&&location.hash==='#cluster-import'&&document.readyState==='complete'"),"initial dossier fragment navigation");
   await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'&&document.querySelector('#cluster-import')?.open"),"deep-linked GPU research importer");
   const linked=await evaluate("(()=>({hub:document.querySelector('[data-import-hub]').open,gpu:document.querySelector('#cluster-import').open,neuron:document.querySelector('#neuron-import').open,hash:location.hash}))()");
   verify(linked.hub&&linked.gpu&&!linked.neuron&&linked.hash==="#cluster-import","GPU deep link must expose the correct file control",linked);
