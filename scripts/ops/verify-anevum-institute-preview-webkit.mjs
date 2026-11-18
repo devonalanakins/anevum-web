@@ -23,6 +23,7 @@ const routes=[
   "/institute-preview/learn/cfp-101/logic-gates",
   "/institute-preview/learn/cfp-101/half-adders",
   "/institute-preview/learn/cfp-101/registers",
+  "/institute-preview/learn/cfp-101/addressed-memory",
   "/institute-preview/laboratory/and-gate",
   "/institute-preview/laboratory/cluster-scheduling",
   "/institute-preview/laboratory/neuron-dynamics"
@@ -288,6 +289,77 @@ async function studyNotePortability(page){
   }));
 }
 
+async function memoryLesson(page){
+  const route="/institute-preview/learn/cfp-101/addressed-memory";
+  const key="anevum.institute.study.v1.CFP-101-U05";
+  await visit(page,route);
+  await page.evaluate(key=>localStorage.removeItem(key),key);
+  const bench=page.locator("[data-memory-bench]");
+  const read=bench.locator("[data-memory-read]");
+  const input=bench.locator("[data-memory-input]");
+  const count=bench.locator("[data-memory-count]");
+  check((await read.textContent())==="0000"&&(await input.textContent())==="0000"&&(await count.textContent())==="0",
+    "Memory model did not initialize with four zero words");
+  await bench.locator('[data-memory-address="2"]').click();
+  await bench.locator('[data-memory-bit="0"]').click();
+  await bench.locator('[data-memory-bit="2"]').click();
+  check((await input.textContent())==="1010"&&(await read.textContent())==="0000",
+    "Selecting write bits incorrectly changed stored data");
+  await bench.locator("[data-memory-write]").click();
+  check((await read.textContent())==="1010"&&(await count.textContent())==="1",
+    "Explicit write to memory word 2 failed");
+  await bench.locator('[data-memory-address="1"]').click();
+  for(const bit of ["0","1","2","3"])await bench.locator('[data-memory-bit="'+bit+'"]').click();
+  await bench.locator("[data-memory-write]").click();
+  check((await read.textContent())==="0101"&&(await input.textContent())==="0101"
+    &&(await count.textContent())==="2","Explicit write to memory word 1 failed");
+  await bench.locator('[data-memory-address="2"]').click();
+  const words=await bench.locator("[data-memory-cell]").allTextContents();
+  check((await read.textContent())==="1010"&&words.join(",")==="0000,0101,1010,0000",
+    "Writing a different address corrupted prior memory words",words);
+  const exportRecord=await bench.evaluate(async root=>{
+    const prior=URL.createObjectURL;
+    let captured=null;
+    const intercept=e=>{if(e.target.closest("a[download]"))e.preventDefault();};
+    document.addEventListener("click",intercept,true);
+    URL.createObjectURL=blob=>{captured=blob;return "blob:anevum-memory-webkit-fixture";};
+    try{
+      root.querySelector("[data-memory-export]").click();
+      return captured?JSON.parse(await captured.text()):null;
+    }finally{
+      URL.createObjectURL=prior;
+      document.removeEventListener("click",intercept,true);
+    }
+  });
+  check(exportRecord?.model==="ideal-four-word-four-bit-addressed-memory"
+    &&exportRecord?.writeCount===2&&exportRecord?.recentWrites?.length===2
+    &&exportRecord?.memory?.[2]?.join("")==="1010"
+    &&exportRecord?.independentlyVerified===false&&exportRecord?.academicCredit===false,
+    "Export must preserve true model scope and data",exportRecord);
+  await page.locator('[data-memory-answer="1010"]').click();
+  check((await page.locator("[data-memory-quiz-status]").textContent()).includes("Correct."),
+    "Memory address isolation self-check failed");
+  await bench.locator("[data-memory-reset]").click();
+  check((await read.textContent())==="0000"&&(await count.textContent())==="0"
+    &&(await bench.locator("[data-memory-cell]").allTextContents()).every(s=>s==="0000"),
+    "Memory teaching model reset failed");
+  await page.locator("[data-study-text]").fill("Synthetic note: writing address 1 leaves address 2 unchanged.");
+  await page.locator("[data-study-save]").click();
+  await page.reload({waitUntil:"load"});
+  check((await page.locator("[data-study-text]").inputValue()).includes("address 2 unchanged")
+    &&(await page.locator("[data-study-lesson]").getAttribute("data-study-lesson"))==="CFP-101-U05"
+    &&(await page.locator("[data-memory-count]").textContent())==="0",
+    "Notebook restore or page-session reset is incorrect");
+  await page.locator("[data-study-clear]").click();
+  await page.locator("[data-study-clear]").click();
+  check(await page.evaluate(key=>localStorage.getItem(key)===null,key),
+    "Synthetic test notes must be cleared");
+  await screenshot(page,"memory-mobile");
+  console.log("ANEVUM_WEBKIT_MEMORY_LESSON_PASS",
+    JSON.stringify({distinctAddresses:true,inputDoesNotWrite:true,explicitWrites:true,
+      exportHonest:true,selfCheck:true,reset:true,notesPersist:true,academicCredit:false}));
+}
+
 async function registerLesson(page){
   await visit(page,"/institute-preview/learn/cfp-101/registers");
   const bench=page.locator("[data-register-bench]");
@@ -415,6 +487,7 @@ try{
   await studyNotePortability(phone);
   await halfAdder(phone);
   await registerLesson(phone);
+  await memoryLesson(phone);
   await visit(phone,"/institute-preview/dossier");
   await screenshot(phone,"research-desk-mobile");
   await phoneContext.close();
@@ -428,7 +501,7 @@ try{
   await desktopContext.close();
   check(errors.length===0,"Unhandled WebKit page errors",errors);
   console.log("ANEVUM_INSTITUTE_WEBKIT_PREFLIGHT_PASS",
-    JSON.stringify({routes:30,touchMenu:true,registerLesson:true,studyNotesPreserved:true,unsavedNavigationGuard:true,portableNoteImport:true,halfAdderHandoff:true,
+    JSON.stringify({routes:32,touchMenu:true,registerLesson:true,memoryLesson:true,studyNotesPreserved:true,unsavedNavigationGuard:true,portableNoteImport:true,halfAdderHandoff:true,
       ownerSafariAcceptance:false,publicDeployment:false}));
 }finally{
   if(browser)await browser.close();
