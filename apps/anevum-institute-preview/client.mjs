@@ -103,7 +103,7 @@ export const INSTITUTE_CLIENT = String.raw`
   // Personal study notes are device-only and scoped to a versioned lesson ID.
   document.querySelectorAll("[data-study-lesson]").forEach(function(panel){
     var unitId=panel.getAttribute("data-study-lesson");
-    if(!/^CFP-101-U0[123]$/.test(unitId||""))return;
+    if(!/^CFP-101-U0[1234]$/.test(unitId||""))return;
     var key="anevum.institute.study.v1."+unitId;
     var textarea=panel.querySelector("[data-study-text]");
     var feedback=panel.querySelector("[data-study-status]");
@@ -755,6 +755,7 @@ export const INSTITUTE_CLIENT = String.raw`
       ["Transistor switching",root+"/learn/cfp-101/transistor-switching","semiconductor cmos lesson 01"],
       ["Boolean logic",root+"/learn/cfp-101/logic-gates","and gate lesson 02"],
       ["Half adders",root+"/learn/cfp-101/half-adders","binary arithmetic combinational xor and sum carry lesson 03"],
+      ["Clocked registers",root+"/learn/cfp-101/registers","sequential circuits memory d flip-flop clock rising edge four bit register lesson 04"],
       ["AND-gate laboratory",root+"/laboratory/and-gate","simulation experiment notebook"],
       ["GPU cluster scheduling",root+"/laboratory/cluster-scheduling","compute gpu allocation fifo shortest job first simulator"],
       ["Neuron dynamics laboratory",root+"/laboratory/neuron-dynamics","neuroscience leaky integrate fire membrane potential threshold spike refractory"],
