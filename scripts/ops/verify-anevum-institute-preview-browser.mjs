@@ -94,7 +94,7 @@ async function testPage(pathname,label,width,height){
     verify(layout.courseTop<layout.schoolsTop&&layout.courseTop<height,"Mobile Academy must show the published learning opportunity before planned schools",{width,layout});
   }
   if((label==="studio"||label==="profile")&&(width===390||width===1440)){
-    const start=await evaluate("(()=>{const item=document.querySelector('[data-member-studio] .studio-activity-list,[data-member-profile] [data-member-field=displayName]');return item?.getBoundingClientRect().top??9999})()");
+    const start=await evaluate("(()=>{const item=document.querySelector('[data-member-studio] #studio-course-title,[data-member-profile] [data-member-field=displayName]');return item?.getBoundingClientRect().top??9999})()");
     verify(start<height-20,"Working Studio/profile activity must appear in initial screen",{label,width,height,start});
   }
   if(label==="dossier"&&(width===390||width===1440)){
