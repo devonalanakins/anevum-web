@@ -83,6 +83,7 @@ if(panel){
   });
   labImporter.addEventListener("change",async function(){
     stagedLab=null;labApply.hidden=true;
+    labFeedback.textContent="Checking laboratory notebook format and Boolean values…";
     const file=labImporter.files?.[0];
     if(!file)return;
     try{
