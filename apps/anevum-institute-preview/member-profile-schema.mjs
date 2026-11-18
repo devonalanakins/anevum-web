@@ -23,10 +23,10 @@ export function validateMemberProfile(value){
   for(const key of Object.keys(value))if(!FIELDS.includes(key))errors.push("Unexpected field: "+key);
   for(const key of FIELDS)if(!Object.hasOwn(value,key))errors.push("Missing field: "+key);
   if(value.schemaVersion!==1||value.kind!=="device-local-unverified-profile")errors.push("Only unverified local profile drafts are accepted");
-  if(typeof value.displayName!=="string"||value.displayName.trim().length<2||value.displayName.length>48||/[\\u0000-\\u001f<>]/.test(value.displayName||""))errors.push("Display name must be 2–48 safe characters");
+  if(typeof value.displayName!=="string"||value.displayName.trim().length<2||value.displayName.length>48||/[\u0000-\u001f<>]/.test(value.displayName||""))errors.push("Display name must be 2–48 safe characters");
   if(typeof value.handle!=="string"||!/^[a-z0-9](?:[a-z0-9-]{1,22}[a-z0-9])$/.test(value.handle||""))errors.push("Local handle must be 3–24 lowercase letters, digits or hyphens");
   if(!MEMBER_FOCI.includes(value.focus))errors.push("Choose a supported field of study");
-  if(typeof value.about!=="string"||value.about.length>360||/[\\u0000-\\u001f]/.test(value.about||""))errors.push("Introduction must be 360 characters or fewer without control characters");
+  if(typeof value.about!=="string"||value.about.length>360||/[\u0000-\u001f]/.test(value.about||""))errors.push("Introduction must be 360 characters or fewer without control characters");
   if(!MEMBER_THEMES.includes(value.theme))errors.push("Choose a supported profile theme");
   return errors;
 }
@@ -59,4 +59,4 @@ export const MEMBER_PROFILE_BROWSER_MODULE=[
   canonicalMemberProfile.toString(),makeMemberProfileExport.toString(),
   readMemberProfileExport.toString(),
   "export {MEMBER_PROFILE_FORMAT,MEMBER_PROFILE_KEY,MEMBER_PROFILE_MAX_BYTES,MEMBER_FOCI,MEMBER_THEMES,normalizeMemberProfile,validateMemberProfile,canonicalMemberProfile,makeMemberProfileExport,readMemberProfileExport};"
-].join("\\n")+"\\n";
+].join("\n")+"\n";
