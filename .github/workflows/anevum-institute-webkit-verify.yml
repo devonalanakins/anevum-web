@@ -16,6 +16,11 @@ permissions:
 jobs:
   webkit-preflight:
     runs-on: ubuntu-24.04
+    # Microsoft Playwright's prebuilt browser image avoids slow apt download
+    # failures on transient Ubuntu mirrors. Pin image and npm package together.
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --user 1001
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -26,8 +31,8 @@ jobs:
         run: node --check scripts/ops/verify-anevum-institute-preview-webkit.mjs
       - name: Install pinned test-only Playwright without changing repo dependencies
         run: npm install --no-save --no-package-lock --ignore-scripts --no-audit --no-fund playwright@1.56.1
-      - name: Install WebKit browser and Linux dependencies
-        run: npx playwright install --with-deps webkit
+      - name: Confirm pinned WebKit image has its browser installed
+        run: test -d /ms-playwright && npx --no-install playwright --version
       - name: Run loopback-only WebKit phone and desktop acceptance preflight
         run: node scripts/ops/verify-anevum-institute-preview-webkit.mjs
       - name: Preserve WebKit screenshots for visual review
