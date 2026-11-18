@@ -208,6 +208,10 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   for(const [html,key] of [[a,"CFP-101-U01"],[b,"CFP-101-U02"],[c,"CFP-101-U03"]]){
     assert.match(html,new RegExp('data-study-lesson="'+key+'"'));
     assert.match(html,/data-study-save/);
+    assert.match(html,/data-study-import/);
+    assert.match(html,/data-study-import-apply hidden/);
+    assert.match(html,/Bring back exported notes for this lesson/);
+    assert.match(html,/your current text and saved notes stay unchanged until you explicitly apply/i);
     assert.match(html,/data-study-download/);
     assert.match(html,/data-study-bookmark aria-pressed="false"/);
     assert.match(html,/data-study-clear/);
@@ -227,6 +231,14 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   assert.match(client,/Unsaved notes\. Select Save notes or Bookmark this lesson/);
   assert.match(client,/var current=textarea\?textarea\.value\.slice\(0,8000\):""/);
   assert.doesNotMatch(client,/writeNotes\(saved\.note,next\)/);
+  assert.match(client,/importInput\.addEventListener\("change",async function/);
+  assert.match(client,/file\.size>40960/);
+  assert.match(client,/raw\.startsWith\(prefix\)/);
+  assert.match(client,/raw\.endsWith\("\\n"\)/);
+  assert.match(client,/imported\.length>8000/);
+  assert.match(client,/importApply\.addEventListener\("click",function/);
+  assert.match(client,/Imported notes applied to editor, not saved/);
+  assert.doesNotMatch(client,/localStorage\.setItem\(key,stagedImportedNotes\)/);
 });
 
 test("CFP-101 reader exposes curriculum-grounded navigation without invented completion",async()=>{
