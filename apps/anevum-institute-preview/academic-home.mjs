@@ -24,7 +24,7 @@ const HOME=`
           <div class="academic-card-overline">Foundational computing · CFP-101</div>
           <h2>Computing From First Principles</h2>
           <p>Start at the transistor. Move through binary logic, gates and arithmetic using working explanations and interactive models.</p>
-          <div class="academic-card-status"><span>4 lessons available</span><span>4 units in development</span></div>
+          <div class="academic-card-status"><span>5 lessons available</span><span>3 units in development</span></div>
           <a href="%BASE%/academy/cfp-101">View course and syllabus <span aria-hidden="true">→</span></a>
           <div class="academic-card-bottom">
             <div><strong>03</strong><span>Computing lab models</span></div>
@@ -51,9 +51,9 @@ const HOME=`
     </div>
     <div class="academic-offering-grid">
       <article class="academic-offering">
-        <div class="academic-offering-top"><span>COURSE · CFP-101</span><span class="academic-status">4 LESSONS READY</span></div>
+        <div class="academic-offering-top"><span>COURSE · CFP-101</span><span class="academic-status">5 LESSONS READY</span></div>
         <h3>Computing From First Principles</h3>
-        <p>Semiconductors, Boolean logic, binary arithmetic and clocked registers. An eight-unit curriculum in development, with the first four introductory lessons available.</p>
+        <p>Semiconductors, Boolean logic, binary arithmetic, clocked registers and addressed memory. An eight-unit curriculum in development, with the first five introductory lessons available.</p>
         <a href="%BASE%/academy/cfp-101">Explore CFP-101 <span aria-hidden="true">→</span></a>
       </article>
       <article class="academic-offering">
