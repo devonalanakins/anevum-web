@@ -14,7 +14,8 @@ test("identity review masters are accessible vector-only drafts, not published m
     assert.match(svg,/<desc id="desc">/);
     assert.match(svg,/not an approved public mark/);
     assert.match(svg,/<path /);
-    assert.doesNotMatch(svg,/<(?:script|image|foreignObject|text|use|style)\b|\b(?:href|onload|onclick)=|url\(|https?:\/\//i,
+    const withoutRequiredSvgNamespace=svg.replace("http://www.w3.org/2000/svg","");
+    assert.doesNotMatch(withoutRequiredSvgNamespace,/<(?:script|image|foreignObject|text|use|style)\b|\b(?:href|onload|onclick)=|url\(|https?:\/\//i,
       "Review vectors may not include active, remote, external, font-dependent or embedded content");
     const paints=[...svg.matchAll(/(?:stroke|fill)="(#[a-fA-F0-9]{6})"/g)].map(m=>m[1].toUpperCase());
     assert.ok(paints.length>=2);
