@@ -262,6 +262,8 @@ export const INSTITUTE_CLIENT = String.raw`
     var meter=lab.querySelector("[data-lab-meter]");
     var note=lab.querySelector("[data-observation]");
     var exportNotice=lab.querySelector("[data-export-status]");
+    var handoff=lab.querySelector("[data-to-dossier]");
+    var handoffKey="anevum.institute.handoff.and.v1";
     function render(){
       var result=a&&b?1:0;
       var bits=Number(a)+""+Number(b);
@@ -285,6 +287,7 @@ export const INSTITUTE_CLIENT = String.raw`
       });
       if(progress)progress.textContent=visited.size+" of 4 input combinations tested";
       if(meter)meter.style.width=(visited.size*25)+"%";
+      if(handoff)handoff.disabled=visited.size!==4;
       if(note)note.textContent=visited.size===4
         ?"Experiment completed. You have verified the full truth table for AND. This preview records completion on this device only."
         :"Predict the output, then toggle inputs. The AND output is 1 only when both switches are on.";
@@ -301,10 +304,10 @@ export const INSTITUTE_CLIENT = String.raw`
       a=false;b=false;visited=new Set();observations=[];render();
       if(exportNotice)exportNotice.textContent="Notebook reset. Only the initial 00 observation remains.";
     });
-    var exporter=lab.querySelector("[data-export]");
-    if(exporter)exporter.addEventListener("click",function(){
-      // Exact values are simulated Boolean outputs, never physical measurements.
-      var record={
+    // Build the same truthful notebook for file export and local handoff.
+    // The receiving workbench treats sessionStorage as untrusted input.
+    function makeNotebook(){
+      return {
         schemaVersion:1,
         experimentId:"CFP-101-AND-001",
         model:"ideal-two-input-boolean-and",
@@ -316,6 +319,11 @@ export const INSTITUTE_CLIENT = String.raw`
         };}),
         coverage:{observed:observations.length,possible:4,complete:observations.length===4}
       };
+    }
+    var exporter=lab.querySelector("[data-export]");
+    if(exporter)exporter.addEventListener("click",function(){
+      // A notebook file remains portable and independent of browser storage.
+      var record=makeNotebook();
       var file=new Blob([JSON.stringify(record,null,2)+"\n"],{type:"application/json"});
       var url=URL.createObjectURL(file);
       var anchor=document.createElement("a");
@@ -327,6 +335,22 @@ export const INSTITUTE_CLIENT = String.raw`
       anchor.remove();
       setTimeout(function(){URL.revokeObjectURL(url);},5000);
       if(exportNotice)exportNotice.textContent="Download requested for "+observations.length+" simulated observation"+(observations.length===1?"":"s")+". Check browser download permissions if no file appears.";
+    });
+    if(handoff)handoff.addEventListener("click",function(){
+      if(visited.size!==4){
+        if(exportNotice)exportNotice.textContent="Visit all four Boolean input pairs before transferring a complete notebook.";
+        return;
+      }
+      try{
+        var encoded=JSON.stringify(makeNotebook());
+        if(encoded.length>8192)throw new Error("Session notebook exceeds 8 KiB");
+        sessionStorage.setItem(handoffKey,encoded);
+        if(sessionStorage.getItem(handoffKey)!==encoded)throw new Error("Session transfer is unavailable");
+        // A local, single-tab navigation. No network submission or automatic save.
+        window.location.assign("/institute-preview/dossier#logic-import");
+      }catch(_){
+        if(exportNotice)exportNotice.textContent="The browser could not prepare the same-tab handoff. Export JSON instead and import it in Research Desk.";
+      }
     });
     render();
   }
