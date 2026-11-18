@@ -12,6 +12,8 @@ const pages=[
   ["/institute-preview","home"],
   ["/institute-preview/recognition","recognition"],
   ["/institute-preview/dossier","dossier"],
+  ["/institute-preview/studio","studio"],
+  ["/institute-preview/profile","profile"],
   ["/institute-preview/academy","academy"],
   ["/institute-preview/academy/cfp-101","course"],
   ["/institute-preview/learn/cfp-101/transistor-switching","transistor"],
@@ -62,6 +64,7 @@ async function testPage(pathname,label,width,height){
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
   await navigate(pathname);
   if(label==="dossier")await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.getAttribute('data-evidence-ready')==='true'"),"dossier editor loading");
+  if(label==="studio"||label==="profile")await waitFor(()=>evaluate("document.querySelector('[data-member-studio],[data-member-profile]')?.dataset.memberReady==='true'"),"learner workspace module");
   const state=await evaluate("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('main h1')?.textContent.trim(),mainCount:document.querySelectorAll('main').length,h1Count:document.querySelectorAll('h1').length,skip:!!document.querySelector('a.skip[href=\"#main\"]'),desktop:!!document.querySelector('nav.desk-nav[aria-label=\"Primary navigation\"]'),mobile:!!document.querySelector('details.mobile-menu'),mobileVisible:getComputedStyle(document.querySelector('details.mobile-menu')).display!=='none',width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,robots:document.querySelector('meta[name=\"robots\"]')?.content,scriptCount:document.scripts.length,allLinksLabelled:[...document.querySelectorAll('a[href]')].every(a=>!!(a.textContent.trim()||a.getAttribute('aria-label'))),scriptsLoaded:!!document.querySelector('script[src=\"/institute-preview/client.js\"]')}))()");
   const identity=await evaluate("(()=>{const mark=document.querySelector('img.identity-mark');const scene=document.querySelector('.hero');const frontier=document.querySelector('.frontier-facility-art');const reader=document.querySelector('.lesson-article');return {markLoaded:!!mark&&mark.complete&&mark.naturalWidth===160,sceneCorrect:!scene||(!!frontier&&getComputedStyle(frontier).backgroundImage.includes('gradient')&&!!document.querySelector('.facility-poster')),readerBackground:reader?getComputedStyle(reader).backgroundColor:null,navSize:document.querySelectorAll('nav.desk-nav a').length}})()");
   verify(identity.markLoaded&&identity.sceneCorrect&&identity.navSize===5,"New identity, scene or navigation is missing",{label,width,identity});
@@ -89,6 +92,10 @@ async function testPage(pathname,label,width,height){
   if(label==="academy"&&width===390){
     const layout=await evaluate("(()=>({courseTop:document.querySelector('.course-card')?.getBoundingClientRect().top,schoolsTop:document.querySelector('.catalog-layout>.aside-panel')?.getBoundingClientRect().top}))()");
     verify(layout.courseTop<layout.schoolsTop&&layout.courseTop<height,"Mobile Academy must show the published learning opportunity before planned schools",{width,layout});
+  }
+  if((label==="studio"||label==="profile")&&(width===390||width===1440)){
+    const start=await evaluate("(()=>{const item=document.querySelector('[data-member-studio] .studio-activity-list,[data-member-profile] [data-member-field=displayName]');return item?.getBoundingClientRect().top??9999})()");
+    verify(start<height-20,"Working Studio/profile activity must appear in initial screen",{label,width,height,start});
   }
   if(label==="dossier"&&(width===390||width===1440)){
     const firstField=await evaluate("document.querySelector('[data-evidence-field=title]').getBoundingClientRect().top");
@@ -215,6 +222,29 @@ async function interactions(){
   verify(importedLab.title.includes("Boolean AND study (4 of 4 states)")&&importedLab.observations.includes("11 -> 1")&&importedLab.observations.includes("Simulated (not measured)")&&importedLab.limitations.includes("not independently reviewed")&&importedLab.feedback.includes("copied into the editor")&&importedLab.local===null,"Lab import must preserve simulation qualifications and await explicit save",importedLab);
   console.log("INSTITUTE_LAB_TO_DOSSIER_QA_PASS",JSON.stringify({observed:4,forgeryRejected:true,applied:true,autoSaved:false}));
   console.log("INSTITUTE_DOSSIER_QA_PASS",JSON.stringify({digest:savedDossier.digest,persistence:true,export:parsedDossier.format,tamperRejected:true,confirmedDelete:true}));
+  // The Canvas-like Studio uses the SAME local activity flags; the member card is
+  // private, unissued and independent of notes, award state, and Command identity.
+  await navigate("/institute-preview/studio");
+  await waitFor(()=>evaluate("document.querySelector('[data-member-studio]')?.dataset.memberReady==='true'"),"Studio client");
+  const studioBefore=await evaluate("(()=>({name:document.querySelector('[data-studio-name]').textContent,count:document.querySelector('[data-studio-count]').textContent,progress:document.querySelector('[data-studio-meter]').getAttribute('aria-valuenow'),next:document.querySelector('[data-studio-resume]').getAttribute('href'),states:[...document.querySelectorAll('[data-studio-activity]')].map(x=>x.dataset.status),evidence:document.querySelector('[data-studio-evidence-state]').textContent}))()");
+  verify(studioBefore.name==="Independent learner"&&studioBefore.count==="3 of 3"&&studioBefore.progress==="3"&&studioBefore.states.every(x=>x==="local-complete")&&studioBefore.evidence.includes("No saved research dossier"),"Studio must show real local progress, never an invented award",studioBefore);
+  await navigate("/institute-preview/profile");
+  await waitFor(()=>evaluate("document.querySelector('[data-member-profile]')?.dataset.memberReady==='true'"),"member-card editor");
+  const profileWrite=await evaluate("(()=>{const field=document.querySelector('[data-member-field=displayName]');const tagline=document.querySelector('[data-member-field=tagline]');field.value='Ada Experimenter';field.dispatchEvent(new Event('input',{bubbles:true}));tagline.value='I build reproducible logic experiments.';tagline.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('[data-member-interest=Physics]').click();document.querySelector('[data-member-save]').click();const saved=JSON.parse(localStorage.getItem('anevum.institute.member-card.v1'));return {name:saved.displayName,tagline:saved.tagline,physics:saved.interests.includes('Physics'),status:document.querySelector('[data-member-status]').textContent,visible:document.querySelector('[data-member-name]').textContent};})()");
+  verify(profileWrite.name==="Ada Experimenter"&&profileWrite.physics&&profileWrite.visible===profileWrite.name&&profileWrite.status.includes("saved on this device"),"Private profile could not be saved",profileWrite);
+  await navigate("/institute-preview/studio");
+  await waitFor(()=>evaluate("document.querySelector('[data-member-studio]')?.dataset.memberReady==='true'"),"Studio refreshed profile");
+  const profileInStudio=await evaluate("(()=>({name:document.querySelector('[data-studio-name]').textContent,interests:document.querySelector('[data-studio-interests]').textContent,progress:document.querySelector('[data-studio-count]').textContent}))()");
+  verify(profileInStudio.name===profileWrite.name&&profileInStudio.interests.includes("Physics")&&profileInStudio.progress==="3 of 3","Saved identity failed to appear beside existing work",profileInStudio);
+  await navigate("/institute-preview/profile");
+  await waitFor(()=>evaluate("document.querySelector('[data-member-profile]')?.dataset.memberReady==='true'"),"profile restoration");
+  const profileExport=await evaluate(`(async()=>{let captured=null;let name='';const old=URL.createObjectURL;const stop=e=>{if(e.target.matches('a[download]')){e.preventDefault();name=e.target.download;}};document.addEventListener('click',stop,true);URL.createObjectURL=blob=>{captured=blob;return 'blob:anevum-local-member';};try{document.querySelector('[data-member-export]').click();return {filename:name,body:captured?await captured.text():null};}finally{URL.createObjectURL=old;document.removeEventListener('click',stop,true);}})()`);
+  verify(profileExport.filename==="anevum-local-learner-card.json"&&JSON.parse(profileExport.body).profile.displayName==="Ada Experimenter","Portable learner card export broken",profileExport);
+  const forgedProfile=await evaluate(`(async()=>{const card=JSON.parse(localStorage.getItem('anevum.institute.member-card.v1'));const input=document.querySelector('[data-member-import]');const dt=new DataTransfer();dt.items.add(new File([JSON.stringify({format:'anevum-local-member-card/v1',profile:{...card,role:'administrator'}})],'forged.json',{type:'application/json'}));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));for(let i=0;i<30&&!document.querySelector('[data-member-status]').textContent.startsWith('Import rejected');i++)await new Promise(r=>setTimeout(r,15));return {status:document.querySelector('[data-member-status]').textContent,stored:JSON.parse(localStorage.getItem('anevum.institute.member-card.v1')).displayName};})()`);
+  verify(forgedProfile.status.includes("Unrecognized")&&forgedProfile.stored==="Ada Experimenter","Forged administrative profile import was not rejected",forgedProfile);
+  const deletion=await evaluate("(()=>{const btn=document.querySelector('[data-member-delete]');const card='anevum.institute.member-card.v1';const course='anevum.institute.cfp101.preview.v1';btn.click();const pending={label:btn.textContent,exists:localStorage.getItem(card)!==null};btn.click();return {pending,removed:localStorage.getItem(card)===null,courseProgress:JSON.parse(localStorage.getItem(course)).experiment,display:document.querySelector('[data-member-name]').textContent};})()");
+  verify(deletion.pending.label==="Confirm card deletion"&&deletion.pending.exists&&deletion.removed&&deletion.courseProgress&&deletion.display==="Independent learner","Private profile deletion must not erase course records",deletion);
+  console.log("INSTITUTE_MEMBER_STUDIO_QA_PASS",JSON.stringify({profileSaved:true,restored:true,exported:true,forgeryRejected:true,deleteConfirmed:true,progressPreserved:true}));
   // Notes are scoped to a lesson and must survive navigation without leaking to others.
   await navigate("/institute-preview/learn/cfp-101/transistor-switching");
   const notesSaved=await evaluate("(()=>{const root=document.querySelector('[data-study-lesson]');const text=root.querySelector('[data-study-text]');text.value='Input high enables nMOS; in the ideal model Q=0.';root.querySelector('[data-study-save]').click();root.querySelector('[data-study-bookmark]').click();return {key:root.getAttribute('data-study-lesson'),note:JSON.parse(localStorage.getItem('anevum.institute.study.v1.CFP-101-U01')).note,bookmark:root.querySelector('[data-study-bookmark]').getAttribute('aria-pressed'),status:root.querySelector('[data-study-status]').textContent};})()");
