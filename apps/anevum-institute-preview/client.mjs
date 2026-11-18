@@ -116,8 +116,12 @@ export const INSTITUTE_CLIENT = String.raw`
     var stagedImportedNotes=null;
     var importRequest=0;
     function clearStagedNotesImport(){
+      // Invalidate asynchronous file reads as well as any already-staged import.
+      // A subsequent edit, save, bookmark or deletion must win over stale work.
+      importRequest++;
       stagedImportedNotes=null;
       if(importApply)importApply.hidden=true;
+      if(importInput)importInput.value="";
     }
     var pendingDeletion=false;
     function report(message){if(feedback)feedback.textContent=message;}
@@ -206,8 +210,10 @@ export const INSTITUTE_CLIENT = String.raw`
     // A successful file read stages notes for explicit Apply, not for storage.
     if(importInput&&importApply)importInput.addEventListener("change",async function(){
       var file=importInput.files?.[0];
-      var request=++importRequest;
+      // Capture the selected File before clearing the input. Cancellation also
+      // clears its filename, including when a slow read is still pending.
       clearStagedNotesImport();
+      var request=importRequest;
       resetDelete();
       if(!file)return;
       try{
