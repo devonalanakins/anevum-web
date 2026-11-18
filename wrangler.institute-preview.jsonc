@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "anevum-institute-review-NOT-PRODUCTION",
+  "name": "anevum-institute-review-no-production",
   "main": "./apps/anevum-institute-preview/hosted-worker.mjs",
   "compatibility_date": "2026-11-18",
   "workers_dev": false,

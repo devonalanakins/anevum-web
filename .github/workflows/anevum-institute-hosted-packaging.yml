@@ -1,0 +1,48 @@
+name: ANEVUM Institute Hosted Preview Packaging
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/anevum-institute-preview/**"
+      - "tests/anevum-institute-hosted-preview.test.mjs"
+      - "wrangler.institute-preview.jsonc"
+      - ".github/workflows/anevum-institute-hosted-packaging.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  package-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Check hosted-preview adapter without remote credentials
+        run: |
+          node --check apps/anevum-institute-preview/hosted-adapter.mjs
+          node --check apps/anevum-institute-preview/hosted-worker.mjs
+          node --test tests/anevum-institute-hosted-preview.test.mjs
+      - name: Install pinned Wrangler for local packaging only
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Bundle Institute-only Worker without deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/anevum-institute-hosted-bundle"
+          npx --no-install wrangler deploy --config wrangler.institute-preview.jsonc --dry-run --outdir "$dir"
+          bundle_file="$(find "$dir" -type f \( -name '*.js' -o -name '*.mjs' \) -print -quit)"
+          test -n "$bundle_file"
+          test -s "$bundle_file"
+          BUNDLE_FILE="$bundle_file" node --input-type=module <<'NODE'
+          import {statSync} from 'node:fs';
+          const bytes=statSync(process.env.BUNDLE_FILE).size;
+          if(bytes<=0||bytes>8*1024*1024)throw Error('Review-only bundle outside safe size boundary');
+          console.log('ANEVUM_INSTITUTE_HOSTED_DRY_RUN_PASS',JSON.stringify({bytes}));
+          NODE
+      - name: Confirm no Cloudflare deploy was attempted
+        run: echo "Packaging verified locally only. No deployed preview, Access login, or production update."

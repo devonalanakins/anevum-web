@@ -9,6 +9,8 @@ on:
       - "scripts/ops/anevum-institute-preview-readiness.mjs"
       - "scripts/ops/verify-anevum-institute-preview-browser.mjs"
       - "tests/anevum-institute-preview.test.mjs"
+      - "tests/anevum-institute-hosted-preview.test.mjs"
+      - "wrangler.institute-preview.jsonc"
       - "tests/anevum-institute-preview-readiness.test.mjs"
       - "tests/anevum-identity-review.test.mjs"
       - "tests/member-learning-profile.test.mjs"
@@ -53,7 +55,7 @@ jobs:
           node --check scripts/ops/anevum-institute-preview-server.mjs
           node --check scripts/ops/verify-anevum-institute-preview-browser.mjs
       - name: Verify isolated educational content and route contracts
-        run: node --test tests/anevum-institute-preview.test.mjs tests/anevum-evidence-schema.test.mjs tests/anevum-local-member-card.test.mjs tests/anevum-local-member.test.mjs tests/anevum-identity-review.test.mjs tests/member-learning-profile.test.mjs
+        run: node --test tests/anevum-institute-hosted-preview.test.mjs tests/anevum-institute-preview.test.mjs tests/anevum-evidence-schema.test.mjs tests/anevum-local-member-card.test.mjs tests/anevum-local-member.test.mjs tests/anevum-identity-review.test.mjs tests/member-learning-profile.test.mjs
       - name: Verify fail-closed owner preview readiness diagnostic (synthetic only)
         run: node --test tests/anevum-institute-preview-readiness.test.mjs
       - name: Rehearse learning profile migration in disposable SQLite
