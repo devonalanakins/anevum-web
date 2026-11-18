@@ -16,7 +16,24 @@ export const FRONTIER_REVIEW_ART=Object.freeze({
   desktop:{name:"observatory-review-desktop.webp",width:1536,height:864,blobSha:"af1e38f88853c67a1c98b0d6b01ff83f8f192bb5"},
   mobile:{name:"observatory-review-mobile.webp",width:720,height:1126,blobSha:"408331d10e3e618ca10be55ce8e85925cafe3051"}
 });
+// Original, photorealistic industrial research facility concept created for this ANEVUM review.
+// Source is fictional digital architecture, not a claim of a physical campus. Owner approval PENDING.
+export const FACILITY_DESIGN_ART=Object.freeze({
+  previewEnabled:true,ownerApproved:false,source:"ANEVUM original generated design candidate 2026-11-17",
+  desktop:{name:"facility-concept-v2-desktop.webp",width:1672,height:941,bytes:189628,sha256:"721c18176b5b392f6f785bbc1ffd177d2d3a293713005db174331d0ab232588a",blobSha:"75724819a8243e72c71a3ca807cdbe70d04bc2d6"},
+  mobile:{name:"facility-concept-v2-mobile.webp",width:720,height:1126,bytes:130592,sha256:"a81a7e1e6ef5ccca4a264ee24f9419eca1d1c9551c1e757097d00aad8ac3acd9",blobSha:"7991d4919788079f56f05e94a132cd46f3be5592"}
+});
 export function frontierMediaMarkup(base){
+  // Review-only generated photorealistic facility: owner-approved final identity remains pending.
+  if(FACILITY_DESIGN_ART.previewEnabled){
+    return `<div class="frontier-media frontier-media--facility" aria-hidden="true" data-frontier-visual data-art-source="generated-facility-v2-review">
+      <div class="frontier-facility-art"></div>
+      <picture class="frontier-picture"><source media="(max-width:650px)" srcset="${base}/media/${FACILITY_DESIGN_ART.mobile.name}">
+        <img class="frontier-poster facility-poster" src="${base}/media/${FACILITY_DESIGN_ART.desktop.name}" alt="" width="1672" height="941" fetchpriority="high" decoding="async"></picture>
+      <div class="frontier-atmosphere"></div>
+      <canvas class="frontier-gl" data-frontier-gl role="presentation" aria-hidden="true"></canvas>
+    </div>`;
+  }
   if(FRONTIER_REVIEW_ART.previewEnabled){
     return `<div class="frontier-media" aria-hidden="true" data-frontier-visual data-art-source="pr813-review">
       <div class="frontier-art"></div>
