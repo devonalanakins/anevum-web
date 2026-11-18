@@ -48,5 +48,47 @@ jobs:
           if(bytes<=0||bytes>8*1024*1024)throw Error('Review-only bundle outside safe size boundary');
           console.log('ANEVUM_INSTITUTE_HOSTED_DRY_RUN_PASS',JSON.stringify({bytes}));
           NODE
-      - name: Confirm no Cloudflare deploy was attempted
-        run: echo "Packaging verified locally only. No deployed preview, Access login, or production update."
+      # Releasing the isolated Institute to Cloudflare is authorized for this PR
+      # only after the owner has pinned the exact known Worker and Access app.
+      # The next step never deploys production, and no broad Access rule is used.
+      - name: Report unavailable pinned preview configuration
+        if: github.event.pull_request.number == 816 && (vars.ANEVUM_WEB_PREVIEW_ACCESS_APP_ID == '' || vars.ANEVUM_WEB_PREVIEW_WORKER_UUID == '')
+        run: |
+          echo "ANEVUM_INSTITUTE_PREVIEW_NOT_DEPLOYED - pinned owner-only Access variables are absent."
+          echo "Protected hosted preview requires exact audited GitHub Actions variable pins." >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify exact owner-only Cloudflare Access before hosted preview
+        id: access
+        if: github.event.pull_request.number == 816 && vars.ANEVUM_WEB_PREVIEW_ACCESS_APP_ID != '' && vars.ANEVUM_WEB_PREVIEW_WORKER_UUID != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ANEVUM_WEB_PREVIEW_ACCESS_APP_ID: ${{ vars.ANEVUM_WEB_PREVIEW_ACCESS_APP_ID }}
+          ANEVUM_WEB_PREVIEW_WORKER_UUID: ${{ vars.ANEVUM_WEB_PREVIEW_WORKER_UUID }}
+        run: node scripts/verify-original-works-hosted-access.mjs
+      - name: Create owner-only Institute Preview without a production deployment
+        id: preview
+        if: steps.access.outcome == 'success'
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          # Wrangler derives exact Worker name from the dedicated no-bindings config.
+          # Never substitute 'wrangler deploy' here.
+          output="$(npx --no-install wrangler preview --config wrangler.institute-preview.jsonc --name institute-pr-816 --json)"
+          json="$(printf '%s\n' "$output" | sed -n '/^{/,$p')"
+          preview_url="$(printf '%s' "$json" | jq -er '.preview.urls[0]')"
+          echo "::add-mask::$preview_url"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+          echo "Isolated Institute Preview was created. Owner authentication and anonymous Access denial remain mandatory." >> "$GITHUB_STEP_SUMMARY"
+      - name: Prove all protected Preview routes deny anonymous access
+        if: steps.preview.outcome == 'success'
+        env:
+          BASE_URL: ${{ steps.preview.outputs.preview_url }}
+        run: node scripts/verify-original-works-protected-preview.mjs
+      - name: Record remaining authenticated Safari acceptance
+        if: steps.preview.outcome == 'success'
+        run: |
+          echo "Owner-authenticated iPhone Safari, screenshot, keyboard and media validation are pending." >> "$GITHUB_STEP_SUMMARY"
+          echo "No production merge, public deployment or academic accreditation is implied." >> "$GITHUB_STEP_SUMMARY"
