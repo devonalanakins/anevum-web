@@ -858,7 +858,7 @@ export const INSTITUTE_CLIENT = String.raw`
     var exportStatus=bench.querySelector("[data-assembly-export-status]");
     var mnemonics=["LOAD","STORE","ADD","HALT"],history=[];
     function decode(word){
-      if(typeof word!=="string"||!/^[01]{4}$/.test(word))
+      if(typeof word!=="string"||word.length!==4||!/^[01]{4}$/.test(word))
         throw new TypeError("Machine word must contain exactly four binary digits");
       var op=parseInt(word.slice(0,2),2);
       var addr=parseInt(word.slice(2),2);
