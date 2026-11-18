@@ -189,6 +189,9 @@ test("personal research dossier provides real editor controls without exposing p
     assert.match(html,new RegExp(control));
   }
   assert.match(html,/type="file"/);
+  assert.match(html,/data-lab-import/);
+  assert.match(html,/data-lab-apply hidden/);
+  assert.match(html,/data-lab-feedback/);
   assert.match(html,/browser storage is not encrypted/i);
   assert.equal(EVIDENCE_FORMAT,"anevum-personal-evidence-draft/v1");
   assert.match(EVIDENCE_BROWSER_MODULE,/function parseEvidenceEnvelope/);
@@ -268,6 +271,8 @@ test("styles are complete, mobile responsive and reduced-motion safe",async()=>{
   assert.match(css,/\.frontier-video/);
   assert.match(css,/\.dossier-grid/);
   assert.match(css,/\.dossier-receipt/);
+  assert.match(css,/\.dossier-lab-import/);
+  assert.match(css,/\.dossier-lab-apply\[hidden\]/);
   assert.match(css,/\.dossier-field input:focus-visible/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.frontier-atmosphere/);
   assert.match(css,/\/institute-preview\/assets\/lab-hero-v1\.webp/);
