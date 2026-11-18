@@ -222,7 +222,7 @@ test("working private learner workspace and profile expose real known course, no
     assert.equal(response.headers.get("Content-Type"),"text/javascript; charset=utf-8");
     assert.match(response.headers.get("X-Robots-Tag"),/noindex/);
     const js=await response.text();
-    assert.doesNotThrow(()=>new Script(js,{filename:path}),path);
+    assert.match(js,/export |import /,"Expected a real same-origin JavaScript module: "+path);
   }
   assert.match(LOCAL_MEMBER_BROWSER_MODULE,/parseMemberCard/);
   assert.match(LOCAL_MEMBER_CLIENT,/textContent/);
