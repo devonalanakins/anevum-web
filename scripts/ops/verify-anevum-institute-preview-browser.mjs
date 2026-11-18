@@ -112,7 +112,13 @@ async function interactions(){
   verify(["active","fallback"].includes(fx.status)&&fx.still,"WebGL must draw or reliably fall back to the existing art",fx);
   if(fx.status==="active"){
     await waitFor(()=>evaluate("Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0)>=2"),"shader animation frames");
-    console.log("INSTITUTE_WEBGL_RENDER_QA_PASS",JSON.stringify(fx));
+    await screenshot("home-webgl-active-390",false);
+    await send("Emulation.setDeviceMetricsOverride",{width:1440,height:900,deviceScaleFactor:1,mobile:false});
+    await navigate("/institute-preview");
+    await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='active'&&Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0)>=2"),"desktop WebGL shader frames");
+    await screenshot("home-webgl-active-1440",false);
+    await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    console.log("INSTITUTE_WEBGL_RENDER_QA_PASS",JSON.stringify({...fx,desktopFrames:true,mobileScreenshot:true,desktopScreenshot:true}));
   }else console.log("INSTITUTE_WEBGL_FALLBACK_QA_PASS",JSON.stringify(fx));
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
   await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='reduced-motion'"),"WebGL runtime preference switch");
