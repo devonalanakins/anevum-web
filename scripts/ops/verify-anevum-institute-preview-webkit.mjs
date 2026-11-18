@@ -129,6 +129,62 @@ async function studyNoteBookmark(page){
       restoredAfterReload:true,twoStepDeletion:true}));
 }
 
+async function studyUnsavedNavigation(page){
+  const lesson="/institute-preview/learn/cfp-101/logic-gates";
+  const syllabus=origin+"/institute-preview/academy/cfp-101";
+  const key="anevum.institute.study.v1.CFP-101-U02";
+  await visit(page,lesson);
+  await page.evaluate(key=>localStorage.removeItem(key),key);
+  await page.reload({waitUntil:"load"});
+  const note=page.locator("[data-study-text]");
+  const link=page.locator(".study-path-heading a");
+  const draft="Unsaved model notes should not disappear silently.";
+  await note.fill(draft);
+  let dismissed=0;
+  page.once("dialog",async dialog=>{
+    check(dialog.type()==="confirm"&&dialog.message().includes("unsaved lesson notes"),
+      "In-site unsaved note guard did not offer a truthful confirmation");
+    dismissed++;
+    await dialog.dismiss();
+  });
+  await link.click();
+  check(dismissed===1&&page.url()===origin+lesson
+    &&(await note.inputValue())===draft
+    &&(await page.evaluate(key=>localStorage.getItem(key),key))===null
+    &&(await page.locator("[data-study-status]").textContent()).includes("Navigation cancelled"),
+    "Cancelled navigation must retain unsaved editor text and keep storage untouched");
+  let accepted=0;
+  page.once("dialog",async dialog=>{
+    check(dialog.type()==="confirm","Keyboard navigation did not show confirmation");
+    accepted++;
+    await dialog.accept();
+  });
+  await link.focus();
+  await page.keyboard.press("Enter");
+  await page.waitForURL(syllabus,{timeout:12000});
+  check(accepted===1,"Accepted keyboard navigation was not confirmed exactly once");
+  await visit(page,lesson);
+  check((await page.locator("[data-study-text]").inputValue())===""
+    &&(await page.evaluate(key=>localStorage.getItem(key),key))===null,
+    "Accepted leave must not auto-save the discarded local draft");
+  const saved="Saved notes should not cause a navigation prompt.";
+  await page.locator("[data-study-text]").fill(saved);
+  await page.locator("[data-study-save]").click();
+  let unexpected=0;
+  const onDialog=async dialog=>{unexpected++;await dialog.dismiss();};
+  page.on("dialog",onDialog);
+  await page.locator(".study-path-heading a").click();
+  await page.waitForURL(syllabus,{timeout:12000});
+  page.off("dialog",onDialog);
+  check(unexpected===0&&(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).note,key))===saved,
+    "Saved lesson notes must navigate directly without prompting or data loss");
+  await page.evaluate(key=>localStorage.removeItem(key),key);
+  console.log("ANEVUM_WEBKIT_UNSAVED_NAVIGATION_PASS",JSON.stringify({
+    cancelPreservesEditor:true,keyboardAcceptLeaves:true,doesNotAutosave:true,
+    savedNavigationDoesNotPrompt:true,mobileBrowserCloseWarningNotAssumed:true
+  }));
+}
+
 async function studyNotePortability(page){
   const route="/institute-preview/learn/cfp-101/logic-gates";
   const key="anevum.institute.study.v1.CFP-101-U02";
@@ -297,6 +353,7 @@ try{
   await screenshot(phone,"academy-mobile");
   await mobileMenu(phone);
   await studyNoteBookmark(phone);
+  await studyUnsavedNavigation(phone);
   await studyNotePortability(phone);
   await halfAdder(phone);
   await visit(phone,"/institute-preview/dossier");
@@ -312,7 +369,7 @@ try{
   await desktopContext.close();
   check(errors.length===0,"Unhandled WebKit page errors",errors);
   console.log("ANEVUM_INSTITUTE_WEBKIT_PREFLIGHT_PASS",
-    JSON.stringify({routes:28,touchMenu:true,studyNotesPreserved:true,portableNoteImport:true,halfAdderHandoff:true,
+    JSON.stringify({routes:28,touchMenu:true,studyNotesPreserved:true,unsavedNavigationGuard:true,portableNoteImport:true,halfAdderHandoff:true,
       ownerSafariAcceptance:false,publicDeployment:false}));
 }finally{
   if(browser)await browser.close();
