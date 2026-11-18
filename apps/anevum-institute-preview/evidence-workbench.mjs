@@ -254,6 +254,40 @@ if(panel){
   }catch(error){
     report("Could not verify saved draft: "+humanError(error)+"; it has not been removed.");
   }
+  // Single-use, same-tab AND experiment handoff. Session storage is untrusted:
+  // validate the same strict notebook shape as manual file import, then wait for
+  // explicit Apply and Save. Never silently change editor fields or saved drafts.
+  function consumeAndLabHandoff(){
+    const handoffKey="anevum.institute.handoff.and.v1";
+    let raw=null;
+    try{raw=sessionStorage.getItem(handoffKey);}
+    catch(_){return;}
+    if(raw===null)return;
+    try{sessionStorage.removeItem(handoffKey);}
+    catch(_){
+      labFeedback.textContent="The browser could not clear its pending transfer. Export and import the notebook manually.";
+      return;
+    }
+    if(window.location.hash!=="#logic-import")return;
+    try{
+      if(raw.length>8192)throw new Error("Session notebook exceeds 8 KiB");
+      const source=JSON.parse(raw);
+      if(source?.coverage?.complete!==true||source?.coverage?.observed!==4){
+        throw new Error("Direct handoff requires all four Boolean input states");
+      }
+      stagedLab=evidenceFromAndLabNotebook(source);
+      labApply.hidden=false;
+      if(importHub)importHub.open=true;
+      for(const item of importSources)item.open=item.id==="logic-import";
+      labFeedback.textContent="Validated all four ideal Boolean states from a same-tab session transfer. Select Use checked simulation in this draft to replace the current editor fields. Nothing is saved or submitted automatically; origin and authorship are not verified.";
+      report("A checked simulated notebook is ready for your explicit approval. Any existing saved draft remains unchanged.");
+    }catch(error){
+      clearStagedLab();
+      labFeedback.textContent="Same-tab handoff rejected: "+humanError(error)+". Existing editor and saved draft were not changed. Export and import the notebook manually.";
+      report("The transferred simulation was not applied. Your existing research draft was not changed.");
+    }
+  }
+  consumeAndLabHandoff();
   panel.setAttribute("data-evidence-ready","true");
 }
 `;
