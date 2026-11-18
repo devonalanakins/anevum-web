@@ -172,5 +172,23 @@ body[data-area="research"]{background:var(--academic-paper);color:var(--academic
 @media(max-width:880px){.research-experiment-grid{grid-template-columns:1fr}.research-experiment h3{margin-top:14px}.research-method-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:750px){.research-intro .shell{padding-block:6px}.research-actions a{width:100%}.research-method-steps{gap:20px 10px}.research-next{flex-direction:column;align-items:stretch;gap:16px}.research-next a{width:100%}}
 @media(max-width:420px){.research-method-steps{grid-template-columns:1fr}.research-experiment{padding:17px}.research-experiment h3{font-size:27px}}
+/* CFP-101 compact reading pathway; status derives only from existing browser-local checks. */
+.study-path{margin:0 0 30px;padding:16px 18px 14px;border:1px solid #d0dfd5;background:#e8eee8;border-radius:7px;color:#243d3b}
+.study-path-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:11px;font:750 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.045em;text-transform:uppercase;color:#3a5e54}
+.study-path-heading a{color:#235d54;text-transform:none;text-decoration:underline;text-underline-offset:3px}
+.study-path-links{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0!important;padding:0!important}
+.study-path-links li{margin:0!important;min-width:0}
+.study-path-link{display:flex;align-items:center;gap:9px;min-height:58px;padding:10px;border:1px solid #c8d9cf;background:#f8f8f4;color:#284a43!important;border-radius:4px;text-decoration:none!important}
+.study-path-link[aria-current="page"]{border-color:#286356;background:#d7e6db;box-shadow:inset 0 0 0 1px #286356}
+.study-path-index{display:grid;place-items:center;flex:none;width:29px;height:29px;border-radius:50%;background:#dbe8df;font:750 11px/1 ui-monospace,Consolas,monospace;color:#30574f}
+.study-path-link[aria-current="page"] .study-path-index{background:#285c52;color:#fff}
+.study-path-details{display:flex;flex-direction:column;gap:2px;min-width:0}
+.study-path-details strong{font-size:12px;line-height:1.4}
+.study-path-details small{font-size:10px;color:#526c61;line-height:1.35}
+.study-path-details [data-practice-status="recorded"]{color:#216352;font-weight:700}
+.study-path-disclaimer{margin:11px 0 0!important;font-size:11px!important;line-height:1.55!important;color:#54695f!important}
+.study-path a:focus-visible{outline:3px solid #a37c3e;outline-offset:3px}
+@media(max-width:750px){.study-path{padding:12px;margin-bottom:22px}.study-path-links{gap:5px}.study-path-link{padding:8px;gap:6px}.study-path-index{width:25px;height:25px}.study-path-details strong{font-size:11px}.study-path-details small{font-size:9px}}
+@media(max-width:420px){.study-path-links{grid-template-columns:1fr}.study-path-link{min-height:44px}.study-path-details strong{font-size:12px}.study-path-details small{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.institution-home *{animation:none!important;transition:none!important}}
 `;
