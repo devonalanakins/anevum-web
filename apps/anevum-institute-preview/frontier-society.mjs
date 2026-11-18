@@ -9,7 +9,23 @@ export const FRONTIER_MEDIA=Object.freeze({
   mobile:{name:"frontier-cavern-mobile.webp",width:720,height:1024,sha256:"eb5265e36826ee1c10ba3b8b5b52cc0a5b335fc30bd3949bbd2cbd8ab188966e"},
   overlay:{name:"atmosphere-screenblend.mp4",width:1280,height:720,seconds:6,sha256:"d1b708ae3ced78670d507ffa9babeb2a6fe8763036cd4e4763bad55209e5d199"}
 });
+// Source-only reuse of two preserved PR #813 cinematic stills on the isolated design preview.
+// Not approved as the final Open Research Society art; new cavern art remains pending review.
+export const FRONTIER_REVIEW_ART=Object.freeze({
+  previewEnabled:true,productionApproved:false,sourcePR:813,
+  desktop:{name:"observatory-review-desktop.webp",width:1536,height:864,blobSha:"af1e38f88853c67a1c98b0d6b01ff83f8f192bb5"},
+  mobile:{name:"observatory-review-mobile.webp",width:720,height:1126,blobSha:"408331d10e3e618ca10be55ce8e85925cafe3051"}
+});
 export function frontierMediaMarkup(base){
+  if(FRONTIER_REVIEW_ART.previewEnabled){
+    return `<div class="frontier-media" aria-hidden="true" data-frontier-visual data-art-source="pr813-review">
+      <div class="frontier-art"></div>
+      <picture class="frontier-picture"><source media="(max-width:650px)" srcset="${base}/media/${FRONTIER_REVIEW_ART.mobile.name}">
+        <img class="frontier-poster" src="${base}/media/${FRONTIER_REVIEW_ART.desktop.name}" alt="" width="1536" height="864" fetchpriority="high" decoding="async"></picture>
+      <div class="frontier-atmosphere"></div>
+      <canvas class="frontier-gl" data-frontier-gl role="presentation" aria-hidden="true"></canvas>
+    </div>`;
+  }
   if(!FRONTIER_MEDIA.assetsBundled||!FRONTIER_MEDIA.ownerApproved){
     return '<div class="frontier-media" aria-hidden="true" data-frontier-visual><div class="frontier-art"></div><div class="frontier-atmosphere"></div><canvas class="frontier-gl" data-frontier-gl role="presentation" aria-hidden="true"></canvas></div>';
   }
