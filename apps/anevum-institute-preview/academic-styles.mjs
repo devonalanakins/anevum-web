@@ -130,6 +130,11 @@ body[data-area="academy"] .course-card{border-left:4px solid #2d6961}
 
 /* Research & Methods: real scientific instruments, evidence boundaries and editorial clarity. */
 .research-index{background:var(--academic-paper);color:var(--academic-ink)}
+body[data-area="research"]{background:var(--academic-paper);color:var(--academic-ink)}
+.research-intro h1{color:var(--academic-ink)!important}
+.research-intro p{color:#4d625c!important}
+.research-intro .research-disclosure{color:#52685e!important}
+.research-index .academic-heading-row h2,.research-index .research-status h2{color:var(--academic-ink)}
 .research-index .serif{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.045em}
 .research-index .serif em{font-style:normal;color:#2a6861}
 .research-intro{background:var(--academic-paper)!important;border-bottom:1px solid var(--academic-border)}
