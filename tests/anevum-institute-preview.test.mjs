@@ -70,7 +70,7 @@ test("Academy advertises only implemented curriculum lessons and real simulated 
   const lessonPaths=CFP_101.units.filter(unit=>unit.availability==="preview");
   assert.equal(lessonPaths.length,3);
   assert.match(html,/data-study-path aria-labelledby="academy-available-title"/);
-  assert.match(html,/3 published previews \/ 5 planned units/);
+  assert.match(html,/3 available previews \/ 5 planned units/);
   assert.equal((html.match(/class="academy-unit-link"/g)||[]).length,3);
   for(const unit of lessonPaths){
     assert.ok(html.includes('href="/institute-preview'+unit.lessonPath+'"'),"Missing implemented lesson "+unit.id);
