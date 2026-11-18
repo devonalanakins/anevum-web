@@ -37,7 +37,7 @@ function navigation(active){
     ["Institute","Society",BASE],
     ["Academics","Academy",BASE+"/academy"],
     ["Laboratories","Laboratory",BASE+"/laboratory/cluster-scheduling"],
-    ["Research","Recognition",BASE+"/recognition"],
+    ["Research","Research",BASE+"/research"],
     ["My Studio","My Studio",BASE+"/studio"]
   ];
   const makeLinks=()=>links.map(([label,key,href])=>`<a href="${href}"${(key===active||(active==="Course"||active==="Classroom")&&key==="Academy")?' aria-current="page"':''}>${label}</a>`).join("");
@@ -70,6 +70,62 @@ function layout(title,active,body){
 
 function home(){return layout("The Open Institute","Society",academicInstituteHome(BASE));}
 function recognition(){return layout("Recognition","Recognition",frontierRecognition(BASE));}
+
+function research(){
+  return layout("Research & Methods","Research",`<main id="main" tabindex="-1" class="site-main research-index">
+    <section class="page-hero research-intro" aria-labelledby="research-title">
+      <div class="shell">
+        <div class="kicker">ANEVUM / Research &amp; Methods / Founding preview</div>
+        <h1 id="research-title" class="serif">Inquiry starts with <em>a testable question.</em></h1>
+        <p>Explore transparent scientific teaching models, examine their assumptions and record what they actually demonstrate. The institute is being built around reproducible work, not claims of research it has not conducted.</p>
+        <div class="research-actions"><a class="academic-primary" href="${BASE}/dossier">Open the Research Desk <span aria-hidden="true">→</span></a><a class="academic-secondary" href="${BASE}/recognition">Read the proposed evidence standard <span aria-hidden="true">→</span></a></div>
+        <p class="research-disclosure">Independent education preview · No peer-reviewed findings, operating research departments, clinical validation or physical GPU cluster is claimed.</p>
+      </div>
+    </section>
+    <section class="shell academic-section" aria-labelledby="research-models-title">
+      <div class="academic-section-label"><span>01 / EXPERIMENT DIRECTORY</span><span>Available now · Three browser-based models</span></div>
+      <div class="academic-heading-row"><div><h2 id="research-models-title" class="serif">Inspect the model. <em>Challenge its limits.</em></h2><p>These are runnable learning instruments, not results from original empirical studies. Each model is explicit about what is simulated and what is not measured.</p></div></div>
+      <div class="research-experiment-grid">
+        <article class="research-experiment">
+          <div class="research-experiment-meta"><span>CFP-101 · DIGITAL LOGIC</span><strong>IDEAL MODEL</strong></div>
+          <h3>Boolean switching</h3><p>Change two inputs and reproduce all four rows of an AND-gate truth table.</p>
+          <p class="research-assumption"><strong>Boundary</strong> No transistor timings, voltage measurements or physical circuit simulation.</p>
+          <a href="${BASE}/laboratory/and-gate">Run the logic experiment <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="research-experiment">
+          <div class="research-experiment-meta"><span>COMPUTE-LAB-001 · SYSTEMS</span><strong>SIMULATED</strong></div>
+          <h3>GPU scheduling</h3><p>Compare idealized scheduling policies, queue behavior and slot utilization across a small example workload.</p>
+          <p class="research-assumption"><strong>Boundary</strong> No GPU hardware, real cluster access or performance benchmarks.</p>
+          <a href="${BASE}/laboratory/cluster-scheduling">Run the scheduling model <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="research-experiment">
+          <div class="research-experiment-meta"><span>NEURO-LAB-001 · COMPUTATION</span><strong>TEACHING MODEL</strong></div>
+          <h3>Neuron dynamics</h3><p>Explore threshold, leakage and refractory behavior in an idealized leaky integrate-and-fire neuron.</p>
+          <p class="research-assumption"><strong>Boundary</strong> No neural recordings, biological validation or clinical diagnosis.</p>
+          <a href="${BASE}/laboratory/neuron-dynamics">Run the neuron model <span aria-hidden="true">→</span></a>
+        </article>
+      </div>
+    </section>
+    <section class="research-methods" aria-labelledby="research-workflow-title"><div class="shell academic-section">
+      <div class="academic-section-label"><span>02 / PRACTICAL METHOD</span><span>Working local workflow · External review proposed</span></div>
+      <div class="academic-heading-row"><div><h2 id="research-workflow-title" class="serif">From observation <em>to a record.</em></h2><p>ANEVUM provides a private, browser-local place to describe and export investigations. Independent validation and publication workflows are future work.</p></div></div>
+      <ol class="research-method-steps">
+        <li><span>01</span><div><h3>Define the question</h3><p>Record an explicit hypothesis and the assumptions under which it could be tested.</p></div></li>
+        <li><span>02</span><div><h3>Run a model</h3><p>Vary inputs and save the model's generated observations as a portable JSON notebook.</p></div></li>
+        <li><span>03</span><div><h3>Document the evidence</h3><p>Import the simulation into your Research Desk; record method, limits and references locally.</p></div></li>
+        <li><span>04</span><div><h3>Separate review from practice</h3><p>Export the draft for scrutiny. No independent review, publication or credential is automatic.</p></div></li>
+      </ol>
+      <div class="research-next"><div><strong>Start a documented investigation</strong><p>Open the existing Research Desk and import a laboratory notebook. The record stays on this browser unless you export it.</p></div><a class="academic-primary" href="${BASE}/dossier">Go to Research Desk <span aria-hidden="true">→</span></a></div>
+    </div></section>
+    <section class="shell academic-section research-status" aria-labelledby="research-status-title">
+      <div class="academic-section-label"><span>03 / INSTITUTE STATUS</span><span>Scope and boundaries</span></div>
+      <h2 id="research-status-title" class="serif">An open research ambition, <em>not a claimed institution.</em></h2>
+      <p>AI model validation, distributed computing, mathematics, physics, neuroscience, biophysics and neuropsychology are intended directions. ANEVUM does not currently claim employed faculty, operating research departments, accreditation, university status, original clinical studies or issued academic credentials.</p>
+      <a class="academic-text-link" href="${BASE}/academy">Return to available coursework →</a>
+    </section>
+  </main>`);
+}
+
 function dossier(){return layout("Research Desk","My Studio",dossierPage(BASE));}
 function memberStudio(){return layout("My Studio","My Studio",localStudioPage(BASE));}
 function memberProfile(){return layout("Private Learner Card","My Studio",localProfilePage(BASE));}
@@ -195,7 +251,7 @@ function lab(){
   </main>`);
 }
 
-const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/recognition",recognition],[BASE+"/dossier",dossier],[BASE+"/studio",memberStudio],[BASE+"/profile",memberProfile],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/learn/cfp-101/half-adders",halfAdderLesson],[BASE+"/laboratory/and-gate",lab],[BASE+"/laboratory/cluster-scheduling",clusterScheduling],[BASE+"/laboratory/neuron-dynamics",neuronLab]]);
+const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/research",research],[BASE+"/recognition",recognition],[BASE+"/dossier",dossier],[BASE+"/studio",memberStudio],[BASE+"/profile",memberProfile],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/learn/cfp-101/half-adders",halfAdderLesson],[BASE+"/laboratory/and-gate",lab],[BASE+"/laboratory/cluster-scheduling",clusterScheduling],[BASE+"/laboratory/neuron-dynamics",neuronLab]]);
 
 const ASSETS=new Map([
   [BASE+"/curriculum/cfp-101.json",["application/json; charset=utf-8",JSON.stringify(CFP_101,null,2)+"\n"]],
