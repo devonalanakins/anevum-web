@@ -94,7 +94,7 @@ export const HALF_ADDER_LESSON_HTML = String.raw`
           <button type="button" data-half-export>Export observations (.json)</button>
           <button type="button" data-half-to-dossier disabled>Review in Research Desk →</button>
         </div>
-        <p class="half-fine" data-half-export-status role="status" aria-live="polite">After observing all four input pairs, you can transfer a single-use notebook to the Research Desk for local validation. No automatic saving, network request, enrollment, or independent verification occurs.</p>
+        <p class="half-fine" data-half-export-status role="status" aria-live="polite">After observing all four input pairs, you can transfer a single-use notebook to the Research Desk for local validation. Nothing is saved automatically. No network request, enrollment, or independent verification occurs.</p>
         <noscript><p class="half-fine">This simulator requires JavaScript; the equations and full truth table above remain readable.</p></noscript>
       </section>
 
