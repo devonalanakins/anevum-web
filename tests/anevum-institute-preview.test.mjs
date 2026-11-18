@@ -7,6 +7,7 @@ import {CFP_101,validateCurriculum} from "../apps/anevum-institute-preview/curri
 import {studyToolsHtml} from "../apps/anevum-institute-preview/study-tools.mjs";
 import {dossierPage} from "../apps/anevum-institute-preview/dossier-ui.mjs";
 import {EVIDENCE_BROWSER_MODULE,EVIDENCE_FORMAT} from "../apps/anevum-institute-preview/evidence-schema.mjs";
+import {FRONTIER_GL_CLIENT} from "../apps/anevum-institute-preview/frontier-gl.mjs";
 import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
@@ -167,6 +168,8 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.match(FRONTIER_MEDIA.desktop.sha256,/^[a-f0-9]{64}$/);
   assert.match(FRONTIER_MEDIA.overlay.sha256,/^[a-f0-9]{64}$/);
   assert.match(frontierMediaMarkup("/institute-preview"),/class="frontier-art"/);
+  assert.match(frontierMediaMarkup("/institute-preview"),/data-frontier-gl/);
+  assert.match(home,/data-frontier-visual/);
   assert.doesNotMatch(frontierHome("/institute-preview"),/<video\b|frontier-cavern-desktop\.webp|atmosphere-screenblend\.mp4/);
   assert.doesNotMatch(home,/src="\/institute-preview\/media\//);
   assert.match(frontierHome("/institute-preview"),/href="\/institute-preview\/academy/);
@@ -204,6 +207,25 @@ test("personal research dossier provides real editor controls without exposing p
   assert.equal((await req("/api/evidence")).status,404);
   assert.equal((await req("/accounts")).status,404);
   assert.equal((await req("/awards")).status,404);
+});
+
+test("real WebGL atmospheric module is isolated, accessible, same-origin, and resilient to failures",async()=>{
+  const response=await req("/frontier-gl.js");
+  assert.equal(response.status,200);
+  assert.equal(response.headers.get("Content-Type"),"text/javascript; charset=utf-8");
+  assert.match(response.headers.get("Content-Security-Policy"),/script-src 'self'/);
+  assert.match(response.headers.get("X-Robots-Tag"),/noindex/);
+  const source=await response.text();
+  assert.equal(source,FRONTIER_GL_CLIENT);
+  assert.doesNotThrow(()=>new Script(source));
+  for(const token of ["getContext(\"webgl\"","createShader","compileShader","drawArrays","uniform2f","requestAnimationFrame","cancelAnimationFrame","webglcontextlost","webglcontextrestored","prefers-reduced-motion","navigator.connection","document.hidden","IntersectionObserver","ResizeObserver"]){
+    assert.ok(source.includes(token),"WebGL functionality missing: "+token);
+  }
+  assert.match(source,/now-lastFrame<42/,"WebGL frame rate must be limited");
+  assert.match(source,/Math\.sqrt\(1050000\//,"WebGL pixel count must be bounded");
+  assert.match(source,/dataset\.fxStatus=/);
+  assert.match(source,/FRONTIER/);
+  assert.doesNotMatch(source,/fetch\(|XMLHttpRequest|WebSocket|sendBeacon|import\(|eval\(|new Function|three\.js|\.glb\b|\.gltf\b/i);
 });
 
 test("logic laboratory exposes four correct truth-table rows and accessible controls",async()=>{
@@ -252,6 +274,7 @@ test("preview client parses, and uses only local browser state",async()=>{
   assert.match(source,/navigator\.connection\.saveData/);
   assert.match(source,/visibilitychange/);
   assert.match(source,/import\("\/institute-preview\/evidence-workbench\.js"\)/);
+  assert.match(source,/import\("\/institute-preview\/frontier-gl\.js"\)/);
   assert.match(source,/no analog voltage|analog voltage/i);
   assert.doesNotMatch(source,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.serviceWorker/);
 });
@@ -270,6 +293,9 @@ test("styles are complete, mobile responsive and reduced-motion safe",async()=>{
   assert.match(css,/\.frontier-hero/);
   assert.match(css,/\.frontier-evidence-list/);
   assert.match(css,/\.frontier-poster/);
+  assert.match(css,/\.frontier-gl/);
+  assert.match(css,/\[data-fx-status="active"\]/);
+  assert.match(css,/\.frontier-gl\{display:none!important/);
   assert.match(css,/\.frontier-video/);
   assert.match(css,/\.dossier-grid/);
   assert.match(css,/\.dossier-receipt/);
@@ -342,7 +368,7 @@ test("unowned routes, origins, methods and data endpoints are rejected",async()=
   const post=await req("",{method:"POST",body:"x"});
   assert.equal(post.status,405);
   assert.equal(post.headers.get("Allow"),"GET, HEAD");
-  for(const path of ["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/curriculum/cfp-101.json","/styles.css","/client.js","/evidence-schema.js","/evidence-workbench.js","/assets/lab-hero-v1.webp"]){
+  for(const path of ["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/curriculum/cfp-101.json","/styles.css","/client.js","/evidence-schema.js","/evidence-workbench.js","/frontier-gl.js","/assets/lab-hero-v1.webp"]){
     const get=await req(path),head=await req(path,{method:"HEAD"});
     assert.equal(head.status,200,path);
     assert.equal((await head.arrayBuffer()).byteLength,0);
