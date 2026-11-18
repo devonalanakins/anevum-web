@@ -9,6 +9,8 @@ if(root){
   const runButton=root.querySelector("[data-cluster-run]");
   const compareButton=root.querySelector("[data-cluster-compare]");
   const exportButton=root.querySelector("[data-cluster-export]");
+  const transferButton=root.querySelector("[data-cluster-to-dossier]");
+  const transferKey="anevum.institute.handoff.cluster.v1";
   const status=root.querySelector("[data-cluster-status]");
   const resultPanel=root.querySelector("[data-cluster-output]");
   const comparePanel=root.querySelector("[data-cluster-comparison]");
@@ -23,6 +25,7 @@ if(root){
     resultPanel.hidden=true;
     comparePanel.hidden=true;
     exportButton.disabled=true;
+    transferButton.disabled=true;
     status.textContent="Configuration changed. Run the local model to generate new results.";
   }
   policy.addEventListener("change",stale);
@@ -84,6 +87,7 @@ if(root){
       if(withComparison)renderComparison(config);else comparePanel.hidden=true;
       lastRecord=result;
       exportButton.disabled=false;
+      transferButton.disabled=false;
       status.textContent="Simulation complete. Calculated from fixed abstract workloads on this device; no actual GPUs were used.";
     }catch(error){
       stale();
@@ -100,6 +104,23 @@ if(root){
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),5000);
     status.textContent="Local JSON export requested. Results remain unreviewed, simulated data only.";
+  });
+  transferButton.addEventListener("click",function(){
+    if(!lastRecord){
+      status.textContent="Run a simulation before transferring a research draft.";
+      return;
+    }
+    try{
+      const raw=JSON.stringify(lastRecord);
+      if(raw.length>16384)throw new Error("Session model exceeds 16 KiB");
+      sessionStorage.setItem(transferKey,raw);
+      if(sessionStorage.getItem(transferKey)!==raw)throw new Error("Session transfer unavailable");
+      // Same tab only: receiving editor independently verifies all fields.
+      // No network submission, automatic editor replacement or persistence.
+      window.location.assign("/institute-preview/dossier#cluster-import");
+    }catch(_){
+      status.textContent="Could not prepare the local research handoff. Export JSON and import it manually instead.";
+    }
   });
   root.dataset.clusterReady="true";
 }
