@@ -111,6 +111,14 @@ export const INSTITUTE_CLIENT = String.raw`
     var saveButton=panel.querySelector("[data-study-save]");
     var exportButton=panel.querySelector("[data-study-download]");
     var deleteButton=panel.querySelector("[data-study-clear]");
+    var importInput=panel.querySelector("[data-study-import]");
+    var importApply=panel.querySelector("[data-study-import-apply]");
+    var stagedImportedNotes=null;
+    var importRequest=0;
+    function clearStagedNotesImport(){
+      stagedImportedNotes=null;
+      if(importApply)importApply.hidden=true;
+    }
     var pendingDeletion=false;
     function report(message){if(feedback)feedback.textContent=message;}
     function readNotes(){
@@ -143,6 +151,7 @@ export const INSTITUTE_CLIENT = String.raw`
     if(bookmark)setBookmark(initial.bookmark);
     if(textarea)textarea.addEventListener("input",function(){
       resetDelete();
+      clearStagedNotesImport();
       if(!initial.available){
         report("Browser storage is unavailable. Export your current notes to keep a copy.");
       }else if(textarea.value.slice(0,8000)===persistedNote){
@@ -154,6 +163,7 @@ export const INSTITUTE_CLIENT = String.raw`
     report(initial.available?(initial.note||initial.bookmark?"Saved study notes loaded from this browser.":"No saved notes for this lesson."):"Browser storage is unavailable. Export your notes to keep a copy.");
     if(saveButton)saveButton.addEventListener("click",function(){
       resetDelete();
+      clearStagedNotesImport();
       var current=textarea?textarea.value.slice(0,8000):"";
       var starred=bookmark&&bookmark.getAttribute("aria-pressed")==="true";
       var saved=writeNotes(current,!!starred);
@@ -162,6 +172,7 @@ export const INSTITUTE_CLIENT = String.raw`
     });
     if(bookmark)bookmark.addEventListener("click",function(){
       resetDelete();
+      clearStagedNotesImport();
       var next=bookmark.getAttribute("aria-pressed")!=="true";
       // Commit both the bookmark and the *currently visible* notes together.
       var current=textarea?textarea.value.slice(0,8000):"";
@@ -191,6 +202,49 @@ export const INSTITUTE_CLIENT = String.raw`
       report("Text export requested. Check browser download permissions if the file does not appear."+
         (textarea&&textarea.value.slice(0,8000)!==persistedNote?" Your edits are not saved in this browser unless you choose Save notes or Bookmark.":""));
     });
+    // Import only our own per-lesson exported text, never arbitrary files.
+    // A successful file read stages notes for explicit Apply, not for storage.
+    if(importInput&&importApply)importInput.addEventListener("change",async function(){
+      var file=importInput.files?.[0];
+      var request=++importRequest;
+      clearStagedNotesImport();
+      resetDelete();
+      if(!file)return;
+      try{
+        if(file.size>40960)throw new Error("File exceeds the 40 KiB limit");
+        var raw=await file.text();
+        if(request!==importRequest)return;
+        // A UTF-8 BOM is harmless; all other header fields must match exactly.
+        if(raw.charCodeAt(0)===0xFEFF)raw=raw.slice(1);
+        var prefix="ANEVUM Open Institute / "+unitId+" / Personal study notes\n"+
+          "Browser-local export; not an institutional transcript.\n\n";
+        if(!raw.startsWith(prefix)||!raw.endsWith("\n")){
+          throw new Error("Not an ANEVUM exported notes file for this exact lesson");
+        }
+        var imported=raw.slice(prefix.length,-1);
+        if(imported.length>8000||imported.indexOf("\u0000")!==-1){
+          throw new Error("Imported notes exceed the 8000-character limit or contain invalid text");
+        }
+        stagedImportedNotes=imported;
+        importApply.hidden=false;
+        report("Lesson export format checked ("+imported.length+" characters). Current editor and saved notes unchanged. Select Apply imported notes to review the text.");
+      }catch(error){
+        if(request===importRequest){
+          clearStagedNotesImport();
+          report("Notes import rejected: "+(error instanceof Error?error.message:"Could not read file")+". Current notes unchanged.");
+        }
+      }finally{
+        if(request===importRequest)importInput.value="";
+      }
+    });
+    if(importApply)importApply.addEventListener("click",function(){
+      if(stagedImportedNotes===null||!textarea)return;
+      var imported=stagedImportedNotes;
+      clearStagedNotesImport();
+      textarea.value=imported;
+      textarea.dispatchEvent(new Event("input",{bubbles:true}));
+      report("Imported notes applied to editor, not saved. Review and select Save notes or Bookmark this lesson to keep them on this device.");
+    });
     if(deleteButton)deleteButton.addEventListener("click",function(){
       if(!pendingDeletion){
         pendingDeletion=true;
@@ -200,6 +254,7 @@ export const INSTITUTE_CLIENT = String.raw`
       }
       try{
         localStorage.removeItem(key);
+        clearStagedNotesImport();
         if(textarea)textarea.value="";
         persistedNote="";
         if(bookmark)setBookmark(false);
