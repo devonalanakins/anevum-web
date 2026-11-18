@@ -445,9 +445,9 @@ test("new institute identity is an original isolated vector system",async()=>{
     assert.equal(head.status,200);
     assert.equal(await head.text(),"");
   }
-  const home=await (await req("")).text();
-  assert.match(home,/rel="icon" type="image\/svg\+xml" href="\/institute-preview\/mark-small\.svg"/);
-  assert.match(home,/class="identity-mark" src="\/institute-preview\/mark\.svg"/);
+  const brandedHome=await (await req("")).text();
+  assert.match(brandedHome,/rel="icon" type="image\/svg\+xml" href="\/institute-preview\/mark-small\.svg"/);
+  assert.match(brandedHome,/class="identity-mark" src="\/institute-preview\/mark\.svg"/);
   const css=await (await req("/styles.css")).text();
   assert.match(css,/url\("\/institute-preview\/assets\/research-computation-v1\.webp"\)/);
   assert.match(css,/\.lesson-article\{background:#f4f1e8/);
