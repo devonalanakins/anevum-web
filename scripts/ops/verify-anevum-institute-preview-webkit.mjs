@@ -84,6 +84,51 @@ async function mobileMenu(page){
     "Touch menu failed to navigate");
   console.log("ANEVUM_WEBKIT_TOUCH_MENU_PASS");
 }
+async function studyNoteBookmark(page){
+  const route="/institute-preview/learn/cfp-101/half-adders";
+  const key="anevum.institute.study.v1.CFP-101-U03";
+  await visit(page,route);
+  await page.evaluate(key=>localStorage.removeItem(key),key);
+  await page.reload({waitUntil:"load"});
+  const note=page.locator("[data-study-text]");
+  const bookmark=page.locator("[data-study-bookmark]");
+  const feedback=page.locator("[data-study-status]");
+  const first="Device-only draft entered before bookmarking.";
+  await note.fill(first);
+  check((await feedback.textContent()).includes("Unsaved notes"),
+    "Typing must expose unsaved note state");
+  check(await page.evaluate(key=>localStorage.getItem(key)===null,key),
+    "Typing alone must not silently save");
+  await bookmark.click();
+  const committed=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
+  check(committed.note===first&&committed.bookmark===true
+    &&(await feedback.textContent()).includes("current notes saved"),
+    "Bookmarking must atomically save visible note text",committed);
+  await page.reload({waitUntil:"load"});
+  check(await note.inputValue()===first&&(await bookmark.getAttribute("aria-pressed"))==="true",
+    "Bookmark and pending edits must survive reload");
+  const revised="Revised device-only draft on bookmark removal.";
+  await note.fill(revised);
+  check((await feedback.textContent()).includes("Unsaved notes"),
+    "Editing a saved note must show unsaved state");
+  await bookmark.click();
+  const unbookmarked=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
+  check(unbookmarked.note===revised&&unbookmarked.bookmark===false,
+    "Removing bookmark must preserve new unsaved notes",unbookmarked);
+  await page.reload({waitUntil:"load"});
+  check(await note.inputValue()===revised&&(await bookmark.getAttribute("aria-pressed"))==="false",
+    "Unbookmarked revised note was lost");
+  await page.locator("[data-study-clear]").click();
+  check((await feedback.textContent()).includes("Confirm deletion"),
+    "Local notes deletion needs a second confirmation");
+  await page.locator("[data-study-clear]").click();
+  check(await page.evaluate(key=>localStorage.getItem(key)===null,key),
+    "Synthetic test notes could not be deleted");
+  console.log("ANEVUM_WEBKIT_UNSAVED_NOTE_BOOKMARK_PASS",
+    JSON.stringify({losslessBookmark:true,losslessUnbookmark:true,noAutosave:true,
+      restoredAfterReload:true,twoStepDeletion:true}));
+}
+
 async function halfAdder(page){
   await visit(page,"/institute-preview/learn/cfp-101/half-adders");
   await page.evaluate(()=>{
@@ -149,6 +194,7 @@ try{
   await visit(phone,"/institute-preview/academy");
   await screenshot(phone,"academy-mobile");
   await mobileMenu(phone);
+  await studyNoteBookmark(phone);
   await halfAdder(phone);
   await visit(phone,"/institute-preview/dossier");
   await screenshot(phone,"research-desk-mobile");
@@ -163,7 +209,7 @@ try{
   await desktopContext.close();
   check(errors.length===0,"Unhandled WebKit page errors",errors);
   console.log("ANEVUM_INSTITUTE_WEBKIT_PREFLIGHT_PASS",
-    JSON.stringify({routes:28,touchMenu:true,halfAdderHandoff:true,
+    JSON.stringify({routes:28,touchMenu:true,studyNotesPreserved:true,halfAdderHandoff:true,
       ownerSafariAcceptance:false,publicDeployment:false}));
 }finally{
   if(browser)await browser.close();
