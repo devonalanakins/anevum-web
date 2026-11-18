@@ -340,9 +340,14 @@ body[data-area="society"] .mast,body[data-area="recognition"] .mast{background:#
 
 
 /* Research Desk / working mode: native accessible fields over a quiet paper surface. */
-.dossier-hero{background:linear-gradient(115deg,#08141b,#15333b 66%,#0a1720)}
+.dossier-hero{background:linear-gradient(115deg,#08141b,#15333b 66%,#0a1720);padding-top:36px;padding-bottom:39px}
+.dossier-hero .crumb{margin-bottom:14px}
+.dossier-hero h1{font-size:clamp(39px,4.8vw,67px);margin:10px 0 13px}
+.dossier-hero p{max-width:780px;font-size:14px;line-height:1.65}
+.dossier-hero .frontier-caveat{font-size:10px!important;margin-top:11px!important}
+.dossier-hero+.frontier-rail{display:none}
 .dossier-hero::before{background-image:linear-gradient(90deg,#09151cd9,#07121978),url("/institute-preview/assets/research-computation-v1.webp");opacity:.32;background-size:cover;background-position:80% center}
-.dossier-section{padding-block:clamp(42px,6vw,85px)}
+.dossier-section{padding-block:clamp(22px,3vw,53px)}
 .dossier-grid{display:grid;grid-template-columns:minmax(0,.72fr) minmax(0,1fr);gap:clamp(28px,5vw,95px);align-items:start}
 .dossier-intro h2{font-size:clamp(42px,5vw,66px);line-height:1.05;letter-spacing:-.045em;margin:15px 0 24px}
 .dossier-intro>p{color:#bdcfca;font-size:15px;line-height:1.8;max-width:550px}
