@@ -213,7 +213,7 @@ body[data-area="research"]{background:var(--academic-paper);color:var(--academic
 .study-path{margin:0 0 30px;padding:16px 18px 14px;border:1px solid #d0dfd5;background:#e8eee8;border-radius:7px;color:#243d3b}
 .study-path-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:11px;font:750 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.045em;text-transform:uppercase;color:#3a5e54}
 .study-path-heading a{color:#235d54;text-transform:none;text-decoration:underline;text-underline-offset:3px}
-.study-path-links{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0!important;padding:0!important}
+.study-path-links{list-style:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0!important;padding:0!important}
 .study-path-links li{margin:0!important;min-width:0}
 .study-path-link{display:flex;align-items:center;gap:9px;min-height:58px;padding:10px;border:1px solid #c8d9cf;background:#f8f8f4;color:#284a43!important;border-radius:4px;text-decoration:none!important}
 .study-path-link[aria-current="page"]{border-color:#286356;background:#d7e6db;box-shadow:inset 0 0 0 1px #286356}
@@ -225,6 +225,33 @@ body[data-area="research"]{background:var(--academic-paper);color:var(--academic
 .study-path-details [data-practice-status="recorded"]{color:#216352;font-weight:700}
 .study-path-disclaimer{margin:11px 0 0!important;font-size:11px!important;line-height:1.55!important;color:#54695f!important}
 .study-path a:focus-visible{outline:3px solid #a37c3e;outline-offset:3px}
+/* CFP-101-U05: original, input-first addressed memory workbench. */
+.memory-bench{margin:20px 0 28px;padding:19px;border:1px solid #bfd2c4;border-radius:7px;background:#e8eee8;color:#263f3b}
+.memory-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;font:700 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.025em;color:#3f645a}
+.lesson-article .memory-bench h3{font:normal 27px/1.2 Georgia,serif;margin:14px 0;color:#24473f}
+.memory-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.memory-controls,.memory-observations{min-width:0;background:#fffefa;border:1px solid #d2e0d4;border-radius:5px;padding:14px}
+.memory-label{font:700 11px/1.5 ui-monospace,Consolas,monospace;color:#3d5c55;margin:9px 0}
+.memory-addresses,.memory-bits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-bottom:12px}
+.memory-addresses button,.memory-bits button{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;min-width:0;min-height:52px;border:1px solid #bdcfbe;background:#f2f5ee;border-radius:4px;color:#2a5046;padding:7px 3px;font:700 11px/1.3 ui-monospace,Consolas,monospace}
+.memory-addresses small{font:500 9px/1.4 system-ui,sans-serif}
+.memory-bits strong{font-size:19px}
+.memory-addresses button[aria-pressed="true"],.memory-bits button[aria-pressed="true"]{background:#285e51;border-color:#285e51;color:#fff}
+.lesson-article .memory-word{font:650 12px/1.6 ui-monospace,Consolas,monospace;color:#355b50;margin:10px 0}
+.memory-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+.memory-actions button{min-height:44px;flex:1 1 150px;padding:9px 12px;border:1px solid #b2c8b9;background:#f5f8f3;border-radius:4px;color:#26584b;font-size:12px;font-weight:700}
+.memory-actions button:first-child{background:#285e51;border-color:#285e51;color:#fff}
+.memory-bench button:focus-visible{outline:3px solid #b47f46;outline-offset:3px}
+.lesson-article .memory-readout{font:700 clamp(20px,2.8vw,28px)/1.3 ui-monospace,Consolas,monospace;letter-spacing:.035em;color:#285b4e;margin:17px 0 18px}
+.memory-table{width:100%;font-size:12px}
+.memory-table th,.memory-table td{padding:8px 11px}
+.memory-table [data-memory-row][aria-current="true"]{background:#d6e7d9;color:#255f50}
+.lesson-article .memory-status{margin:13px 0;background:#d9e7da;border-left:3px solid #2e7664;padding:11px;color:#285549;font-size:12px;line-height:1.65}
+.lesson-article .memory-bench h4{font:700 13px/1.5 system-ui,sans-serif;color:#2a5047;margin:10px 0 5px}
+.memory-history{padding-left:22px;color:#3c6256;font:500 11px/1.8 ui-monospace,Consolas,monospace;max-height:190px;overflow:auto}
+.lesson-article .memory-export-status{font-size:11px;color:#547066;line-height:1.6;margin:10px 0 0}
+@media(max-width:800px){.memory-grid{grid-template-columns:1fr}.memory-bench{padding:12px}}
+@media(max-width:420px){.memory-addresses{grid-template-columns:repeat(2,minmax(0,1fr))}.memory-controls,.memory-observations{padding:10px}.memory-actions button{flex-basis:100%}}
 /* Ideal four-bit clocked register: compact editorial workbench, no imagery. */
 .register-bench{margin:20px 0 28px;padding:20px;border:1px solid #bfd1c2;background:#e8eee8;border-radius:7px;color:#243f3c}
 .register-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:#46665d;font:700 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.025em}
