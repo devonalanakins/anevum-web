@@ -218,6 +218,8 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
     assert.match(html,/data-study-status role="status" aria-live="polite"/);
     assert.match(html,/not encrypted or synced/);
     assert.match(html,/Bookmarking also saves the text currently in the editor/);
+    assert.match(html,/In-site links ask before discarding unsaved edits/);
+    assert.match(html,/browser close or app switch warnings may not appear on mobile Safari/);
     assert.match(html,/maxlength="8000"/);
     assert.equal((html.match(/class="study-notes"/g)||[]).length,1,"A lesson must have exactly one local notebook");
   }
@@ -227,6 +229,12 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   assert.doesNotMatch(c,/data-study-lesson="CFP-101-U02"/);
   const client=await (await req("/client.js")).text();
   assert.match(client,/var persistedNote=initial\.note/);
+  assert.match(client,/function hasUnsavedStudyNotes\(\)/);
+  assert.match(client,/window\.addEventListener\("beforeunload"/);
+  assert.match(client,/window\.confirm\("You have unsaved lesson notes/);
+  assert.match(client,/link\.hasAttribute\("download"\)/);
+  assert.match(client,/target\.origin===location\.origin&&target\.pathname===location\.pathname/);
+  assert.match(client,/Navigation cancelled\. Save notes/);
   assert.match(client,/textarea\.addEventListener\("input"/);
   assert.match(client,/Unsaved notes\. Select Save notes or Bookmark this lesson/);
   assert.match(client,/var current=textarea\?textarea\.value\.slice\(0,8000\):""/);
