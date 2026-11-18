@@ -83,3 +83,22 @@ The portal's JavaScript loads the workbench module only on the dossier route usi
 ### Verification
 
 Dedicated Node contracts and real Chromium browser checks cover responsive layouts at widths 320, 390, 768, 1024, and 1440, working input validation, local persistence and reload, exported and imported record checks, counterfeit and malformed payload rejection, confirmed deletion, and staging a real AND-lab output. The workbench's first editable field must be visible in the initial 390px/1440px viewport; working surfaces are deliberately task-first rather than cinematic wrappers. Record exact-head GitHub Actions links and results in PR #816, not as assumptions here.
+
+## Cinematic WebGL review implementation — 2026-11-17
+
+**Session owner:** ANEVUM.WEB.BUILD.2026-11-17.003.OPEN-INSTITUTE-FULL-IMPLEMENTATION  
+**Scope:** isolated draft preview only; NO production/public identity rollout or release approval.
+
+The Frontier Society home now runs a real WebGL 1 transparent shader over authored high-resolution still artwork. It simulates restrained drifting atmospheric haze, cyan and copper light, wide diffusion, and subtle pointer-responsive light direction. The shader does not pretend to model a physical facility, simulate scientific measurements or render live 3D meshes. All actual course, laboratory, navigation, dossier, and review controls remain ordinary accessible HTML.
+
+**Implemented components:**
+- `apps/anevum-institute-preview/frontier-gl.mjs`: independent same-origin shader, bounded GPU pixel area (approximately 1.05 million pixels), low-power context, approximately 24 FPS cap, page-visibility pause, intersection pause, dynamic resize, context-loss detection/recovery, reduced-motion and Save-Data bypass, and fail-closed static-art fallback.
+- `frontier-society.mjs` and `styles.mjs`: an integrated semantic-safe canvas behind the content and over the poster; no user-facing input hidden in graphics. Responsive poster composition and deliberate readability overlays on 390px phones.
+- `client.mjs` and `worker.mjs`: lazy same-origin module load on the Discovery page only, with strict CSP and no external WebGL dependencies.
+- **Provisional visual review art:** two original high-definition WebP blobs copied by identical SHA from historic cinematic draft PR #813 into `apps/anevum-institute-preview/media/`. Preserving original source history rather than merging the older PR. See `media/PROVENANCE.md`.
+- `scripts/ops/anevum-institute-preview-server.mjs`: loopback-only allowlisted art loader with Git blob integrity verification. Direct Worker requests fail closed unless the intentionally scoped media binding is supplied. This is a review-server capability, not a production asset deployment claim.
+- Browser QA now checks eight pages at 320/390/768/1024/1440px and adds actual *active WebGL* desktop/mobile frame screenshots, runtime reduced-motion toggling and a forced missing-GPU context with correct static fallback. A high-resolution poster must decode at the intended 1536px desktop / 720px phone widths.
+
+**Review limitations:** These stills preserve the earlier illuminated orbital laboratory identity as a sharper interim visual candidate; the new original November 17 cavern/facility art and six-second MP4 remain separate owner-review files and **are not the assets shown in this GitHub preview**. Their transfer, owner approval, originality/trademark review, licensing, accessibility, sustained FPS/thermal performance on iPhone Safari, final desktop composition, and production route integration remain outstanding. Do not call this a final AAA-approved public experience merely because the current renderer passes Chromium automation.
+
+The following stronger release gates remain mandatory: human visual acceptance; WCAG 2.2 AA review with actual assistive technology; performance on real iOS Safari and low-memory Android; proper self-hosted binary assets and caching; WebGL2/WebGPU compatibility only if it materially improves the result; full repo's owner-only Cloudflare Access checks; and separate owner production publication authorization.
