@@ -1,3 +1,5 @@
+// Exact reviewed browser module bytes, kept in the owning repository.
+export const CLUSTER_SCHEDULER_CLIENT_BROWSER_MODULE = String.raw`
 // Browser-only deterministic cluster scheduler. No fetch, cloud actions or telemetry.
 import {CLUSTER_WORKLOADS,simulateCluster} from "/institute-preview/cluster-scheduler-model.js";
 const root=document.querySelector("[data-cluster-lab]");
@@ -101,3 +103,4 @@ if(root){
   });
   root.dataset.clusterReady="true";
 }
+`;

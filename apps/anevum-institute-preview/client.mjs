@@ -445,6 +445,13 @@ export const INSTITUTE_CLIENT = String.raw`
     });
   })();
 
+  // The GPU scheduling simulator is a browser-only, lazily loaded module.
+  if(document.querySelector("[data-cluster-lab]")){
+    import("/institute-preview/cluster-scheduler-client.js").catch(function(){
+      var message=document.querySelector("[data-cluster-status]");
+      if(message)message.textContent="The local scheduling model could not load. No simulation ran.";
+    });
+  }
   // Local-only navigation. Every result is a real allowlisted preview route.
   (function(){
     var modal=document.querySelector("[data-command-dialog]");
@@ -464,6 +471,7 @@ export const INSTITUTE_CLIENT = String.raw`
       ["Boolean logic",root+"/learn/cfp-101/logic-gates","and gate lesson 02"],
       ["Half adders",root+"/learn/cfp-101/half-adders","binary arithmetic combinational xor and sum carry lesson 03"],
       ["AND-gate laboratory",root+"/laboratory/and-gate","simulation experiment notebook"],
+      ["GPU cluster scheduling",root+"/laboratory/cluster-scheduling","compute gpu allocation fifo shortest job first simulator"],
       ["Research Desk",root+"/dossier","evidence methodology draft"],
       ["Recognition",root+"/recognition","review policy research evidence"],
       ["My Studio",root+"/studio","personal learning progress notes"],

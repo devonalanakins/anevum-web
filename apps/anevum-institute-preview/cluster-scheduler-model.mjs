@@ -1,3 +1,5 @@
+// Exact reviewed browser module bytes, kept in the owning repository.
+export const CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE = String.raw`
 // ANEVUM Open Institute: deterministic, pedagogical GPU-slot scheduler model.
 // This is not a GPU allocator, a driver, a cloud service, or measured hardware telemetry.
 export const CLUSTER_WORKLOADS=Object.freeze([
@@ -72,3 +74,4 @@ export function simulateCluster({capacity=4,policy="fifo",jobs=CLUSTER_WORKLOADS
     metrics:{makespanTicks:makespan,meanWaitTicks:Math.round(avgWait*100)/100,busyGpuTicks:work,availableGpuTicks:makespan*capacity,gpuUtilizationPercent:percentage}
   };
 }
+`;
