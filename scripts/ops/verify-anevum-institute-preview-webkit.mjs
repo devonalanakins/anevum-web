@@ -140,6 +140,7 @@ async function studyNotePortability(page){
   const file=page.locator("[data-study-import]");
   const apply=page.locator("[data-study-import-apply]");
   const feedback=page.locator("[data-study-status]");
+  check(await apply.isHidden(),"Unused note importer Apply action must be visually hidden");
   await note.fill("Previously saved text on this device.");
   await save.click();
   const original=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).note,key);
