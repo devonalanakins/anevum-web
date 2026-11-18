@@ -125,8 +125,10 @@ async function compactShellQA(){
   verify(open.modal&&open.focused&&open.count===10,"Compact palette did not open with actual routes",open);
   const search=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');const q=d.querySelector('[data-command-query]');q.value='transistor';q.dispatchEvent(new Event('input',{bubbles:true}));return [...d.querySelectorAll('.command-result')].map(a=>a.getAttribute('href'));})()");
   verify(search.includes("/institute-preview/learn/cfp-101/transistor-switching")&&search.every(url=>url.startsWith("/institute-preview/")),"Search did not resolve the existing lesson",search);
-  const close=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');d.querySelector('[data-command-close]').click();return !d.open&&document.activeElement?.matches('[data-search-open]');})()");
-  verify(close,"Palette close did not restore focus",{close});
+  const closed=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');d.querySelector('[data-command-close]').click();return !d.open;})()");
+  verify(closed,"Palette close button did not close the dialog",{closed});
+  const restoredFocus=await waitFor(()=>evaluate("document.activeElement?.matches('[data-search-open]')"),"dialog close event to restore opener focus");
+  verify(restoredFocus,"Palette did not restore its opener focus",{restoredFocus});
   const keyboard=await evaluate("(()=>{document.dispatchEvent(new KeyboardEvent('keydown',{key:'/',bubbles:true}));const d=document.querySelector('[data-command-dialog]');const active=d.open&&document.activeElement===d.querySelector('[data-command-query]');d.close();return active;})()");
   verify(keyboard,"Slash shortcut failed",{keyboard});
   console.log("ANEVUM_COMPACT_PALETTE_PASS");
