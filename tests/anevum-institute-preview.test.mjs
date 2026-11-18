@@ -26,6 +26,23 @@ const BASE="https://anevum.com/institute-preview";
 const PATHS=["","/research","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics"];
 const req=(path="",init={})=>worker.fetch(new Request(BASE+path,init));
 
+test("owner Safari release checklist matches implemented preview and makes no release claim",async()=>{
+  const guide=await readFile(new URL("../docs/qa/ANEVUM.WEB.QA.2026-11-18.022.OWNER-SAFARI-ACCEPTANCE.md",import.meta.url),"utf8");
+  assert.match(guide,/14 routes/);
+  assert.match(guide,/CFP-101 introductory lessons U01–U03/);
+  assert.match(guide,/U04–U08 remain planned/);
+  assert.match(guide,/institute-pr-816-anevum-web-nextgen\.devonakins\.workers\.dev\/institute-preview/);
+  assert.match(guide,/authenticate with the preexisting owner identity/);
+  assert.match(guide,/all four A\/B combinations/);
+  assert.match(guide,/does \*\*not\*\* change saved drafts before selecting \*\*Apply\*\*/);
+  assert.match(guide,/\*\*PENDING\*\*/);
+  assert.match(guide,/NO-GO/);
+  assert.match(guide,/Do not enter client\/patient records/);
+  assert.match(guide,/not a public production site/);
+  assert.match(guide,/V5 separate beta workers.dev availability/);
+  assert.doesNotMatch(guide,/\b(iPhone Safari|actual owner acceptance) (?:is|was) (?:approved|completed|verified)\b/i);
+});
+
 test("fourteen isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
   for(const path of PATHS){
     const response=await req(path);
