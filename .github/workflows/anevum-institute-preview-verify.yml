@@ -13,6 +13,7 @@ on:
       - "src/server/member-learning-profile.mjs"
       - "src/server/member.mjs"
       - "migrations-learning-preview/**"
+      - "scripts/ops/verify-anevum-learning-schema.py"
       - "tests/anevum-local-member-card.test.mjs"
       - "docs/design/ANEVUM.WEB.DESIGN.2026-11-17.001.OPEN-INSTITUTE-LEARNING-PREVIEW.md"
       - ".github/workflows/anevum-institute-preview-verify.yml"
@@ -50,6 +51,8 @@ jobs:
           node --check scripts/ops/verify-anevum-institute-preview-browser.mjs
       - name: Verify isolated educational content and route contracts
         run: node --test tests/anevum-institute-preview.test.mjs tests/anevum-evidence-schema.test.mjs tests/anevum-local-member-card.test.mjs tests/anevum-local-member.test.mjs tests/anevum-identity-review.test.mjs tests/member-learning-profile.test.mjs
+      - name: Rehearse learning profile migration in disposable SQLite
+        run: python3 scripts/ops/verify-anevum-learning-schema.py
       - name: Verify real Chromium interaction, accessibility and responsiveness
         run: node scripts/ops/verify-anevum-institute-preview-browser.mjs
       - name: Retain screenshots for visual review
