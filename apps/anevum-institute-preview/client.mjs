@@ -163,6 +163,16 @@ export const INSTITUTE_CLIENT = String.raw`
       }
     });
   });
+  // Learning Workspace and Private Profile reuse the real existing preview records.
+  // They NEVER create a server account, public profile, credential or API request.
+  if(document.querySelector("[data-member-studio]")||document.querySelector("[data-member-profile]")){
+    import("/institute-preview/local-member-client.js").catch(function(){
+      var note=document.querySelector("[data-member-status]");
+      if(note)note.textContent="Private card editor unavailable. Your existing browser data was not changed.";
+      var studio=document.querySelector("[data-member-studio]");
+      if(studio)studio.setAttribute("data-member-error","unavailable");
+    });
+  }
   // Discovery-only WebGL light/fog layer: no 3D models and no impact on study controls.
   // The dedicated source module handles context loss, Save-Data, reduced motion and tab visibility.
   if(document.querySelector("[data-frontier-gl]")){
