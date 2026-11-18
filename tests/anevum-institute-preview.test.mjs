@@ -5,12 +5,13 @@ import {LAB_ART} from "../apps/anevum-public-studio/living-laboratory-art.mjs";
 import worker from "../apps/anevum-institute-preview/worker.mjs";
 import {CFP_101,validateCurriculum} from "../apps/anevum-institute-preview/curriculum.mjs";
 import {studyToolsHtml} from "../apps/anevum-institute-preview/study-tools.mjs";
+import {frontierHome,frontierRecognition,RECOGNITION_POLICY} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
-const PATHS=["","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
+const PATHS=["","/recognition","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
 const req=(path="",init={})=>worker.fetch(new Request(BASE+path,init));
 
-test("six isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
+test("seven isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
   for(const path of PATHS){
     const response=await req(path);
     assert.equal(response.status,200,path);
@@ -133,6 +134,34 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   assert.doesNotMatch(b,/data-study-lesson="CFP-101-U01"/);
 });
 
+test("frontier society and evidence-based recognition distinguish working activities from future claims",async()=>{
+  const home=await(await req("")).text();
+  const recognition=await(await req("/recognition")).text();
+  assert.match(home,/Don't just study the frontier/);
+  assert.match(home,/Work on it\.<\/em>/);
+  assert.match(home,/frontier-hero-inner/);
+  assert.match(home,/research is a verb/i);
+  assert.match(home,/The work is the <em>curriculum/);
+  assert.match(home,/NOT ISSUED/);
+  assert.match(home,/TWO PREVIEW LESSONS AVAILABLE/);
+  assert.match(home,/href="\/institute-preview\/recognition"/);
+  assert.match(recognition,/Your work should speak/);
+  assert.match(recognition,/data-evidence-panel/);
+  assert.match(recognition,/data-evidence-count/);
+  assert.match(recognition,/data-evidence-activity="transistor"/);
+  assert.match(recognition,/data-evidence-activity="lesson"/);
+  assert.match(recognition,/data-evidence-activity="experiment"/);
+  assert.match(recognition,/No external awards, institutional credentials, or member accounts are issued/);
+  assert.match(recognition,/independent critique/i);
+  assert.deepEqual(RECOGNITION_POLICY.evidenceStages,["practice","artifact","review","replication"]);
+  assert.equal(RECOGNITION_POLICY.awardsIssued,false);
+  assert.equal(RECOGNITION_POLICY.profilesEnabled,false);
+  assert.equal(RECOGNITION_POLICY.reviewEnabled,false);
+  assert.match(frontierHome("/institute-preview"),/href="\/institute-preview\/academy/);
+  assert.match(frontierRecognition("/institute-preview"),/data-evidence-panel/);
+  assert.doesNotMatch(home+recognition,/<form\b|<iframe|onclick=|onload=|download=".*certificate"/i);
+});
+
 test("logic laboratory exposes four correct truth-table rows and accessible controls",async()=>{
   const html=await(await req("/laboratory/and-gate")).text();
   const rows=[...html.matchAll(/<tr data-bits="([01]{2})"><td>([01])<\/td><td>([01])<\/td><td>([01])<\/td><\/tr>/g)];
@@ -170,6 +199,9 @@ test("preview client parses, and uses only local browser state",async()=>{
   assert.match(source,/localStorage\.removeItem/);
   assert.match(source,/data-study-download/);
   assert.match(source,/pendingDeletion/);
+  assert.match(source,/data-evidence-panel/);
+  assert.match(source,/data-evidence-state/);
+  assert.match(source,/This is not independently verified/);
   assert.match(source,/no analog voltage|analog voltage/i);
   assert.doesNotMatch(source,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.serviceWorker/);
 });
@@ -185,6 +217,9 @@ test("styles are complete, mobile responsive and reduced-motion safe",async()=>{
   assert.match(css,/a:focus-visible/);
   assert.match(css,/\.study-notes textarea:focus-visible/);
   assert.match(css,/\.study-actions/);
+  assert.match(css,/\.frontier-hero/);
+  assert.match(css,/\.frontier-evidence-list/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.frontier-atmosphere/);
   assert.match(css,/\/institute-preview\/assets\/lab-hero-v1\.webp/);
   assert.doesNotMatch(css,/https?:\/\//);
 });
@@ -208,15 +243,16 @@ test("new institute identity is an original isolated vector system",async()=>{
   const lesson=await (await req("/learn/cfp-101/logic-gates")).text();
   assert.match(home,/src="\/institute-preview\/mark\.svg"/);
   assert.match(home,/rel="icon" type="image\/svg\+xml"/);
-  assert.match(home,/An open institute for <em>curious minds\.<\/em>/);
-  assert.match(home,/A conceptual institute, not a physical campus/);
-  assert.match(home,/Research program \/ proposed/);
-  assert.match(home,/Community platform \/ proposed/);
+  assert.match(home,/Don\x27t just study the frontier/);
+  assert.match(home,/NO PHYSICAL FACILITIES CLAIMED/);
+  assert.match(home,/RECOGNITION \/ 003/);
+  assert.match(home,/MEMBER/);
   assert.match(home,/Design review:/);
   assert.match(lesson,/class="lesson-article"/);
   const nav=home.match(/<nav class="desk-nav" aria-label="Primary navigation">([\s\S]*?)<\/nav>/)?.[1]||"";
-  assert.equal((nav.match(/<a /g)||[]).length,3);
-  assert.match(nav,/Institute/);
+  assert.equal((nav.match(/<a /g)||[]).length,4);
+  assert.match(nav,/Society/);
+  assert.match(nav,/Recognition/);
   assert.match(nav,/Academy/);
   assert.match(nav,/Laboratory/);
   for(const [name,part] of [["mark.svg","Three converging tapered pathways"],["observatory.svg","The ANEVUM observatory"]]){
@@ -233,13 +269,13 @@ test("new institute identity is an original isolated vector system",async()=>{
     assert.equal(await head.text(),"");
   }
   const css=await (await req("/styles.css")).text();
-  assert.match(css,/background:url\("\/institute-preview\/observatory\.svg"\)/);
+  assert.match(css,/url\("\/institute-preview\/assets\/research-computation-v1\.webp"\)/);
   assert.match(css,/\.lesson-article\{background:#f4f1e8/);
   assert.match(css,/\.identity-mark\{display:block/);
 });
 
 test("unowned routes, origins, methods and data endpoints are rejected",async()=>{
-  for(const path of ["/staff","/command","/api","/about","/archive","/../../staff","/assets/private.webp"]){
+  for(const path of ["/staff","/command","/api","/about","/archive","/profiles","/awards","/../../staff","/assets/private.webp"]){
     assert.equal((await req(path)).status,404,path);
   }
   for(const url of ["https://example.com/institute-preview","https://backstage.anevum.com/institute-preview","http://anevum.com/institute-preview","https://anevum.com/institute-preview?debug=1"]){
@@ -248,7 +284,7 @@ test("unowned routes, origins, methods and data endpoints are rejected",async()=
   const post=await req("",{method:"POST",body:"x"});
   assert.equal(post.status,405);
   assert.equal(post.headers.get("Allow"),"GET, HEAD");
-  for(const path of ["","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/curriculum/cfp-101.json","/styles.css","/client.js","/assets/lab-hero-v1.webp"]){
+  for(const path of ["","/recognition","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate","/curriculum/cfp-101.json","/styles.css","/client.js","/assets/lab-hero-v1.webp"]){
     const get=await req(path),head=await req(path,{method:"HEAD"});
     assert.equal(head.status,200,path);
     assert.equal((await head.arrayBuffer()).byteLength,0);
