@@ -9,7 +9,7 @@ import {FRONTIER_GL_CLIENT} from "./frontier-gl.mjs";
 import {TRANSISTOR_LESSON_HTML} from "./transistor-lesson.mjs";
 import {CFP_101} from "./curriculum.mjs";
 import {studyToolsHtml} from "./study-tools.mjs";
-import {frontierHome,frontierRecognition} from "./frontier-society.mjs";
+import {frontierHome,frontierRecognition,FRONTIER_REVIEW_ART} from "./frontier-society.mjs";
 import {dossierPage} from "./dossier-ui.mjs";
 import {EVIDENCE_BROWSER_MODULE} from "./evidence-schema.mjs";
 import {EVIDENCE_WORKBENCH_CLIENT} from "./evidence-workbench.mjs";
@@ -183,18 +183,30 @@ const ASSETS=new Map([
   [BASE+"/observatory.svg",["image/svg+xml; charset=utf-8",ANEVUM_OBSERVATORY_SVG]]
 ]);
 
+const REVIEW_MEDIA_FILES=new Set([FRONTIER_REVIEW_ART.desktop.name,FRONTIER_REVIEW_ART.mobile.name]);
 const IMAGE_ASSETS=new Set(["lab-hero-v1.webp","lab-archive-v1.webp","research-generation-v1.webp","research-computation-v1.webp","research-worlds-v1.webp","rhen-generative-v1.webp"]);
 const SECURITY={"Content-Security-Policy":"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; media-src 'self'; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'","X-Frame-Options":"DENY","X-Content-Type-Options":"nosniff","Referrer-Policy":"no-referrer","X-Robots-Tag":"noindex, nofollow, noarchive","Cache-Control":"no-store","X-Anevum-Surface":"open-institute-design-review-v1"};
 
-export default {async fetch(request){
+export default {async fetch(request,env={}){
   const url=new URL(request.url);
   if(url.protocol!=="https:"||url.hostname!=="anevum.com"||url.port||url.search){return new Response("Not found",{status:404});}
   const page=PAGES.get(url.pathname);
   const asset=ASSETS.get(url.pathname);
   const mediaName=url.pathname.startsWith(BASE+"/assets/")?url.pathname.slice((BASE+"/assets/").length):null;
   const media=mediaName&&IMAGE_ASSETS.has(mediaName)&&Object.hasOwn(LAB_ART,mediaName)?LAB_ART[mediaName]:null;
-  if(!page&&!asset&&!media)return new Response("Not found",{status:404});
+  const reviewName=url.pathname.startsWith(BASE+"/media/")?url.pathname.slice((BASE+"/media/").length):null;
+  const previewAsset=reviewName&&REVIEW_MEDIA_FILES.has(reviewName)?reviewName:null;
+  if(!page&&!asset&&!media&&!previewAsset)return new Response("Not found",{status:404});
   if(request.method!=="GET"&&request.method!=="HEAD")return new Response(null,{status:405,headers:{...SECURITY,Allow:"GET, HEAD"}});
+  if(previewAsset){
+    // No binary blobs are bundled into code. The isolated Node review server injects
+    // a verified, same-origin loader; an unconfigured Worker fails closed.
+    if(typeof env?.loadReviewMedia!=="function")return new Response("Not found",{status:404,headers:SECURITY});
+    let bytes;
+    try{bytes=await env.loadReviewMedia(previewAsset);}catch(_){return new Response("Not found",{status:404,headers:SECURITY});}
+    if(!(bytes instanceof Uint8Array)||bytes.length<4096||bytes.length>2097152)return new Response("Not found",{status:404,headers:SECURITY});
+    return new Response(request.method==="HEAD"?null:bytes,{status:200,headers:{...SECURITY,"Content-Type":"image/webp","Content-Length":String(bytes.length)}});
+  }
   const isAsset=!!asset;
   const isMedia=!!media;
   const body=isMedia?Uint8Array.from(atob(media),c=>c.charCodeAt(0)):isAsset?asset[1]:page();
