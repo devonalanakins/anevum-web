@@ -50,7 +50,7 @@ export function academyLearningDirectory(base="/institute-preview"){
   return `<section class="academy-learning-directory" data-study-path aria-labelledby="academy-available-title">
     <div class="academy-directory-heading"><div><div class="kicker">01 / Available coursework</div>
       <h2 id="academy-available-title">Choose a real lesson.</h2></div>
-      <span class="academy-directory-count">${available.length} published previews / ${planned} planned units</span></div>
+      <span class="academy-directory-count">${available.length} available previews / ${planned} planned units</span></div>
     <p class="academy-directory-intro">All three introductory CFP-101 lessons are available without an account. Each explains the underlying model and includes practice; this is not a completed eight-unit course.</p>
     <ol class="academy-unit-list">${links}</ol>
     <div class="academy-directory-foot"><span data-study-path-progress>0 of 3 practice checks recorded on this device.</span><span>Local practice only · No course credit or verified completion</span></div>
