@@ -125,7 +125,7 @@ export const HALF_ADDER_LESSON_HTML = String.raw`
       <div class="kicker">Lesson 03 / Index</div><h2>Inside this lesson</h2>
       <ul><li><a href="#binary">Binary addition</a></li><li><a href="#derive">Derive XOR / AND</a></li><li><a href="#circuit">Logic diagram</a></li><li><a href="#experiment">Half-adder experiment</a></li><li><a href="#check">Self-assessment</a></li><li><a href="#limits">Model limitations</a></li></ul>
       <p>Estimated reading and experiment: 12–18 minutes. No account or credit.</p>
-      <p><a href="/institute-preview/learn/cfp-101/logic-gates">← Lesson 02: Gates</a></p><p><a href="/institute-preview/academy/cfp-101">Full course outline →</a></p>
+      <p><a href="/institute-preview/learn/cfp-101/logic-gates">← Lesson 02: Gates</a></p><p><a href="/institute-preview/learn/cfp-101/registers">Next: Lesson 04 — Registers →</a></p><p><a href="/institute-preview/academy/cfp-101">Full course outline →</a></p>
     </aside>
   </div></section>
 </main>
