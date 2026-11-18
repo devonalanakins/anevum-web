@@ -11,11 +11,12 @@ export const FRONTIER_MEDIA=Object.freeze({
 });
 export function frontierMediaMarkup(base){
   if(!FRONTIER_MEDIA.assetsBundled||!FRONTIER_MEDIA.ownerApproved){
-    return '<div class="frontier-media" aria-hidden="true"><div class="frontier-art"></div><div class="frontier-atmosphere"></div></div>';
+    return '<div class="frontier-media" aria-hidden="true" data-frontier-visual><div class="frontier-art"></div><div class="frontier-atmosphere"></div><canvas class="frontier-gl" data-frontier-gl role="presentation" aria-hidden="true"></canvas></div>';
   }
-  return `<div class="frontier-media" aria-hidden="true">
+  return `<div class="frontier-media" aria-hidden="true" data-frontier-visual>
     <picture><source media="(max-width: 650px)" srcset="${base}/media/${FRONTIER_MEDIA.mobile.name}">
       <img class="frontier-poster" src="${base}/media/${FRONTIER_MEDIA.desktop.name}" alt="" width="1672" height="941" fetchpriority="high" decoding="async"></picture>
+    <canvas class="frontier-gl" data-frontier-gl role="presentation" aria-hidden="true"></canvas>
     <video class="frontier-video" data-frontier-video muted playsinline loop preload="none" aria-hidden="true">
       <source src="${base}/media/${FRONTIER_MEDIA.overlay.name}" type="video/mp4"></video>
   </div>`;
