@@ -48,7 +48,7 @@ export const INSTITUTE_CLIENT = String.raw`
       var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
       var progress=nav.querySelector("[data-study-path-progress]");
       if(progress)progress.textContent=count+" of 3 practice checks recorded on this device.";
-      // Lesson U03 remains untracked: a correct single answer is not course completion.
+      // Lessons U03 and U04 remain untracked: a correct answer or model event is not course completion.
     });
     // Recognition preview: this is a browser-local practice trace, never an award.
     document.querySelectorAll("[data-evidence-panel]").forEach(function(panel){
