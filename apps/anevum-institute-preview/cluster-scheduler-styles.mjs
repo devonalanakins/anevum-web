@@ -15,6 +15,7 @@ export const CLUSTER_SCHEDULER_CSS = String.raw`
 .cluster-config select{width:100%;height:44px;padding:8px 34px 8px 11px;background:#0c222c;color:#edf2eb;border:1px solid #8ea99d;border-radius:5px;font:13px system-ui,sans-serif}
 .cluster-config select:focus-visible,.cluster-actions button:focus-visible,.academy-experiment a:focus-visible{outline:3px solid #f9d798;outline-offset:3px}
 .cluster-table-wrap{max-width:100%;overflow-x:auto}
+.cluster-bench>.cluster-table-wrap{margin-top:16px}
 .cluster-data{border-collapse:collapse;width:100%;min-width:350px;font-size:12px;line-height:1.5;font-variant-numeric:tabular-nums}
 .cluster-data th{font-weight:650;color:#dfcb9f;text-align:left;letter-spacing:.03em;background:#20333b}
 .cluster-data td{color:#d5e1d9}
@@ -58,6 +59,6 @@ export const CLUSTER_SCHEDULER_CSS = String.raw`
 .cluster-after h2{font:normal 29px Georgia,serif;margin:0 0 8px}
 .cluster-after p{font-size:13px;color:#c5d5cc;line-height:1.7}
 @media(max-width:900px){.cluster-layout{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:520px){.cluster-config{grid-template-columns:1fr}.cluster-actions{display:grid;grid-template-columns:1fr}.cluster-metrics{grid-template-columns:1fr 1fr}.cluster-metrics>div:last-child{grid-column:1/-1}.cluster-section{padding-block:17px 45px}.cluster-tick{grid-template-columns:47px minmax(0,1fr) 43px;gap:5px}.cluster-actions .btn{width:100%}.academy-experiment{padding:18px}}
+@media(max-width:520px){.cluster-data{min-width:300px}.cluster-config{grid-template-columns:1fr}.cluster-actions{display:grid;grid-template-columns:1fr}.cluster-metrics{grid-template-columns:1fr 1fr}.cluster-metrics>div:last-child{grid-column:1/-1}.cluster-section{padding-block:17px 45px}.cluster-tick{grid-template-columns:47px minmax(0,1fr) 43px;gap:5px}.cluster-actions .btn{width:100%}.academy-experiment{padding:18px}}
 @media(prefers-reduced-motion:reduce){.cluster-allocation,.cluster-result-table{animation:none!important;transition:none!important}}
 `;
