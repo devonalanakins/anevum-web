@@ -71,6 +71,9 @@ async function testPage(pathname,label,width,height){
   verify(state.width>=width-20&&state.width<=width&&state.scrollWidth<=state.width+1&&state.bodyWidth<=state.width+1,"Horizontal overflow",{label,width,state});
   verify((width<=1100)===state.mobileVisible,"Wrong mobile navigation breakpoint",{label,width,state});
   if(label==="home"){
+    await waitFor(()=>evaluate("document.querySelector('.frontier-poster')?.complete&&document.querySelector('.frontier-poster')?.naturalWidth>700"),"high-resolution heritage review art decode");
+    const poster=await evaluate("(()=>{const el=document.querySelector('.frontier-poster');return {width:el.naturalWidth,current:el.currentSrc,artSource:document.querySelector('[data-frontier-visual]').dataset.artSource};})()");
+    verify(poster.artSource==="pr813-review"&&poster.width===(width<=650?720:1536),"Responsive archival photography must use real hi-resolution assets",{width,poster});
     await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='reduced-motion'"),"reduced-motion WebGL suppression");
     const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,canvas:!!document.querySelector('[data-frontier-gl]'),draws:document.querySelector('[data-frontier-gl]').dataset.fxFrames||'0',display:getComputedStyle(document.querySelector('[data-frontier-gl]')).display,art:getComputedStyle(document.querySelector('.frontier-art')).backgroundImage}))()");
     verify(fx.canvas&&fx.status==="reduced-motion"&&fx.draws==="0"&&fx.display==="none"&&fx.art.includes("research-computation-v1.webp"),"Reduced-motion users must keep an authentic still while avoiding GPU allocation",{width,fx});
@@ -108,7 +111,7 @@ async function interactions(){
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
   await navigate("/institute-preview");
   await waitFor(()=>evaluate("['active','fallback'].includes(document.querySelector('[data-frontier-gl]')?.dataset.fxStatus)"),"WebGL startup or clean fallback");
-  const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,frames:Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0),shader:document.querySelector('[data-frontier-gl]').width>0,still:getComputedStyle(document.querySelector('.frontier-art')).backgroundImage.includes('research-computation-v1.webp')}))()");
+  const fx=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,frames:Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0),shader:document.querySelector('[data-frontier-gl]').width>0,still:document.querySelector('.frontier-poster').naturalWidth>700}))()");
   verify(["active","fallback"].includes(fx.status)&&fx.still,"WebGL must draw or reliably fall back to the existing art",fx);
   if(fx.status==="active"){
     await waitFor(()=>evaluate("Number(document.querySelector('[data-frontier-gl]').dataset.fxFrames||0)>=2"),"shader animation frames");
@@ -130,7 +133,7 @@ async function interactions(){
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
   await navigate("/institute-preview");
   await waitFor(()=>evaluate("document.querySelector('[data-frontier-gl]')?.dataset.fxStatus==='fallback'"),"no-WebGL fallback");
-  const disabledGL=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,art:getComputedStyle(document.querySelector('.frontier-art')).backgroundImage.includes('research-computation-v1.webp'),title:document.querySelector('main h1').textContent}))()");
+  const disabledGL=await evaluate("(()=>({status:document.querySelector('[data-frontier-gl]').dataset.fxStatus,art:document.querySelector('.frontier-poster').naturalWidth>700,title:document.querySelector('main h1').textContent}))()");
   verify(disabledGL.status==="fallback"&&disabledGL.art&&disabledGL.title.includes("frontier"),"WebGL absence must preserve readable architecture and learning entry",disabledGL);
   await send("Page.removeScriptToEvaluateOnNewDocument",{identifier:blockedGL.identifier});
   console.log("INSTITUTE_WEBGL_NO_GPU_QA_PASS",JSON.stringify(disabledGL));
