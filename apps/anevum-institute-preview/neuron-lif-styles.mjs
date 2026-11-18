@@ -24,7 +24,7 @@ export const NEURON_LIF_CSS=String.raw`
 .neuron-metrics>div{background:#e5e8dc;border:1px solid #c4cebe;padding:13px;display:grid;gap:4px}
 .neuron-metrics span{font-size:11px;color:#496359}.neuron-metrics strong{font:normal clamp(25px,3vw,36px) Georgia,serif;color:#1d4542}
 .neuron-metrics small{font-size:10px;color:#587168}
-.neuron-chart-wrap{overflow-x:auto;max-width:100%;border:1px solid #bbc9ba;background:#faf9f3;padding:8px}
+.neuron-scroll-hint{color:#567167;font-size:11px;margin:0 0 7px;line-height:1.45}.neuron-chart-wrap{overflow-x:auto;max-width:100%;border:1px solid #bbc9ba;background:#faf9f3;padding:8px}
 .neuron-chart-wrap svg{display:block;min-width:510px;width:100%;height:auto}
 .neuron-legend{display:flex;flex-wrap:wrap;gap:12px;margin:11px 0}
 .neuron-legend span{display:flex;align-items:center;gap:6px;font-size:11px;color:#476258}
@@ -32,6 +32,6 @@ export const NEURON_LIF_CSS=String.raw`
 .neuron-readout{font-size:13px;color:#365a52;line-height:1.55;margin:12px 0}
 .neuron-qualification{font-size:12px;line-height:1.6;color:#516b60;background:#e5e8dc;padding:11px 13px;border-left:3px solid #a88254}
 @media(max-width:920px){.neuron-layout{grid-template-columns:1fr}}
-@media(max-width:520px){.neuron-settings{grid-template-columns:1fr}.neuron-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.neuron-actions button{width:100%;font-size:11px;padding:8px}.neuron-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.neuron-metrics>div:last-child{grid-column:1/-1}.neuron-section{padding-block:16px 43px}}
+@media(max-width:520px){.neuron-hero{padding-block:19px 23px}.neuron-bench h2{margin:9px 0}.neuron-bench>p{font-size:12px;line-height:1.5}.neuron-settings{margin:12px 0}.neuron-section{padding-top:10px}.neuron-settings{grid-template-columns:1fr}.neuron-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.neuron-actions button{width:100%;font-size:11px;padding:8px}.neuron-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.neuron-metrics>div:last-child{grid-column:1/-1}.neuron-section{padding-block:16px 43px}}
 @media(prefers-reduced-motion:reduce){.neuron-chart-wrap svg{transition:none!important;animation:none!important}}
 `;
