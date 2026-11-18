@@ -22,6 +22,7 @@ const routes=[
   "/institute-preview/learn/cfp-101/transistor-switching",
   "/institute-preview/learn/cfp-101/logic-gates",
   "/institute-preview/learn/cfp-101/half-adders",
+  "/institute-preview/learn/cfp-101/registers",
   "/institute-preview/laboratory/and-gate",
   "/institute-preview/laboratory/cluster-scheduling",
   "/institute-preview/laboratory/neuron-dynamics"
@@ -287,6 +288,63 @@ async function studyNotePortability(page){
   }));
 }
 
+async function registerLesson(page){
+  await visit(page,"/institute-preview/learn/cfp-101/registers");
+  const bench=page.locator("[data-register-bench]");
+  const d=page.locator("[data-register-d]");
+  const q=page.locator("[data-register-q]");
+  const clock=page.locator("[data-register-count]");
+  check((await d.textContent())==="0000"&&(await q.textContent())==="0000"
+    &&(await clock.textContent())==="0","Register did not initialize");
+  await bench.locator('[data-register-bit="0"]').click();
+  await bench.locator('[data-register-bit="2"]').click();
+  check((await d.textContent())==="1010"&&(await q.textContent())==="0000",
+    "Input editing changed Q without clock event");
+  await bench.locator("[data-register-clock]").click();
+  check((await q.textContent())==="1010"&&(await clock.textContent())==="1",
+    "Clock event did not sample the four-bit bus");
+  await bench.locator('[data-register-bit="0"]').click();
+  check((await d.textContent())==="0010"&&(await q.textContent())==="1010",
+    "Stored Q did not hold after changing input D");
+  const evidence=await bench.evaluate(async root=>{
+    const original=URL.createObjectURL;
+    let captured=null;
+    const noDownload=e=>{if(e.target.closest("a[download]"))e.preventDefault();};
+    document.addEventListener("click",noDownload,true);
+    URL.createObjectURL=blob=>{captured=blob;return "blob:anevum-register-qa";};
+    try{
+      root.querySelector("[data-register-export]").click();
+      return captured?JSON.parse(await captured.text()):null;
+    }finally{
+      URL.createObjectURL=original;
+      document.removeEventListener("click",noDownload,true);
+    }
+  });
+  check(evidence?.model==="ideal-four-bit-rising-edge-register"
+    &&evidence?.clockEventCount===1&&evidence?.recentEvents?.length===1
+    &&evidence?.recentEvents[0].q==="1010"
+    &&evidence?.independentlyVerified===false&&evidence?.academicCredit===false,
+    "Register notebook misrepresents its source or clock history",evidence);
+  await page.locator('[data-register-answer="0011"]').click();
+  check((await page.locator("[data-register-quiz-status]").textContent()).includes("Correct"),
+    "Register knowledge check failed");
+  await bench.locator("[data-register-reset]").click();
+  check((await d.textContent())==="0000"&&(await q.textContent())==="0000"
+    &&(await clock.textContent())==="0","Register reset did not clear session");
+  await page.locator("[data-study-text]").fill("Synthetic note: Q holds between clock edges.");
+  await page.locator("[data-study-save]").click();
+  await page.reload({waitUntil:"load"});
+  check((await page.locator("[data-study-text]").inputValue()).includes("Q holds")
+    &&(await page.locator("[data-study-lesson]").getAttribute("data-study-lesson"))==="CFP-101-U04",
+    "Fourth lesson notebook did not survive reload");
+  await page.locator("[data-study-clear]").click();
+  await page.locator("[data-study-clear]").click();
+  await screenshot(page,"register-mobile");
+  console.log("ANEVUM_WEBKIT_REGISTER_LESSON_PASS",
+    JSON.stringify({inputHold:true,risingEdgeCapture:true,heldAfterInputChange:true,
+      exportHonest:true,selfCheck:true,reset:true,notesPersist:true,academicCredit:false}));
+}
+
 async function halfAdder(page){
   await visit(page,"/institute-preview/learn/cfp-101/half-adders");
   await page.evaluate(()=>{
@@ -356,6 +414,7 @@ try{
   await studyUnsavedNavigation(phone);
   await studyNotePortability(phone);
   await halfAdder(phone);
+  await registerLesson(phone);
   await visit(phone,"/institute-preview/dossier");
   await screenshot(phone,"research-desk-mobile");
   await phoneContext.close();
@@ -369,7 +428,7 @@ try{
   await desktopContext.close();
   check(errors.length===0,"Unhandled WebKit page errors",errors);
   console.log("ANEVUM_INSTITUTE_WEBKIT_PREFLIGHT_PASS",
-    JSON.stringify({routes:28,touchMenu:true,studyNotesPreserved:true,unsavedNavigationGuard:true,portableNoteImport:true,halfAdderHandoff:true,
+    JSON.stringify({routes:30,touchMenu:true,registerLesson:true,studyNotesPreserved:true,unsavedNavigationGuard:true,portableNoteImport:true,halfAdderHandoff:true,
       ownerSafariAcceptance:false,publicDeployment:false}));
 }finally{
   if(browser)await browser.close();
