@@ -136,7 +136,8 @@ test("staging migration is isolated, user-scoped, cascades account deletion, and
  const sql=readFileSync(new URL("../migrations-learning-preview/0001_private_learner_profile.sql",import.meta.url),"utf8");
  assert.match(sql,/user_id TEXT PRIMARY KEY NOT NULL REFERENCES "user"\("id"\) ON DELETE CASCADE/);
  assert.match(sql,/revision INTEGER NOT NULL/);
- assert.doesNotMatch(sql,/CREATE TABLE IF NOT EXISTS member_profiles\b|CREATE TABLE IF NOT EXISTS member_entitlements\b|award|credential|public_url|role/i);
+ const executableSQL=sql.split("\n").filter(line=>!line.trimStart().startsWith("--")).join("\n");
+ assert.doesNotMatch(executableSQL,/CREATE TABLE IF NOT EXISTS member_profiles\b|CREATE TABLE IF NOT EXISTS member_entitlements\b|award|credential|public_url|role/i);
  const server=readFileSync(new URL("../src/server/member.mjs",import.meta.url),"utf8");
  assert.match(server,/const session = await auth\.api\.getSession/);
  assert.ok(server.indexOf("const session = await auth.api.getSession")<server.indexOf("return memberLearningProfileEndpoint(request,env,user,verifiedOrigin)"));
