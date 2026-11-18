@@ -5,7 +5,7 @@ import {LAB_ART} from "../apps/anevum-public-studio/living-laboratory-art.mjs";
 import worker from "../apps/anevum-institute-preview/worker.mjs";
 import {CFP_101,validateCurriculum} from "../apps/anevum-institute-preview/curriculum.mjs";
 import {studyToolsHtml} from "../apps/anevum-institute-preview/study-tools.mjs";
-import {frontierHome,frontierRecognition,RECOGNITION_POLICY} from "../apps/anevum-institute-preview/frontier-society.mjs";
+import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
 const PATHS=["","/recognition","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
@@ -19,6 +19,7 @@ test("seven isolated pages have accurate titles, landmarks, and noindex headers"
     assert.equal(response.headers.get("X-Anevum-Surface"),"open-institute-design-review-v1");
     assert.match(response.headers.get("Content-Security-Policy"),/default-src 'none'/);
     assert.match(response.headers.get("Content-Security-Policy"),/connect-src 'none'/);
+    assert.match(response.headers.get("Content-Security-Policy"),/media-src 'self'/);
     assert.match(response.headers.get("X-Robots-Tag"),/noindex/);
     const html=await response.text();
     assert.match(html,/<html lang="en">/);
@@ -157,6 +158,15 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.equal(RECOGNITION_POLICY.awardsIssued,false);
   assert.equal(RECOGNITION_POLICY.profilesEnabled,false);
   assert.equal(RECOGNITION_POLICY.reviewEnabled,false);
+  assert.equal(FRONTIER_MEDIA.assetsBundled,false);
+  assert.equal(FRONTIER_MEDIA.ownerApproved,false);
+  assert.match(FRONTIER_MEDIA.desktop.name,/\.webp$/);
+  assert.match(FRONTIER_MEDIA.overlay.name,/\.mp4$/);
+  assert.match(FRONTIER_MEDIA.desktop.sha256,/^[a-f0-9]{64}$/);
+  assert.match(FRONTIER_MEDIA.overlay.sha256,/^[a-f0-9]{64}$/);
+  assert.match(frontierMediaMarkup("/institute-preview"),/class="frontier-art"/);
+  assert.doesNotMatch(frontierHome("/institute-preview"),/<video\b|frontier-cavern-desktop\.webp|atmosphere-screenblend\.mp4/);
+  assert.doesNotMatch(home,/src="\/institute-preview\/media\//);
   assert.match(frontierHome("/institute-preview"),/href="\/institute-preview\/academy/);
   assert.match(frontierRecognition("/institute-preview"),/data-evidence-panel/);
   assert.doesNotMatch(home+recognition,/<form\b|<iframe|onclick=|onload=|download=".*certificate"/i);
@@ -202,6 +212,9 @@ test("preview client parses, and uses only local browser state",async()=>{
   assert.match(source,/data-evidence-panel/);
   assert.match(source,/data-evidence-state/);
   assert.match(source,/This is not independently verified/);
+  assert.match(source,/prefers-reduced-motion: reduce/);
+  assert.match(source,/navigator\.connection\.saveData/);
+  assert.match(source,/visibilitychange/);
   assert.match(source,/no analog voltage|analog voltage/i);
   assert.doesNotMatch(source,/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.serviceWorker/);
 });
@@ -219,6 +232,8 @@ test("styles are complete, mobile responsive and reduced-motion safe",async()=>{
   assert.match(css,/\.study-actions/);
   assert.match(css,/\.frontier-hero/);
   assert.match(css,/\.frontier-evidence-list/);
+  assert.match(css,/\.frontier-poster/);
+  assert.match(css,/\.frontier-video/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.frontier-atmosphere/);
   assert.match(css,/\/institute-preview\/assets\/lab-hero-v1\.webp/);
   assert.doesNotMatch(css,/https?:\/\//);
