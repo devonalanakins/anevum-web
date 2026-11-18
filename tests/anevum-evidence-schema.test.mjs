@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   EVIDENCE_BROWSER_MODULE,EVIDENCE_FORMAT,EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,
-  normalizeEvidence,canonicalEvidence,validateEvidence,createEvidenceEnvelope,parseEvidenceEnvelope
+  normalizeEvidence,canonicalEvidence,validateEvidence,createEvidenceEnvelope,parseEvidenceEnvelope,validateAndLabNotebook,evidenceFromAndLabNotebook
 } from "../apps/anevum-institute-preview/evidence-schema.mjs";
 
 const example=()=>({
@@ -82,4 +82,63 @@ test("rejects malformed scientific drafts without making up provenance",()=>{
   assert.match(validateEvidence(extra).join(" | "),/Unsupported evidence field/);
   assert.equal(normalizeEvidence({...example(),title:"   a title   "}).title,"a title");
   assert.throws(()=>normalizeEvidence([]),/object/);
+});
+
+const andNotebook=()=>({
+  schemaVersion:1,
+  experimentId:"CFP-101-AND-001",
+  model:"ideal-two-input-boolean-and",
+  modelDefinition:"Q = A AND B",
+  provenance:"ANEVUM Open Institute design preview; generated in this browser session",
+  limitations:"Ideal logical states only; no analog voltage, propagation delay, transistor physics or uncertainty is modeled.",
+  observations:[
+    {inputA:0,inputB:0,outputQ:0},
+    {inputA:0,inputB:1,outputQ:0},
+    {inputA:1,inputB:1,outputQ:1},
+    {inputA:1,inputB:0,outputQ:0}
+  ],
+  coverage:{observed:4,possible:4,complete:true}
+});
+
+test("real AND laboratory export maps to a scientifically qualified draft without institutional claims",async()=>{
+  const exported=andNotebook();
+  assert.deepEqual(validateAndLabNotebook(exported),[]);
+  const draft=evidenceFromAndLabNotebook(exported);
+  assert.equal(draft.kind,"personal-unreviewed-draft");
+  assert.match(draft.title,/4 of 4 states/);
+  assert.match(draft.observations,/11 -> 1/);
+  assert.match(draft.observations,/Simulated \(not measured\)/);
+  assert.match(draft.limitations,/not independently reviewed/);
+  assert.deepEqual(draft.references,[]);
+  const envelope=await createEvidenceEnvelope(draft);
+  assert.deepEqual(await parseEvidenceEnvelope(envelope),envelope);
+  const browser=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(EVIDENCE_BROWSER_MODULE));
+  assert.deepEqual(browser.evidenceFromAndLabNotebook(exported),draft);
+});
+
+test("rejects manipulated AND gate output, duplicate inputs, fake model, incomplete or forged coverage",()=>{
+  const modified=andNotebook();
+  modified.observations[2].outputQ=0;
+  assert.match(validateAndLabNotebook(modified).join("; "),/inconsistent with ideal Boolean AND/);
+  assert.throws(()=>evidenceFromAndLabNotebook(modified),/inconsistent/);
+  const duplicated=andNotebook();
+  duplicated.observations[2]={inputA:0,inputB:0,outputQ:0};
+  assert.match(validateAndLabNotebook(duplicated).join("; "),/Duplicate/);
+  const forged=andNotebook();
+  forged.model="measured-CMOS";
+  assert.match(validateAndLabNotebook(forged).join("; "),/Unsupported laboratory model/);
+  const falseCoverage=andNotebook();
+  falseCoverage.coverage.complete=false;
+  assert.match(validateAndLabNotebook(falseCoverage).join("; "),/coverage metadata mismatch/);
+  const surprise=andNotebook();
+  surprise.reviewedBy="ANEVUM";
+  assert.match(validateAndLabNotebook(surprise).join("; "),/Unexpected laboratory notebook fields/);
+  const outOfRange=andNotebook();
+  outOfRange.observations[0].inputA=2;
+  assert.match(validateAndLabNotebook(outOfRange).join("; "),/Boolean bits/);
+  const partial=andNotebook();
+  partial.observations=partial.observations.slice(0,2);
+  partial.coverage={observed:2,possible:4,complete:false};
+  assert.deepEqual(validateAndLabNotebook(partial),[]);
+  assert.match(evidenceFromAndLabNotebook(partial).observations,/2 of 4/);
 });
