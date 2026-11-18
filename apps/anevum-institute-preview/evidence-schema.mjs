@@ -72,6 +72,7 @@ export async function parseEvidenceEnvelope(value){
   const raw=source.record;
   if(Object.keys(raw).sort().join(",")!==FIELDS.slice().sort().join(","))throw new Error("Record contains missing or unauthorized fields");
   const canonical=canonicalEvidence(raw);
+  if(JSON.stringify(raw)!==JSON.stringify(canonical))throw new Error("Non-canonical record: field ordering or values were changed");
   const expected="sha256:"+await digestEvidence(canonical);
   if(source.digest!==expected)throw new Error("Integrity mismatch: the evidence file differs from its recorded SHA-256 digest");
   return {format:EVIDENCE_FORMAT,record:canonical,digest:expected};
