@@ -21,14 +21,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
       - name: Check hosted-preview adapter without remote credentials
         run: |
           node --check apps/anevum-institute-preview/hosted-adapter.mjs
           node --check apps/anevum-institute-preview/hosted-worker.mjs
           node --test tests/anevum-institute-hosted-preview.test.mjs
       - name: Install pinned Wrangler for local packaging only
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        run: npm install --no-package-lock --no-audit --no-fund
       - name: Bundle Institute-only Worker without deployment
         shell: bash
         run: |
