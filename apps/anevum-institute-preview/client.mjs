@@ -309,4 +309,70 @@ export const INSTITUTE_CLIENT = String.raw`
       if(note)note.textContent="The local evidence editor could not load. Your existing saved draft has not been changed.";
     });
   }
+  // Local-only navigation. Every result is a real allowlisted preview route.
+  (function(){
+    var modal=document.querySelector("[data-command-dialog]");
+    var triggers=document.querySelectorAll("[data-search-open]");
+    if(!modal||!triggers.length||typeof modal.showModal!=="function")return;
+    var query=modal.querySelector("[data-command-query]");
+    var results=modal.querySelector("[data-command-results]");
+    var status=modal.querySelector("[data-command-status]");
+    var closer=modal.querySelector("[data-command-close]");
+    var previous=null;
+    var root="/institute-preview";
+    var pages=[
+      ["Society",root,"institute overview"],
+      ["Academy",root+"/academy","disciplines schools catalog"],
+      ["Computing From First Principles",root+"/academy/cfp-101","cfp 101 syllabus curriculum"],
+      ["Transistor switching",root+"/learn/cfp-101/transistor-switching","semiconductor cmos lesson 01"],
+      ["Boolean logic",root+"/learn/cfp-101/logic-gates","and gate lesson 02"],
+      ["AND-gate laboratory",root+"/laboratory/and-gate","simulation experiment notebook"],
+      ["Research Desk",root+"/dossier","evidence methodology draft"],
+      ["Recognition",root+"/recognition","review policy research evidence"],
+      ["My Studio",root+"/studio","personal learning progress notes"],
+      ["Private Learner Card",root+"/profile","local identity interests"]
+    ];
+    function render(){
+      var q=query.value.trim().toLowerCase();
+      var found=pages.filter(function(p){return (p[0]+" "+p[2]).toLowerCase().includes(q);});
+      results.replaceChildren();
+      found.forEach(function(p){
+        var li=document.createElement("li");
+        var a=document.createElement("a");
+        var name=document.createElement("strong");
+        var route=document.createElement("small");
+        a.href=p[1];a.className="command-result";
+        name.textContent=p[0];route.textContent=p[1].slice(root.length)||"/";
+        a.append(name,route);li.appendChild(a);results.appendChild(li);
+      });
+      status.textContent=found.length?found.length+" available destination"+(found.length===1?"":"s"):"No matching preview destinations.";
+    }
+    function open(opener){
+      previous=opener||document.activeElement;
+      query.value="";render();
+      if(!modal.open)modal.showModal();
+      query.focus();
+    }
+    triggers.forEach(function(button){button.addEventListener("click",function(){open(button);});});
+    closer.addEventListener("click",function(){modal.close();});
+    modal.addEventListener("close",function(){if(previous&&typeof previous.focus==="function")previous.focus();});
+    query.addEventListener("input",render);
+    query.addEventListener("keydown",function(event){
+      if(event.key==="ArrowDown"){var first=results.querySelector("a");if(first){event.preventDefault();first.focus();}}
+    });
+    results.addEventListener("keydown",function(event){
+      if(event.key==="ArrowUp"&&event.target===results.querySelector("a")){event.preventDefault();query.focus();}
+    });
+    document.addEventListener("keydown",function(event){
+      if(event.defaultPrevented||event.altKey)return;
+      var el=document.activeElement;
+      var editing=el&&(el.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+      if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){
+        event.preventDefault();if(!modal.open)open(el);else query.focus();
+      }else if(event.key==="/"&&!event.ctrlKey&&!event.metaKey&&!editing&&!modal.open){
+        event.preventDefault();open(el);
+      }
+    });
+  })();
+
 })();`;

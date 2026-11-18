@@ -34,6 +34,7 @@ function navigation(active){
   <header class="mast"><div class="mast-inner">
     <a class="identity" href="${BASE}" aria-label="ANEVUM, home"><img class="identity-mark" src="${BASE}/mark.svg" width="59" height="59" alt="" decoding="async"><span><span class="identity-text">ANEVUM</span><span class="identity-caption">Open Research Society</span></span></a>
     <nav class="desk-nav" aria-label="Primary navigation">${makeLinks()}</nav>
+    <button type="button" class="shell-search" data-search-open aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K" aria-label="Search ANEVUM destinations">Search <kbd>/</kbd></button>
     <a class="mast-action" href="${BASE}/learn/cfp-101/transistor-switching">Start learning <span aria-hidden="true">→</span></a>
     <details class="mobile-menu"><summary>Menu</summary><nav class="nav-menu" aria-label="Mobile navigation">${makeLinks()}</nav></details>
   </div></header>`;
@@ -53,7 +54,7 @@ function layout(title,active,body){
 <meta name="description" content="ANEVUM design preview: free scientific learning, independent experiments, and evidence-based recognition.">
 <title>${title} — ANEVUM Open Research Society (Design Preview)</title>
 <link rel="stylesheet" href="${BASE}/styles.css"><script defer src="${BASE}/client.js"></script>
-</head><body data-area="${active.toLowerCase()}">${navigation(active)}<div class="preview-ribbon"><strong>Design review:</strong> ANEVUM is an independent, non-accredited education and research project. Accounts, peer review and credential issuance are not implemented.</div>${body}${footer()}</body></html>`;
+</head><body data-area="${active.toLowerCase()}">${navigation(active)}<div class="preview-ribbon"><strong>Design review:</strong> ANEVUM is an independent, non-accredited education and research project. Accounts, peer review and credential issuance are not implemented.</div><dialog class="command-dialog" data-command-dialog aria-labelledby="command-title"><div class="command-heading"><div><p>ANEVUM / DIRECTORY</p><h2 id="command-title">Find a destination</h2></div><button type="button" data-command-close aria-label="Close search">Close</button></div><label for="command-query">Search available pages</label><input id="command-query" type="search" data-command-query autocomplete="off" placeholder="Course, lesson, laboratory"><p data-command-status role="status" aria-live="polite"></p><ul data-command-results aria-label="Search results"></ul><p class="command-disclaimer">Only available preview pages. No planned courses, cluster jobs, or credentials are listed.</p></dialog>${body}${footer()}</body></html>`;
 }
 
 function home(){return layout("Frontier","Society",frontierHome(BASE));}
@@ -64,11 +65,11 @@ function memberProfile(){return layout("Private Learner Card","My Studio",localP
 
 function academy(){
   return layout("Academy","Academy",`<main id="main" tabindex="-1" class="site-main">
-    <section class="page-hero"><div class="shell"><div class="kicker">01 / The Grand Library</div>
-     <h1 class="serif">Study without a <em>deadline.</em></h1><p>An expanding library of rigorous, independently paced scientific education. No paywall. No admission criteria. Start with the course that exists today.</p></div></section>
-    <section class="shell section"><div class="catalog-layout">
-      <aside class="aside-panel"><div class="kicker">Schools / proposed</div><h2>Fields of study</h2><ul><li>Computing &amp; artificial intelligence</li><li>Mathematics</li><li>Physics</li><li>Neuroscience &amp; living systems</li><li>Scientific methods</li></ul><p>These are planned academic groupings—not operational faculties or degree programs.</p></aside>
-      <div><div class="kicker">Available instructional preview / 001</div>
+    <section class="page-hero"><div class="shell"><div class="kicker">01 / Open Academy</div>
+     <h1 class="serif">Learn by building. <em>Verify by doing.</em></h1><p>Open scientific education organized around working lessons, experiments and reproducible reasoning. Start with the material available today; other schools remain proposed.</p></div></section>
+    <section class="shell section compact-academy"><div class="catalog-layout">
+      <aside class="aside-panel"><div class="kicker">Six disciplines / proposed</div><h2>Fields of study</h2><ul class="discipline-list"><li>Computing &amp; systems engineering</li><li>Artificial intelligence &amp; machine learning</li><li>Mathematics &amp; physical sciences</li><li>Neuroscience &amp; cognitive science</li><li>Biology &amp; biophysics</li><li>Neuropsychology &amp; human behavior</li></ul><p>These groupings are proposed—not operational faculties, degrees, or clinical qualifications.</p></aside>
+      <div class="academy-main"><div class="academy-tools"><span class="kicker">Ready to study / 01 course</span><a class="academy-jump" href="${BASE}/learn/cfp-101/transistor-switching">Begin lesson 01 →</a></div>
         <article class="course-card"><div><div class="course-meta"><span>CFP-101</span><span>Foundational</span><span>Free / Self-paced</span></div>
           <h3>Computing From First Principles</h3><p>Explore transistor switching and digital logic with two original introductory lessons, self-assessments, an inverter demonstration, and a Boolean AND laboratory. The full course is not complete.</p>
           <a class="btn small" href="${BASE}/academy/cfp-101">Open course ↗</a>
@@ -87,7 +88,7 @@ function program(){
   return layout("CFP-101 Course","Course",`<main id="main" tabindex="-1" class="site-main">
    <section class="page-hero"><div class="shell"><div class="crumb"><a href="${BASE}/academy">Academy</a> / School of Computing / CFP-101</div><div class="kicker">Founding course / 001</div>
     <h1 class="serif">Computing from <em>first principles.</em></h1><p>From semiconductors and switching through digital logic and computer architecture. The eight-unit program is a planned syllabus; two introductory preview lessons and one laboratory are currently implemented.</p></div></section>
-   <section class="shell section"><div class="section-head"><div><div class="kicker">The learning path</div><h2 class="serif">Eight units. Two lessons available.</h2></div><a class="text-link" href="${BASE}/learn/cfp-101/transistor-switching">Begin available lesson ↗</a></div>
+   <section class="shell section compact-course"><div class="section-head"><div><div class="kicker">The learning path / ${CFP_101.version}</div><h2 class="serif">Eight units. Two lessons available.</h2></div><a class="text-link" href="${BASE}/learn/cfp-101/transistor-switching">Begin available lesson ↗</a></div>
     <div class="program-grid">${cards}</div>
     <div class="aside-panel institution-side"><h2>What completing the course should mean</h2><p>Derive digital logic from explicit assumptions; construct and verify circuits; explain how memory, processing, and instructions fit together; produce an independently inspectable computing artifact. No academic credit or degree is awarded. Prerequisites: comfortable arithmetic and willingness to learn basic algebra.</p><p>Content status: draft syllabus, version ${CFP_101.version}. This is not a completed 30–40 hour course, and no academic credit is offered.</p><p><a href="${BASE}/curriculum/cfp-101.json" download="anevum-cfp-101-curriculum.json">Download portable curriculum metadata (JSON) ↗</a></p></div>
    </section>

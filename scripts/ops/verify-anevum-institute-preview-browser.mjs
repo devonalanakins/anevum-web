@@ -117,6 +117,21 @@ async function testPage(pathname,label,width,height){
   }
   console.log("INSTITUTE_PAGE_QA_PASS",label,width,state.heading);
 }
+
+async function compactShellQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await navigate("/institute-preview/academy");
+  const open=await evaluate("(()=>{const trigger=document.querySelector('[data-search-open]');trigger.click();const d=document.querySelector('[data-command-dialog]');return {modal:d.open,focused:document.activeElement===d.querySelector('[data-command-query]'),count:d.querySelectorAll('.command-result').length};})()");
+  verify(open.modal&&open.focused&&open.count===10,"Compact palette did not open with actual routes",open);
+  const search=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');const q=d.querySelector('[data-command-query]');q.value='transistor';q.dispatchEvent(new Event('input',{bubbles:true}));return [...d.querySelectorAll('.command-result')].map(a=>a.getAttribute('href'));})()");
+  verify(search.includes("/institute-preview/learn/cfp-101/transistor-switching")&&search.every(url=>url.startsWith("/institute-preview/")),"Search did not resolve the existing lesson",search);
+  const close=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');d.querySelector('[data-command-close]').click();return !d.open&&document.activeElement?.matches('[data-search-open]');})()");
+  verify(close,"Palette close did not restore focus",{close});
+  const keyboard=await evaluate("(()=>{document.dispatchEvent(new KeyboardEvent('keydown',{key:'/',bubbles:true}));const d=document.querySelector('[data-command-dialog]');const active=d.open&&document.activeElement===d.querySelector('[data-command-query]');d.close();return active;})()");
+  verify(keyboard,"Slash shortcut failed",{keyboard});
+  console.log("ANEVUM_COMPACT_PALETTE_PASS");
+}
+
 async function interactions(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
@@ -297,6 +312,7 @@ try{
   for(const [width,height] of [[320,740],[390,844],[768,1024],[1024,768],[1440,900]]){
     for(const [pathname,label] of pages){await testPage(pathname,label,width,height);}
   }
+  await compactShellQA();
   await interactions();
   console.log("ANEVUM_INSTITUTE_BROWSER_QA_PASS");
 }finally{
