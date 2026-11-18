@@ -201,11 +201,11 @@ test("CFP-101 reader exposes curriculum-grounded navigation without invented com
       assert.ok(html.includes('href="/institute-preview'+otherPath+'"'),"Missing lesson "+otherId);
       assert.ok(html.includes('data-study-path-status="'+otherId+'"'),"Missing practice status "+otherId);
     }
-    assert.match(html,new RegExp('aria-current="page" href="/institute-preview'+path.replace(/[.*+?^$()|[\]{}]/g,"\\test("frontier society and evidence-based recognition distinguish working activities from future claims",async()=>{")+'"'));
+    assert.ok(html.includes('aria-current="page" href="/institute-preview'+path+'"'),"Current lesson marker missing");
     assert.ok(html.includes('data-study-lesson="'+id+'"'),"Notes must exist for "+id);
   }
   const js=await (await req("/client.js")).text();
-  assert.match(js,/CFP-101-U0\[123\]/,"All three local notebooks must be initialized");
+  assert.match(js,/CFP-101-U0\\[123\\]/,"All three local notebooks must be initialized");
   assert.match(js,/data-study-path-status/);
   assert.match(js,/Lesson U03 remains untracked/);
   const css=await (await req("/styles.css")).text();
