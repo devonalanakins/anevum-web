@@ -11,7 +11,7 @@ export function studyToolsHtml(unitId){
   if(!unit)throw new TypeError("Unsupported or unreviewed study-notes unit");
   return `<section class="study-notes" data-study-lesson="${unitId}" data-study-filename="${unit.filename}" aria-label="Personal study notes">
     <div class="study-notes-header"><div class="kicker">Learning Studio / Local notebook</div><h2>Keep your reasoning.</h2><p class="study-notes-subtitle">${unit.label}</p></div>
-    <p>Notes and bookmarks are stored only in this browser profile, if storage is available. Bookmarking also saves the text currently in the editor. They are not encrypted or synced, and other people using this profile could read them. Do not enter sensitive personal information.</p>
+    <p>Notes and bookmarks are stored only in this browser profile, if storage is available. Bookmarking also saves the text currently in the editor. They are not encrypted or synced, and other people using this profile could read them. In-site links ask before discarding unsaved edits; browser close or app switch warnings may not appear on mobile Safari. Do not enter sensitive personal information.</p>
     <label for="notes-${unitId}">Your notes</label>
     <textarea id="notes-${unitId}" data-study-text maxlength="8000" rows="6" placeholder="Write a derivation, question, or observation in your own words…"></textarea>
     <div class="study-actions"><button class="btn small" type="button" data-study-save>Save notes</button><button class="btn ghost small" type="button" data-study-download>Export .txt</button></div>
