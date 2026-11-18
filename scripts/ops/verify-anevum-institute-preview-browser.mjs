@@ -156,6 +156,21 @@ async function interactions(){
   await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.getAttribute('data-evidence-ready')==='true'"),"dossier post-delete");
   const postDelete=await evaluate("(()=>({title:document.querySelector('[data-evidence-field=title]').value,status:document.querySelector('[data-evidence-status]').textContent}))()");
   verify(postDelete.title===""&&postDelete.status.includes("No local draft"),"Deleted dossier must not reappear",postDelete);
+  // Ingest a real exported AND-gate simulation. Reject forged model output before showing an opt-in Apply step.
+  async function loadLabIntoDossier(value){
+    const body=JSON.stringify(JSON.stringify(value));
+    const expression="(async()=>{const content="+body+";const input=document.querySelector('[data-lab-import]');const dt=new DataTransfer();dt.items.add(new File([content],'and-lab.json',{type:'application/json'}));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));for(let i=0;i<50&&!/^(Validated|Laboratory import rejected)/.test(document.querySelector('[data-lab-feedback]').textContent);i++)await new Promise(r=>setTimeout(r,15));return {feedback:document.querySelector('[data-lab-feedback]').textContent,buttonHidden:document.querySelector('[data-lab-apply]').hidden,title:document.querySelector('[data-evidence-field=title]').value,stored:localStorage.getItem('anevum.institute.evidence-draft.v1')};})()";
+    return evaluate(expression);
+  }
+  const fakeLab=structuredClone(notebook.full);
+  fakeLab.observations[2].outputQ=0;
+  const invalidLab=await loadLabIntoDossier(fakeLab);
+  verify(invalidLab.feedback.includes("inconsistent with ideal Boolean AND")&&invalidLab.buttonHidden&&invalidLab.title===""&&invalidLab.stored===null,"Falsified laboratory output cannot populate an evidence draft",invalidLab);
+  const checkedLab=await loadLabIntoDossier(notebook.full);
+  verify(checkedLab.feedback.includes("Validated 4 of 4 ideal Boolean input states")&&!checkedLab.buttonHidden&&checkedLab.title===""&&checkedLab.stored===null,"Lab import must be staged without overwriting the research desk",checkedLab);
+  const importedLab=await evaluate("(()=>{document.querySelector('[data-lab-apply]').click();return {title:document.querySelector('[data-evidence-field=title]').value,observations:document.querySelector('[data-evidence-field=observations]').value,limitations:document.querySelector('[data-evidence-field=limitations]').value,feedback:document.querySelector('[data-lab-feedback]').textContent,local:localStorage.getItem('anevum.institute.evidence-draft.v1')};})()");
+  verify(importedLab.title.includes("Boolean AND study (4 of 4 states)")&&importedLab.observations.includes("11 -> 1")&&importedLab.observations.includes("Simulated (not measured)")&&importedLab.limitations.includes("not independently reviewed")&&importedLab.feedback.includes("copied into the editor")&&importedLab.local===null,"Lab import must preserve simulation qualifications and await explicit save",importedLab);
+  console.log("INSTITUTE_LAB_TO_DOSSIER_QA_PASS",JSON.stringify({observed:4,forgeryRejected:true,applied:true,autoSaved:false}));
   console.log("INSTITUTE_DOSSIER_QA_PASS",JSON.stringify({digest:savedDossier.digest,persistence:true,export:parsedDossier.format,tamperRejected:true,confirmedDelete:true}));
   // Notes are scoped to a lesson and must survive navigation without leaking to others.
   await navigate("/institute-preview/learn/cfp-101/transistor-switching");
