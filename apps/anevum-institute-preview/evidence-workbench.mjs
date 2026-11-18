@@ -1,4 +1,4 @@
-export const EVIDENCE_WORKBENCH_CLIENT=String.raw`import {EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,createEvidenceEnvelope,parseEvidenceEnvelope,evidenceFromAndLabNotebook,evidenceFromClusterSchedulerNotebook,evidenceFromNeuronLifNotebook} from "/institute-preview/evidence-schema.js";
+export const EVIDENCE_WORKBENCH_CLIENT=String.raw`import {EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,createEvidenceEnvelope,parseEvidenceEnvelope,evidenceFromAndLabNotebook,evidenceFromHalfAdderNotebook,evidenceFromClusterSchedulerNotebook,evidenceFromNeuronLifNotebook} from "/institute-preview/evidence-schema.js";
 import {simulateNeuron} from "/institute-preview/neuron-lif-model.js";
 import {simulateCluster} from "/institute-preview/cluster-scheduler-model.js";
 
@@ -17,6 +17,9 @@ if(panel){
   const labImporter=panel.querySelector("[data-lab-import]");
   const labApply=panel.querySelector("[data-lab-apply]");
   const labFeedback=panel.querySelector("[data-lab-feedback]");
+  const halfImporter=panel.querySelector("[data-half-import]");
+  const halfApply=panel.querySelector("[data-half-apply]");
+  const halfFeedback=panel.querySelector("[data-half-feedback]");
   const clusterImporter=panel.querySelector("[data-cluster-import]");
   const clusterApply=panel.querySelector("[data-cluster-apply]");
   const clusterFeedback=panel.querySelector("[data-cluster-feedback]");
@@ -31,14 +34,14 @@ if(panel){
   const importSources=[...panel.querySelectorAll("[data-import-source]")];
   function revealImportHash(){
     const id=window.location.hash.slice(1);
-    if(!["logic-import","cluster-import","neuron-import"].includes(id))return;
+    if(!["logic-import","half-import","cluster-import","neuron-import"].includes(id))return;
     const target=panel.querySelector("#"+id);
     if(!target||!importHub)return;
     importHub.open=true;
     for(const item of importSources)item.open=item===target;
     requestAnimationFrame(()=>target.scrollIntoView({block:"start",behavior:"auto"}));
   }
-  if(importHub&&importSources.length===3){
+  if(importHub&&importSources.length===4){
     importSources.forEach(function(source){
       source.addEventListener("toggle",function(){
         if(!source.open)return;
@@ -50,8 +53,10 @@ if(panel){
     revealImportHash();
   }
   let stagedLab=null;
+  let stagedHalf=null;
   let stagedCluster=null;
   let stagedNeuron=null;
+  function clearStagedHalf(){stagedHalf=null;halfApply.hidden=true;}
   function clearStagedLab(){
     stagedLab=null;
     labApply.hidden=true;
@@ -118,7 +123,7 @@ if(panel){
     }catch(error){report("Export not created: "+humanError(error));}
   });
   importer.addEventListener("change",async function(){
-    clearStagedLab();clearStagedCluster();clearStagedNeuron();
+    clearStagedLab();clearStagedCluster();clearStagedNeuron();clearStagedHalf();
     resetDelete();
     const file=importer.files?.[0];
     if(!file)return;
@@ -135,6 +140,7 @@ if(panel){
     clearStagedLab();
     clearStagedCluster();
     clearStagedNeuron();
+    clearStagedHalf();
     neuronFeedback.textContent="No neuron simulation is staged.";
     clusterFeedback.textContent="No GPU scheduling result is staged.";
     labFeedback.textContent="Checking laboratory notebook format and Boolean values…";
@@ -157,10 +163,34 @@ if(panel){
     labFeedback.textContent="Simulated results copied into the editor. Review the method and limitations, then select Save locally if you want to keep them.";
     report("Checked simulation staged in your research draft. No institutional verification, account or network upload.");
   });
+  halfImporter.addEventListener("change",async function(){
+    clearStagedHalf();clearStagedLab();clearStagedCluster();clearStagedNeuron();
+    halfFeedback.textContent="Checking the half-adder XOR/AND observations and completeness…";
+    const file=halfImporter.files?.[0];
+    if(!file)return;
+    try{
+      if(file.size>8192)throw new Error("Half-adder export exceeds 8 KiB");
+      const source=JSON.parse(await file.text());
+      stagedHalf=evidenceFromHalfAdderNotebook(source);
+      halfApply.hidden=false;
+      halfFeedback.textContent="Checked "+source.observations.length+" of 4 ideal input pairs against XOR sum and AND carry. Select Use checked half-adder result to replace the editor fields. Origin, independent review and hardware performance have not been verified.";
+    }catch(error){
+      clearStagedHalf();
+      halfFeedback.textContent="Half-adder import rejected: "+humanError(error)+". Existing editor and saved research are unchanged.";
+    }finally{halfImporter.value="";}
+  });
+  halfApply.addEventListener("click",function(){
+    if(!stagedHalf)return;
+    fill(stagedHalf);resetReceipt();resetDelete();
+    clearStagedHalf();
+    halfFeedback.textContent="Checked simulated addition results copied into your editor. Review limitations and select Save locally if desired; no automatic saving or submission.";
+    report("Half-adder arithmetic was staged as an unreviewed local draft. No independent verification, credential or physical circuit evidence.");
+  });
   clusterImporter.addEventListener("change",async function(){
     clearStagedCluster();
     clearStagedLab();
     clearStagedNeuron();
+    clearStagedHalf();
     neuronFeedback.textContent="No neuron simulation is staged.";
     labFeedback.textContent="No Boolean notebook is staged.";
     clusterFeedback.textContent="Checking the GPU scheduling model and metrics…";
@@ -194,6 +224,7 @@ if(panel){
 
   neuronImporter.addEventListener("change",async function(){
     clearStagedNeuron();
+    clearStagedHalf();
     clearStagedLab();
     clearStagedCluster();
     labFeedback.textContent="No Boolean notebook is staged.";
@@ -287,6 +318,37 @@ if(panel){
       report("The transferred simulation was not applied. Your existing research draft was not changed.");
     }
   }
+  // Single-use, same-tab half-adder handoff; session storage is not trusted.
+  // Require all four pairs, validate every XOR/AND value, then wait for Apply.
+  function consumeHalfHandoff(){
+    const key="anevum.institute.handoff.half.v1";
+    let raw=null;
+    try{raw=sessionStorage.getItem(key);}catch(_){return;}
+    if(raw===null)return;
+    try{sessionStorage.removeItem(key);}
+    catch(_){
+      halfFeedback.textContent="The half-adder session transfer could not be cleared; export and import the notebook manually.";
+      return;
+    }
+    if(window.location.hash!=="#half-import")return;
+    try{
+      if(raw.length>8192)throw new Error("Session notebook exceeds 8 KiB");
+      const source=JSON.parse(raw);
+      if(source?.coverage?.complete!==true||source?.coverage?.observed!==4){
+        throw new Error("Direct transfer requires all four ideal input pairs");
+      }
+      stagedHalf=evidenceFromHalfAdderNotebook(source);
+      halfApply.hidden=false;
+      if(importHub)importHub.open=true;
+      for(const item of importSources)item.open=item.id==="half-import";
+      halfFeedback.textContent="All four half-adder results match the ideal XOR/AND model. Select Use checked half-adder result to replace the editor fields. Nothing is saved automatically; authorship, physical behavior and independent review are not verified.";
+      report("A checked, unreviewed half-adder notebook is ready for explicit approval; your saved research draft remains unchanged.");
+    }catch(error){
+      clearStagedHalf();
+      halfFeedback.textContent="Same-tab half-adder transfer rejected: "+humanError(error)+". Existing editor and saved drafts were not changed. Import exported JSON manually if needed.";
+      report("The transferred half-adder notebook was not applied. Your existing research draft was not changed.");
+    }
+  }
   // Single-use same-tab transfers from computational teaching laboratories.
   // Session storage is untrusted, exactly like uploaded JSON. Recompute the
   // source-controlled mathematical models before permitting an explicit Apply.
@@ -336,6 +398,7 @@ if(panel){
     }
   }
   consumeAndLabHandoff();
+  consumeHalfHandoff();
   consumeModelHandoff("cluster");
   consumeModelHandoff("neuron");
   panel.setAttribute("data-evidence-ready","true");
