@@ -9,6 +9,7 @@ import {CFP_101,validateCurriculum} from "../apps/anevum-institute-preview/curri
 import {evaluateHalfAdder,HALF_ADDER_LESSON_HTML} from "../apps/anevum-institute-preview/half-adder-lesson.mjs";
 import {evaluateClockedRegister,REGISTER_LESSON_HTML} from "../apps/anevum-institute-preview/register-lesson.mjs";
 import {emptyMemory,readMemoryWord,writeMemoryWord,MEMORY_LESSON_HTML} from "../apps/anevum-institute-preview/memory-lesson.mjs";
+import {encodeToyInstruction,decodeToyInstruction,assembleToyLine,ASSEMBLY_LESSON_HTML} from "../apps/anevum-institute-preview/assembly-lesson.mjs";
 import {CLUSTER_SCHEDULER_HTML} from "../apps/anevum-institute-preview/cluster-scheduler-ui.mjs";
 import {CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE} from "../apps/anevum-institute-preview/cluster-scheduler-model.mjs";
 import {CLUSTER_SCHEDULER_CSS} from "../apps/anevum-institute-preview/cluster-scheduler-styles.mjs";
@@ -25,14 +26,14 @@ import {FRONTIER_GL_CLIENT} from "../apps/anevum-institute-preview/frontier-gl.m
 import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
-const PATHS=["","/research","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/learn/cfp-101/registers","/learn/cfp-101/addressed-memory","/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics"];
+const PATHS=["","/research","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/learn/cfp-101/registers","/learn/cfp-101/addressed-memory","/learn/cfp-101/assembly-code","/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics"];
 const req=(path="",init={})=>worker.fetch(new Request(BASE+path,init));
 
 test("owner Safari release checklist matches implemented preview and makes no release claim",async()=>{
   const guide=await readFile(new URL("../docs/qa/ANEVUM.WEB.QA.2026-11-18.022.OWNER-SAFARI-ACCEPTANCE.md",import.meta.url),"utf8");
-  assert.match(guide,/16 routes/);
-  assert.match(guide,/CFP-101 introductory lessons U01–U05/);
-  assert.match(guide,/U06–U08 remain planned/);
+  assert.match(guide,/17 routes/);
+  assert.match(guide,/CFP-101 introductory lessons U01–U06/);
+  assert.match(guide,/U07–U08 remain planned/);
   assert.match(guide,/institute-pr-816-anevum-web-nextgen\.devonakins\.workers\.dev\/institute-preview/);
   assert.match(guide,/authenticate with the preexisting owner identity/);
   assert.match(guide,/all four A\/B combinations/);
@@ -45,7 +46,7 @@ test("owner Safari release checklist matches implemented preview and makes no re
   assert.doesNotMatch(guide,/\b(iPhone Safari|actual owner acceptance) (?:is|was) (?:approved|completed|verified)\b/i);
 });
 
-test("sixteen isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
+test("seventeen isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
   for(const path of PATHS){
     const response=await req(path);
     assert.equal(response.status,200,path);
@@ -87,10 +88,10 @@ test("every relative institute navigation link resolves within the preview",asyn
 test("Academy advertises only implemented curriculum lessons and real simulated laboratories",async()=>{
   const html=await(await req("/academy")).text();
   const lessonPaths=CFP_101.units.filter(unit=>unit.availability==="preview");
-  assert.equal(lessonPaths.length,5);
+  assert.equal(lessonPaths.length,6);
   assert.match(html,/data-study-path aria-labelledby="academy-available-title"/);
-  assert.match(html,/5 available previews \/ 3 planned units/);
-  assert.equal((html.match(/class="academy-unit-link"/g)||[]).length,5);
+  assert.match(html,/6 available previews \/ 2 planned units/);
+  assert.equal((html.match(/class="academy-unit-link"/g)||[]).length,6);
   for(const unit of lessonPaths){
     assert.ok(html.includes('href="/institute-preview'+unit.lessonPath+'"'),"Missing implemented lesson "+unit.id);
     assert.ok(html.includes('data-study-path-status="'+unit.id+'"'),"Missing honest practice marker "+unit.id);
@@ -113,10 +114,10 @@ test("course availability and educational boundaries are explicit",async()=>{
   const catalog=await(await req("/academy")).text();
   const course=await(await req("/academy/cfp-101")).text();
   const lesson=await(await req("/learn/cfp-101/logic-gates")).text();
-  assert.match(catalog,/Explore transistor switching, Boolean logic, binary arithmetic, clocked registers and addressed memory/i);
+  assert.match(catalog,/Explore transistor switching, Boolean logic, binary arithmetic, clocked registers, addressed memory and fictional machine-code encoding/i);
   assert.match(catalog,/not operational faculties/i);
   assert.match(course,/curriculum in development/i);
-  assert.equal((course.match(/Study this lesson/g)||[]).length,5);
+  assert.equal((course.match(/Study this lesson/g)||[]).length,6);
   assert.ok(course.indexOf("Semiconductors and transistor switching")<course.indexOf("Binary logic and gates"),"Transistors-first syllabus order");
   assert.match(lesson,/Q = A ∧ B/);
   assert.match(lesson,/2² = 4/);
@@ -243,6 +244,61 @@ test("Unit05 ideal addressed-memory model preserves untouched words, rejects inv
   assert.match(client,/recentWrites:history\.slice\(\)/);
 });
 
+test("Unit06 fictional four-bit assembly encodes, decodes and rejects reserved machine words",async()=>{
+  const expected={
+    LOAD:["0000","0001","0010","0011"],
+    STORE:["0100","0101","0110","0111"],
+    ADD:["1000","1001","1010","1011"]
+  };
+  let valid=0;
+  for(const [name,words] of Object.entries(expected)){
+    for(let address=0;address<4;address++){
+      const bits=encodeToyInstruction(name,address);
+      assert.equal(bits,words[address],name+" "+address);
+      assert.equal(assembleToyLine(name+" "+address),bits);
+      assert.equal(assembleToyLine("  "+name.toLowerCase()+"  "+address+"  "),bits);
+      assert.deepEqual(decodeToyInstruction(bits),{
+        bits,opcodeBits:bits.slice(0,2),operandBits:bits.slice(2),
+        mnemonic:name,address,assembly:name+" "+address
+      });
+      valid++;
+    }
+  }
+  assert.equal(valid,12);
+  assert.equal(encodeToyInstruction("HALT"),"1100");
+  assert.equal(assembleToyLine(" halt "),"1100");
+  assert.deepEqual(decodeToyInstruction("1100"),{
+    bits:"1100",opcodeBits:"11",operandBits:"00",mnemonic:"HALT",address:null,assembly:"HALT"
+  });
+  for(const bits of ["1101","1110","1111"])assert.throws(()=>decodeToyInstruction(bits),RangeError);
+  for(const bits of ["","001","00101","abcd","0020"," 0010 ",0,null,undefined,"1100\n"])
+    assert.throws(()=>decodeToyInstruction(bits),TypeError);
+  for(const assembly of ["LOAD","STORE 4","LOAD -1","ADD 3 garbage","HALT 0","NOP 2","","LOAD 1\nHALT",null,42,"x".repeat(33)])
+    assert.throws(()=>assembleToyLine(assembly),{name:/TypeError|RangeError/});
+  for(const [mnemonic,address] of [["LOAD",null],["ADD",4],["STORE",-1],["STORE","1"],["HALT",0],["BOGUS",1]])
+    assert.throws(()=>encodeToyInstruction(mnemonic,address),RangeError);
+  assert.match(ASSEMBLY_LESSON_HTML,/fictional 4-bit instruction format/);
+  assert.match(ASSEMBLY_LESSON_HTML,/13 valid code words/);
+  assert.match(ASSEMBLY_LESSON_HTML,/does not provide a CPU/);
+  const resp=await req("/learn/cfp-101/assembly-code");
+  assert.equal(resp.status,200);
+  const html=await resp.text();
+  for(const token of ["CFP-101-U06","data-assembly-bench","data-assembly-form","data-assembly-source","data-assembly-machine","data-assembly-decode-form","data-assembly-example=\"HALT\"","data-assembly-export","data-assembly-history","data-assembly-quiz","data-study-lesson=\"CFP-101-U06\""]){
+    assert.ok(html.includes(token),"Missing assembly control "+token);
+  }
+  assert.equal((html.match(/data-assembly-example=/g)||[]).length,4);
+  assert.equal((html.match(/data-assembly-answer=/g)||[]).length,3);
+  assert.match(html,/not execute programs/);
+  assert.match(html,/not a secure executable/i);
+  assert.doesNotMatch(html,/physical assembly execution|real instruction benchmark|accredited degree/i);
+  const js=await(await req("/client.js")).text();
+  assert.match(js,/data-assembly-form/);
+  assert.match(js,/data-assembly-decode-form/);
+  assert.match(js,/Reserved encoding: HALT requires operand 00/);
+  assert.match(js,/instructionsExecuted:false,realHardware:false/);
+  assert.match(js,/independentlyVerified:false,academicCredit:false/);
+});
+
 test("transistor switching lesson teaches ideal complementary inversion with accessible active controls",async()=>{
   const response=await req("/learn/cfp-101/transistor-switching");
   assert.equal(response.status,200);
@@ -273,14 +329,14 @@ test("versioned curriculum JSON is portable, accurate and fail-closed on invalid
   assert.equal(manifest.accreditation,"none");
   assert.equal(manifest.units.length,8);
   assert.deepEqual(manifest.units.filter(unit=>unit.availability==="preview").map(unit=>unit.lessonPath),[
-    "/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/learn/cfp-101/registers","/learn/cfp-101/addressed-memory"
+    "/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/learn/cfp-101/registers","/learn/cfp-101/addressed-memory","/learn/cfp-101/assembly-code"
   ]);
-  assert.equal(manifest.units.filter(unit=>unit.availability==="planned").length,3);
+  assert.equal(manifest.units.filter(unit=>unit.availability==="planned").length,2);
   const manifestPage=await(await req("/academy/cfp-101")).text();
   assert.match(manifestPage,/Download portable curriculum metadata/);
-  assert.match(manifestPage,/version 0\.5\.0/);
+  assert.match(manifestPage,/version 0\.6\.0/);
   const invalid=structuredClone(manifest);
-  invalid.units[5].availability="preview";
+  invalid.units[6].availability="preview";
   assert.ok(validateCurriculum(invalid).some(error=>error.includes("Lesson availability mismatch")));
   const badPrerequisite=structuredClone(manifest);
   badPrerequisite.units[0].prerequisites=["CFP-101-U02"];
@@ -291,14 +347,15 @@ test("versioned curriculum JSON is portable, accurate and fail-closed on invalid
   assert.ok(validateCurriculum({schemaVersion:1,id:"CFP-101",version:"0.3.0",status:"preview",units:[{availability:"preview"}]}).length>0);
 });
 
-test("Learning Studio exposes independently keyed, accessible local notebooks for all five lessons",async()=>{
-  assert.throws(()=>studyToolsHtml("CFP-101-U06"),/Unsupported or unreviewed/);
+test("Learning Studio exposes independently keyed, accessible local notebooks for all six lessons",async()=>{
+  assert.throws(()=>studyToolsHtml("CFP-101-U07"),/Unsupported or unreviewed/);
   const a=await (await req("/learn/cfp-101/transistor-switching")).text();
   const b=await (await req("/learn/cfp-101/logic-gates")).text();
   const c=await (await req("/learn/cfp-101/half-adders")).text();
   const d=await (await req("/learn/cfp-101/registers")).text();
   const e=await (await req("/learn/cfp-101/addressed-memory")).text();
-  for(const [html,key] of [[a,"CFP-101-U01"],[b,"CFP-101-U02"],[c,"CFP-101-U03"],[d,"CFP-101-U04"],[e,"CFP-101-U05"]]){
+  const ff=await (await req("/learn/cfp-101/assembly-code")).text();
+  for(const [html,key] of [[a,"CFP-101-U01"],[b,"CFP-101-U02"],[c,"CFP-101-U03"],[d,"CFP-101-U04"],[e,"CFP-101-U05"],[ff,"CFP-101-U06"]]){
     assert.match(html,new RegExp('data-study-lesson="'+key+'"'));
     assert.match(html,/data-study-save/);
     assert.match(html,/data-study-import/);
@@ -348,13 +405,14 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   assert.match(css,/\.study-import \[data-study-import-apply\]\[hidden\]\{display:none!important\}/);
 });
 
-test("Five CFP-101 readers expose curriculum-grounded navigation without invented completion",async()=>{
+test("Six CFP-101 readers expose curriculum-grounded navigation without invented completion",async()=>{
   const pages=[
     ["/learn/cfp-101/transistor-switching","CFP-101-U01"],
     ["/learn/cfp-101/logic-gates","CFP-101-U02"],
     ["/learn/cfp-101/half-adders","CFP-101-U03"],
     ["/learn/cfp-101/registers","CFP-101-U04"],
-    ["/learn/cfp-101/addressed-memory","CFP-101-U05"]
+    ["/learn/cfp-101/addressed-memory","CFP-101-U05"],
+    ["/learn/cfp-101/assembly-code","CFP-101-U06"]
   ];
   for(const [path,id] of pages){
     const response=await req(path);
@@ -362,10 +420,10 @@ test("Five CFP-101 readers expose curriculum-grounded navigation without invente
     const html=await response.text();
     assert.equal((html.match(/data-study-path(?: |\>)/g)||[]).length,1);
     assert.match(html,/aria-label="CFP-101 available lesson navigation"/);
-    assert.equal((html.match(/class="study-path-link"/g)||[]).length,5);
+    assert.equal((html.match(/class="study-path-link"/g)||[]).length,6);
     assert.equal((html.match(/aria-current="page"/g)||[]).length,3,"Expected desktop and mobile mast navigation plus current lesson");
     assert.match(html,/This is not a course completion record or academic credit/);
-    assert.match(html,/Three units remain in development/);
+    assert.match(html,/Two units remain in development/);
     assert.match(html,/data-study-path-progress/);
     for(const [otherPath,otherId] of pages){
       assert.ok(html.includes('href="/institute-preview'+otherPath+'"'),"Missing lesson "+otherId);
@@ -375,9 +433,9 @@ test("Five CFP-101 readers expose curriculum-grounded navigation without invente
     assert.ok(html.includes('data-study-lesson="'+id+'"'),"Notes must exist for "+id);
   }
   const js=await (await req("/client.js")).text();
-  assert.ok(js.includes('/^CFP-101-U0[12345]$/'),"All five local notebooks must be initialized");
+  assert.ok(js.includes('/^CFP-101-U0[123456]$/'),"All six local notebooks must be initialized");
   assert.match(js,/data-study-path-status/);
-  assert.match(js,/Lessons U03, U04 and U05 remain untracked/);
+  assert.match(js,/Lessons U03–U06 remain untracked/);
   const css=await (await req("/styles.css")).text();
   assert.match(css,/\.study-path-links\{list-style:none/);
   assert.match(css,/@media\(max-width:420px\)\{\.study-path-links\{grid-template-columns:1fr\}/);
@@ -389,8 +447,8 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.match(home,/An open institute for <em>serious inquiry/);
   assert.match(home,/Explore the academic catalogue/);
   assert.match(home,/Computing From First Principles/);
-  assert.match(home,/5 lessons available/);
-  assert.match(home,/3 units in development/);
+  assert.match(home,/6 lessons available/);
+  assert.match(home,/2 units in development/);
   assert.match(home,/class="academic-pathways"/);
   assert.match(home,/href="\/institute-preview\/laboratory\/cluster-scheduling"/);
   assert.match(home,/href="\/institute-preview\/laboratory\/neuron-dynamics"/);
