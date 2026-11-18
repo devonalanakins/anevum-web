@@ -27,7 +27,7 @@ export function frontierMediaMarkup(base){
     </div>`;
   }
   if(!FRONTIER_MEDIA.assetsBundled||!FRONTIER_MEDIA.ownerApproved){
-    return '<div class="frontier-media" aria-hidden="true" data-frontier-visual><div class="frontier-art"></div><div class="frontier-atmosphere"></div><canvas class="frontier-gl" data-frontier-gl role="presentation" aria-hidden="true"></canvas></div>';
+    return '<div class="frontier-media frontier-media--facility" aria-hidden="true" data-frontier-visual data-art-source="facility-revision-pending-photo"><div class="frontier-facility-art"></div><div class="frontier-facility-silhouette"></div><div class="frontier-atmosphere"></div><canvas class="frontier-gl" data-frontier-gl role="presentation" aria-hidden="true"></canvas></div>';
   }
   return `<div class="frontier-media" aria-hidden="true" data-frontier-visual>
     <picture><source media="(max-width: 650px)" srcset="${base}/media/${FRONTIER_MEDIA.mobile.name}">
