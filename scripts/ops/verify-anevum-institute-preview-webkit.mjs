@@ -178,13 +178,56 @@ async function studyNotePortability(page){
   await page.waitForFunction(()=>document.querySelector("[data-study-status]")?.textContent.includes("40 KiB limit"));
   check(await apply.isHidden()&&(await note.inputValue())===restored,
     "Oversized import must be rejected and leave text intact");
+  // Reproduce a slow file read; newer editing and confirmed deletion must
+  // cancel the earlier import, even if its Promise settles afterward.
+  await page.evaluate(()=>{
+    const original=File.prototype.text;
+    const imported="ANEVUM Open Institute / CFP-101-U02 / Personal study notes\\n"+
+      "Browser-local export; not an institutional transcript.\\n\\n"+
+      "Stale delayed file must never overwrite newer user work.\\n";
+    const delayed={original,imported,resolve:null};
+    window.__anevumDelayedImport=delayed;
+    File.prototype.text=function(){
+      if(this.name!=="delayed-cfp101-u02.txt")return original.call(this);
+      return new Promise(resolve=>{delayed.resolve=()=>resolve(delayed.imported);});
+    };
+  });
+  const slowFile={name:"delayed-cfp101-u02.txt",mimeType:"text/plain",
+    buffer:Buffer.from("ANEVUM fixture, contents provided by delayed File.text","utf8")};
+  await file.setInputFiles(slowFile);
+  await page.waitForFunction(()=>typeof window.__anevumDelayedImport?.resolve==="function");
+  const newer="Keep this newer unsaved edit; disregard the stale file.";
+  await note.fill(newer);
+  await page.evaluate(async()=>{
+    window.__anevumDelayedImport.resolve();
+    await new Promise(resolve=>setTimeout(resolve,0));
+  });
+  check(await apply.isHidden()&&(await note.inputValue())===newer
+      &&(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).note,key))===restored
+      &&(await file.inputValue())==="",
+    "A late file read must not revive an import after editing");
+  await page.evaluate(()=>{window.__anevumDelayedImport.resolve=null;});
+  await file.setInputFiles(slowFile);
+  await page.waitForFunction(()=>typeof window.__anevumDelayedImport?.resolve==="function");
   await page.locator("[data-study-clear]").click();
   await page.locator("[data-study-clear]").click();
+  await page.evaluate(async()=>{
+    window.__anevumDelayedImport.resolve();
+    await new Promise(resolve=>setTimeout(resolve,0));
+    File.prototype.text=window.__anevumDelayedImport.original;
+    delete window.__anevumDelayedImport;
+  });
+  check(await apply.isHidden()&&(await file.inputValue())==="",
+    "A late file read must not revive an import after confirmed deletion");
   check(await page.evaluate(key=>localStorage.getItem(key)===null,key),
     "Synthetic imported note data must be deleted");
+  console.log("ANEVUM_WEBKIT_STALE_NOTE_IMPORT_CANCEL_PASS",JSON.stringify({
+    editedDuringRead:true,deletedDuringRead:true,staleApplyHidden:true,localSavePreserved:true
+  }));
   console.log("ANEVUM_WEBKIT_PORTABLE_STUDY_IMPORT_PASS",JSON.stringify({
     filePicker:true,stagedOnly:true,explicitApply:true,explicitSave:true,
-    recoveredAfterReload:true,wrongLessonRejected:true,oversizedRejected:true
+    recoveredAfterReload:true,wrongLessonRejected:true,oversizedRejected:true,
+    concurrentEditAndDeletionSafe:true
   }));
 }
 
