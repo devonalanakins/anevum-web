@@ -9,6 +9,9 @@ import {TRANSISTOR_LESSON_HTML} from "./transistor-lesson.mjs";
 import {CFP_101} from "./curriculum.mjs";
 import {studyToolsHtml} from "./study-tools.mjs";
 import {frontierHome,frontierRecognition} from "./frontier-society.mjs";
+import {dossierPage} from "./dossier-ui.mjs";
+import {EVIDENCE_BROWSER_MODULE} from "./evidence-schema.mjs";
+import {EVIDENCE_WORKBENCH_CLIENT} from "./evidence-workbench.mjs";
 import {ANEVUM_MARK_SVG, ANEVUM_OBSERVATORY_SVG} from "./artwork.mjs";
 import {LAB_ART} from "../anevum-public-studio/living-laboratory-art.mjs";
 
@@ -19,7 +22,8 @@ function navigation(active){
     ["Society",BASE],
     ["Academy",BASE+"/academy"],
     ["Laboratory",BASE+"/laboratory/and-gate"],
-    ["Recognition",BASE+"/recognition"]
+    ["Recognition",BASE+"/recognition"],
+    ["My Desk",BASE+"/dossier"]
   ];
   const makeLinks=()=>links.map(([name,href])=>`<a href="${href}"${(name===active||active==="Course"&&name==="Academy"||active==="Classroom"&&name==="Academy")?' aria-current="page"':''}>${name}</a>`).join("");
   return `<a class="skip" href="#main">Skip to main content</a>
@@ -50,6 +54,7 @@ function layout(title,active,body){
 
 function home(){return layout("Frontier","Society",frontierHome(BASE));}
 function recognition(){return layout("Recognition","Recognition",frontierRecognition(BASE));}
+function dossier(){return layout("Research Desk","My Desk",dossierPage(BASE));}
 
 function academy(){
   return layout("Academy","Academy",`<main id="main" tabindex="-1" class="site-main">
@@ -163,12 +168,14 @@ function lab(){
   </main>`);
 }
 
-const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/recognition",recognition],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/laboratory/and-gate",lab]]);
+const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/recognition",recognition],[BASE+"/dossier",dossier],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/laboratory/and-gate",lab]]);
 
 const ASSETS=new Map([
   [BASE+"/curriculum/cfp-101.json",["application/json; charset=utf-8",JSON.stringify(CFP_101,null,2)+"\n"]],
   [BASE+"/styles.css",["text/css; charset=utf-8",INSTITUTE_CSS]],
   [BASE+"/client.js",["text/javascript; charset=utf-8",INSTITUTE_CLIENT]],
+  [BASE+"/evidence-schema.js",["text/javascript; charset=utf-8",EVIDENCE_BROWSER_MODULE]],
+  [BASE+"/evidence-workbench.js",["text/javascript; charset=utf-8",EVIDENCE_WORKBENCH_CLIENT]],
   [BASE+"/mark.svg",["image/svg+xml; charset=utf-8",ANEVUM_MARK_SVG]],
   [BASE+"/observatory.svg",["image/svg+xml; charset=utf-8",ANEVUM_OBSERVATORY_SVG]]
 ]);
