@@ -23,6 +23,32 @@ if(panel){
   const neuronImporter=panel.querySelector("[data-neuron-import]");
   const neuronApply=panel.querySelector("[data-neuron-apply]");
   const neuronFeedback=panel.querySelector("[data-neuron-feedback]");
+
+  // Progressive-enhancement disclosure controls: compact by default,
+  // keyboard accessible via native summary, and fragment links reveal
+  // the exact importer without skipping the real mathematical validators.
+  const importHub=panel.querySelector("[data-import-hub]");
+  const importSources=[...panel.querySelectorAll("[data-import-source]")];
+  function revealImportHash(){
+    const id=window.location.hash.slice(1);
+    if(!["logic-import","cluster-import","neuron-import"].includes(id))return;
+    const target=panel.querySelector("#"+id);
+    if(!target||!importHub)return;
+    importHub.open=true;
+    for(const item of importSources)item.open=item===target;
+    requestAnimationFrame(()=>target.scrollIntoView({block:"start",behavior:"auto"}));
+  }
+  if(importHub&&importSources.length===3){
+    importSources.forEach(function(source){
+      source.addEventListener("toggle",function(){
+        if(!source.open)return;
+        // Fallback for browsers without native details[name] grouping.
+        for(const other of importSources)if(other!==source)other.open=false;
+      });
+    });
+    window.addEventListener("hashchange",revealImportHash);
+    revealImportHash();
+  }
   let stagedLab=null;
   let stagedCluster=null;
   let stagedNeuron=null;

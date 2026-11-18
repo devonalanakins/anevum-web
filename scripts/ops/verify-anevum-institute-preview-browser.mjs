@@ -255,6 +255,36 @@ async function clusterSchedulerBrowserQA(){
 
 
 
+
+async function compactEvidenceImporterQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await navigate("/institute-preview/dossier");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"Research Desk with compact import hub");
+  const initial=await evaluate("(()=>{const hub=document.querySelector('[data-import-hub]');return {closed:!hub.open,modelCount:hub.querySelectorAll('[data-import-source]').length,sourceClosed:[...hub.querySelectorAll('[data-import-source]')].every(x=>!x.open),save:!!document.querySelector('[data-evidence-save]'),pickers:hub.querySelectorAll('input[type=file]').length,summaryVisible:hub.querySelector('summary').getBoundingClientRect().height};})()");
+  verify(initial.closed&&initial.modelCount===3&&initial.sourceClosed&&initial.save&&initial.pickers===3&&initial.summaryVisible>=44,"Research Desk must start with one compact, accessible importer hub",initial);
+  const keyboard=await evaluate("(()=>{const summary=document.querySelector('[data-import-hub]>summary');summary.focus();return document.activeElement===summary;})()");
+  verify(keyboard,"The native experiment import disclosure cannot receive keyboard focus");
+  await send("Input.dispatchKeyEvent",{type:"keyDown",key:"Enter",code:"Enter",windowsVirtualKeyCode:13});
+  await send("Input.dispatchKeyEvent",{type:"keyUp",key:"Enter",code:"Enter",windowsVirtualKeyCode:13});
+  await waitFor(()=>evaluate("document.querySelector('[data-import-hub]').open"),"keyboard-expanded experiment import hub");
+  const expanded=await evaluate("(()=>{const source=document.querySelector('#cluster-import');source.querySelector('summary').click();return {open:source.open,other:[...document.querySelectorAll('[data-import-source]')].filter(x=>x!==source&&x.open).length,activeInputs:!!source.querySelector('[data-cluster-import]')};})()");
+  verify(expanded.open&&expanded.other===0&&expanded.activeInputs,"GPU importer cannot be opened under compact hub",expanded);
+  const exclusive=await evaluate("(()=>{const neuron=document.querySelector('#neuron-import');neuron.querySelector('summary').click();return {neuron:neuron.open,cluster:document.querySelector('#cluster-import').open,all:[...document.querySelectorAll('[data-import-source]')].filter(x=>x.open).length};})()");
+  await waitFor(()=>evaluate("document.querySelector('#neuron-import').open&&!document.querySelector('#cluster-import').open"),"exclusive nested native disclosures");
+  verify(exclusive.neuron,"The neuron importer failed to open",exclusive);
+  await navigate("/institute-preview/dossier#cluster-import");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'&&document.querySelector('#cluster-import')?.open"),"deep-linked GPU research importer");
+  const linked=await evaluate("(()=>({hub:document.querySelector('[data-import-hub]').open,gpu:document.querySelector('#cluster-import').open,neuron:document.querySelector('#neuron-import').open,hash:location.hash}))()");
+  verify(linked.hub&&linked.gpu&&!linked.neuron&&linked.hash==="#cluster-import","GPU deep link must expose the correct file control",linked);
+  await navigate("/institute-preview/dossier");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"Research Desk for dynamic hash navigation");
+  await evaluate("location.hash='#neuron-import'");
+  await waitFor(()=>evaluate("document.querySelector('[data-import-hub]').open&&document.querySelector('#neuron-import').open"),"neuron fragment expansion");
+  const focus=await evaluate("(()=>{const summary=document.querySelector('#neuron-import>summary');summary.focus();return {focused:document.activeElement===summary,visible:summary.getBoundingClientRect().height>=40};})()");
+  verify(focus.focused&&focus.visible,"Deep-linked neuron importer is not keyboard accessible",focus);
+  console.log("ANEVUM_COMPACT_IMPORT_HUB_QA_PASS",JSON.stringify({modelCount:3,keyboard:true,exclusive:true,deepLinks:true,saveRetained:true}));
+}
+
 async function neuronResearchBrowserQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await navigate("/institute-preview/laboratory/neuron-dynamics");
@@ -514,6 +544,7 @@ try{
   await interactions();
   await clusterResearchBrowserQA();
   await neuronResearchBrowserQA();
+  await compactEvidenceImporterQA();
   console.log("ANEVUM_INSTITUTE_BROWSER_QA_PASS");
 }finally{
   for(const item of pending.values()){clearTimeout(item.timer);item.reject(Error("Browser ending"));}pending.clear();

@@ -724,4 +724,31 @@ body[data-area="course"] .unit[hidden]{display:none!important}
 .dossier-neuron-inner .dossier-lab-apply{margin-top:11px;min-height:44px}
 .dossier-neuron-inner button[hidden]{display:none!important}
 
+
+/* One compact importer hub replaces three permanently stacked file controls. */
+.dossier-import-hub{margin:15px 0 13px;border:1px solid #aabfaf;border-radius:7px;background:#e6e9dd;color:#23453e}
+.dossier-import-hub>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px 14px;flex-wrap:wrap;min-height:49px;padding:12px 15px;font-weight:750;font-size:13px;cursor:pointer}
+.dossier-import-hub>summary::-webkit-details-marker,.dossier-import-source>summary::-webkit-details-marker{display:none}
+.dossier-import-hub>summary::after{content:"+";font:750 18px ui-monospace,Consolas,monospace;color:#366157}
+.dossier-import-hub[open]>summary::after{content:"−"}
+.dossier-import-hub>summary small{font:11px ui-monospace,Consolas,monospace;color:#4d6f61}
+.dossier-import-content{border-top:1px solid #b4c5b5;padding:11px 13px 14px}
+.dossier-import-warning{margin:0 1px 11px;color:#385f51;font-size:12px;line-height:1.55}
+.dossier-import-sources{display:grid;gap:7px}
+.dossier-import-source{scroll-margin-top:84px;background:#f1f2ea;border:1px solid #b6c5b8;border-radius:5px;min-width:0}
+.dossier-import-source>summary{list-style:none;display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;min-height:44px;padding:10px 12px;cursor:pointer}
+.dossier-import-source>summary::after{content:"+";font:750 16px ui-monospace,Consolas,monospace;color:#396453}
+.dossier-import-source[open]>summary::after{content:"−"}
+.dossier-import-source>summary strong{font-size:12px;color:#23483f}
+.dossier-import-source>summary small{font-size:11px;color:#517267}
+.dossier-import-hub summary:hover{background:#dae4d8}
+.dossier-import-hub summary:focus-visible,.dossier-import-source input:focus-visible,.dossier-import-source button:focus-visible{outline:3px solid #87693c;outline-offset:2px}
+.dossier-import-body.dossier-lab-import,.dossier-import-body.dossier-neuron-inner{border:0;border-top:1px solid #c3d0c2;background:#f0f2e9;border-radius:0;margin:0;padding:13px 12px 15px;min-width:0;color:#27493f}
+.dossier-import-body input[type=file]{width:100%;max-width:100%;min-height:44px;font-size:12px;padding:7px;background:#faf9f2;border:1px solid #b8c9b9;border-radius:4px}
+.dossier-import-body label{display:block;font-size:12px;margin-bottom:8px;line-height:1.5}
+.dossier-import-body p{font-size:12px;color:#486b5e;line-height:1.55;margin:11px 0 0}
+.dossier-import-body button{min-height:44px;margin-top:10px}
+.dossier-import-body button[hidden]{display:none!important}
+@media(max-width:420px){.dossier-import-hub>summary{font-size:12px;padding:11px}.dossier-import-content{padding:10px}.dossier-import-source>summary{padding:10px}}
+
 `;

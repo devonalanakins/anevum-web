@@ -639,3 +639,23 @@ test("neuron LIF simulator is deterministic, mathematically bounded and not a cl
   assert.ok(style.includes(NEURON_LIF_CSS));
   assert.equal((await req("/api/neuron-data")).status,404);
 });
+
+test("Research Desk groups all three locally checked teaching exports in native keyboard disclosures",async()=>{
+  const dossier=await(await req("/dossier")).text();
+  assert.match(dossier,/data-import-hub/);
+  assert.equal((dossier.match(/data-import-source/g)||[]).length,3);
+  for(const id of ["logic-import","cluster-import","neuron-import"])assert.match(dossier,new RegExp('id="'+id+'"'));
+  for(const picker of ["data-lab-import","data-cluster-import","data-neuron-import"])assert.match(dossier,new RegExp(picker));
+  assert.match(dossier,/Import experiment results|Bring in experiment results/);
+  assert.match(dossier,/data-evidence-save/);
+  assert.match(dossier,/data-evidence-export/);
+  assert.match(dossier,/does not authenticate their origin|not authorship, physical observations or peer review/i);
+  const js=await(await req("/evidence-workbench.js")).text();
+  assert.match(js,/revealImportHash/);
+  assert.match(js,/hashchange/);
+  assert.match(js,/clearStagedNeuron/);
+  const css=await(await req("/styles.css")).text();
+  assert.match(css,/\.dossier-import-hub/);
+  assert.match(css,/\.dossier-import-source/);
+  assert.match(css,/summary:focus-visible/);
+});
