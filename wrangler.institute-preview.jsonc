@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "anevum-institute-review-NOT-PRODUCTION",
+  "main": "./apps/anevum-institute-preview/hosted-worker.mjs",
+  "compatibility_date": "2026-11-18",
+  "workers_dev": false,
+  "preview_urls": true,
+  "previews": {},
+  "rules": [
+    {
+      "type": "Data",
+      "globs": [
+        "**/*.webp"
+      ],
+      "fallthrough": true
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true
+    }
+  }
+}
