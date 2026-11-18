@@ -639,4 +639,37 @@ body[data-area="classroom"] .lesson-article h2{font-size:31px}
 @media(max-width:360px){.shell-search{min-width:52px}.identity-caption{letter-spacing:.12em}}
 @media(prefers-reduced-motion:reduce){.command-dialog{scroll-behavior:auto}}
 
+
+/* ANEVUM.WEB.BUILD.2026-11-18.004 — task-first syllabus and readable work surfaces.
+   Visual review: crowded scientific-hero overlays must not interfere with mobile reading. */
+body[data-area="academy"] .page-hero::before,
+body[data-area="course"] .page-hero::before,
+body[data-area="classroom"] .page-hero::before,
+body[data-area="laboratory"] .page-hero::before{opacity:.07}
+.academy-practice{color:#acc2bd;font-size:11px;line-height:1.45}
+.course-controls{display:flex;align-items:center;flex-wrap:wrap;gap:10px 15px;margin-bottom:13px}
+.course-filter-buttons{display:flex;flex-wrap:wrap;gap:7px}
+.course-filter-buttons button{min-height:39px;border-radius:5px;border:1px solid #6e8a83;color:#dce5df;background:#152731;padding:8px 13px;font-size:12px;font-weight:650;cursor:pointer}
+.course-filter-buttons button:hover{border-color:#e3bf8a;background:#243c40}
+.course-filter-buttons button[aria-pressed="true"]{color:#11252a;background:#e4c48e;border-color:#e4c48e}
+.course-filter-buttons button:focus-visible{outline:3px solid #ffdc9c;outline-offset:3px}
+.course-activity{font:11px/1.4 ui-sans-serif,system-ui,sans-serif;color:#bed0c7}
+.course-filter-status{width:100%;color:#a9bdb4;font-size:11px;line-height:1.5}
+body[data-area="course"] .unit[hidden]{display:none!important}
+@media(max-width:750px){
+  body[data-area="academy"] .page-hero::before,
+  body[data-area="course"] .page-hero::before,
+  body[data-area="classroom"] .page-hero::before,
+  body[data-area="laboratory"] .page-hero::before{content:none!important;background-image:none!important}
+  body[data-area="academy"] .page-hero,
+  body[data-area="course"] .page-hero,
+  body[data-area="classroom"] .page-hero,
+  body[data-area="laboratory"] .page-hero{background:linear-gradient(112deg,#0b1d25,#123037 75%,#0a1a24)}
+  .course-controls{align-items:flex-start;gap:9px;margin-bottom:11px}
+  .course-filter-buttons{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .course-filter-buttons button{font-size:11px;min-height:43px;padding:7px}
+  .academy-tools{align-items:flex-start}
+  .academy-practice{width:100%}
+}
+
 `;

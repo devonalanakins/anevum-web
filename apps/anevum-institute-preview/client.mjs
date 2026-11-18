@@ -20,6 +20,21 @@ export const INSTITUTE_CLIENT = String.raw`
       var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
       el.textContent=count+" of 3 learning activities completed on this device";
     });
+    // A continuation is a suggested NEXT ACTIVITY, never a claim of mastery.
+    var nextStep=!result.transistor
+      ?{href:"/institute-preview/learn/cfp-101/transistor-switching",label:"Begin lesson 01 →"}
+      :!result.lesson
+      ?{href:"/institute-preview/learn/cfp-101/logic-gates",label:"Continue lesson 02 →"}
+      :!result.experiment
+      ?{href:"/institute-preview/laboratory/and-gate",label:"Run AND laboratory →"}
+      :{href:"/institute-preview/dossier",label:"Open Research Desk →"};
+    document.querySelectorAll("[data-course-resume]").forEach(function(link){
+      link.setAttribute("href",nextStep.href);
+      link.textContent=nextStep.label;
+    });
+    document.querySelectorAll("[data-course-activity-status]").forEach(function(el){
+      el.textContent=(Number(result.transistor)+Number(result.lesson)+Number(result.experiment))+" / 3 preview activities recorded on this device · No academic credit";
+    });
     // Recognition preview: this is a browser-local practice trace, never an award.
     document.querySelectorAll("[data-evidence-panel]").forEach(function(panel){
       var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
@@ -309,6 +324,29 @@ export const INSTITUTE_CLIENT = String.raw`
       if(note)note.textContent="The local evidence editor could not load. Your existing saved draft has not been changed.";
     });
   }
+  // Filters only the current syllabus presentation; it cannot change coursework or progress.
+  (function(){
+    var syllabus=document.querySelector("[data-course-units]");
+    if(!syllabus)return;
+    var controls=[].slice.call(document.querySelectorAll("[data-unit-filter]"));
+    var units=[].slice.call(syllabus.querySelectorAll("[data-unit-availability]"));
+    var status=document.querySelector("[data-unit-filter-status]");
+    function select(value){
+      controls.forEach(function(button){
+        button.setAttribute("aria-pressed",button.getAttribute("data-unit-filter")===value?"true":"false");
+      });
+      units.forEach(function(unit){
+        unit.hidden=value==="available"&&unit.getAttribute("data-unit-availability")!=="available";
+      });
+      if(status)status.textContent=value==="available"
+        ?"Showing the 2 available preview lessons. Six planned units are hidden, not removed."
+        :"Showing all 8 syllabus units, including six planned units.";
+    }
+    controls.forEach(function(button){
+      button.addEventListener("click",function(){select(button.getAttribute("data-unit-filter"));});
+    });
+    select("all");
+  })();
   // Local-only navigation. Every result is a real allowlisted preview route.
   (function(){
     var modal=document.querySelector("[data-command-dialog]");

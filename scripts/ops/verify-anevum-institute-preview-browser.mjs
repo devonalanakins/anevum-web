@@ -134,6 +134,43 @@ async function compactShellQA(){
   console.log("ANEVUM_COMPACT_PALETTE_PASS");
 }
 
+
+async function compactCourseUsabilityQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+  // A browser-local activity must never be presented as a degree, verified award or completed course.
+  await navigate("/institute-preview/academy");
+  const clean=await evaluate("(()=>{localStorage.removeItem('anevum.institute.cfp101.preview.v1');return true;})()");
+  verify(clean,"Could not clear synthetic practice flags");
+  const stages=[
+    [{transistor:false,lesson:false,experiment:false},"/learn/cfp-101/transistor-switching","Begin lesson 01"],
+    [{transistor:true,lesson:false,experiment:false},"/learn/cfp-101/logic-gates","Continue lesson 02"],
+    [{transistor:true,lesson:true,experiment:false},"/laboratory/and-gate","Run AND laboratory"],
+    [{transistor:true,lesson:true,experiment:true},"/dossier","Open Research Desk"]
+  ];
+  for(const entry of stages){
+    await evaluate("localStorage.setItem('anevum.institute.cfp101.preview.v1',"+JSON.stringify(JSON.stringify(entry[0]))+")");
+    await navigate("/institute-preview/academy");
+    const academy=await evaluate("(()=>{const a=document.querySelector('[data-course-resume]');return {href:a?.getAttribute('href'),text:a?.textContent,status:document.querySelector('[data-course-activity-status]')?.textContent};})()");
+    verify(academy.href==="/institute-preview"+entry[1]&&academy.text.includes(entry[2])&&academy.status.includes("No academic credit"),"Academy next step is inconsistent with saved local practice",{stage:entry[0],academy});
+    await navigate("/institute-preview/academy/cfp-101");
+    const course=await evaluate("(()=>{const a=document.querySelector('[data-course-resume]');return {href:a?.getAttribute('href'),text:a?.textContent,display:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,planned:document.querySelectorAll('[data-unit-availability=planned]').length};})()");
+    verify(course.href==="/institute-preview"+entry[1]&&course.text.includes(entry[2])&&course.display===8&&course.planned===6,"Course syllabus continuation or availability incorrect",{stage:entry[0],course});
+  }
+  const toggled=await evaluate("(()=>{const b=document.querySelector('[data-unit-filter=available]');b.click();return {pressed:b.getAttribute('aria-pressed'),shown:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,hidden:document.querySelectorAll('[data-unit-availability][hidden]').length,status:document.querySelector('[data-unit-filter-status]').textContent};})()");
+  verify(toggled.pressed==="true"&&toggled.shown===2&&toggled.hidden===6&&toggled.status.includes("hidden, not removed"),"Available-only course filtering is inaccurate",toggled);
+  const restored=await evaluate("(()=>{document.querySelector('[data-unit-filter=all]').click();return {shown:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,selected:document.querySelector('[data-unit-filter=all]').getAttribute('aria-pressed')};})()");
+  verify(restored.shown===8&&restored.selected==="true","All-units filter did not restore full syllabus",restored);
+  for(const p of ["/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"]){
+    await navigate("/institute-preview"+p);
+    const legible=await evaluate("(()=>{const el=document.querySelector('.page-hero');const bg=getComputedStyle(el,'::before');return {bg:el&&getComputedStyle(el).backgroundImage,deco:bg.content,overlay:bg.backgroundImage};})()");
+    verify(legible.deco==="none"&&legible.overlay==="none","Mobile study hero remains obscured by decorative diagram",{p,legible});
+  }
+  // Restore the original browser test's expected fresh-visitor state.
+  await evaluate("localStorage.removeItem('anevum.institute.cfp101.preview.v1')");
+  console.log("ANEVUM_COMPACT_COURSE_USABILITY_QA_PASS");
+}
+
 async function interactions(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
@@ -315,6 +352,7 @@ try{
     for(const [pathname,label] of pages){await testPage(pathname,label,width,height);}
   }
   await compactShellQA();
+  await compactCourseUsabilityQA();
   await interactions();
   console.log("ANEVUM_INSTITUTE_BROWSER_QA_PASS");
 }finally{
