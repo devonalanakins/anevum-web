@@ -78,6 +78,10 @@ async function testPage(pathname,label,width,height){
     const layout=await evaluate("(()=>({courseTop:document.querySelector('.course-card')?.getBoundingClientRect().top,schoolsTop:document.querySelector('.catalog-layout>.aside-panel')?.getBoundingClientRect().top}))()");
     verify(layout.courseTop<layout.schoolsTop&&layout.courseTop<height,"Mobile Academy must show the published learning opportunity before planned schools",{width,layout});
   }
+  if(label==="dossier"&&(width===390||width===1440)){
+    const firstField=await evaluate("document.querySelector('[data-evidence-field=title]').getBoundingClientRect().top");
+    verify(firstField<height-30,"Personal research activity must be visible in first viewport",{width,height,firstField});
+  }
   if((label==="lesson"||label==="transistor"||label==="laboratory")&&(width===390||width===1440)){
     const workTop=await evaluate("(()=>{const el=document.querySelector('.lesson-article')||document.querySelector('[data-and-lab]');return el?.getBoundingClientRect().top??9999})()");
     verify(workTop<height-30,"Study task is pushed below the initial viewport",{label,width,height,workTop});
