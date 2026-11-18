@@ -220,6 +220,8 @@ test("logic laboratory exposes four correct truth-table rows and accessible cont
   assert.match(html,/data-reset/);
   assert.match(html,/data-export/);
   assert.match(html,/data-export-status/);
+  assert.match(html,/open Research Desk<\/a>/);
+  assert.match(html,/href="\/institute-preview\/dossier"/);
   assert.match(html,/browser simulation evaluates the ideal Boolean function/);
 });
 
