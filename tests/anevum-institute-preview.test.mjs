@@ -347,9 +347,10 @@ test("archived high-resolution hero review blobs preserve provenance and fail cl
   }
   assert.equal((await req("/media/private.webp")).status,404);
   const html=await(await req("")).text();
-  assert.match(html,/data-art-source="generated-facility-v2-review"/);
-  assert.match(html,/facility-concept-v2-desktop\.webp/);
-  assert.match(html,/facility-concept-v2-mobile\.webp/);
+  // The original review assets are preserved in the codebase and served only
+  // through their explicitly requested, protected media routes, not the new homepage.
+  assert.doesNotMatch(html,/data-art-source="generated-facility-v2-review"/);
+  assert.doesNotMatch(html,/facility-concept-v2-desktop\.webp|facility-concept-v2-mobile\.webp/);
   assert.doesNotMatch(html,/src="\/institute-preview\/media\/observatory-review-desktop\.webp"/);
   assert.doesNotMatch(html,/srcset="\/institute-preview\/media\/observatory-review-mobile\.webp"/);
   assert.doesNotMatch(html,/frontier-cavern-desktop\.webp/);
@@ -480,19 +481,19 @@ test("new institute identity is an original isolated vector system",async()=>{
   const lesson=await (await req("/learn/cfp-101/logic-gates")).text();
   assert.match(home,/src="\/institute-preview\/mark\.svg"/);
   assert.match(home,/rel="icon" type="image\/svg\+xml"/);
-  assert.match(home,/The frontier <em>is open\.<\/em>/);
-  assert.match(home,/NOT A PHYSICAL CAMPUS/);
-  assert.match(home,/RECOGNITION \/ 003/);
-  assert.match(home,/Document the evidence/);
+  assert.match(home,/An open institute for <em>serious inquiry\.<\/em>/);
+  assert.match(home,/Not operating faculties/);
+  assert.match(home,/03 \/ THE ACADEMIC METHOD/);
+  assert.match(home,/Document your findings/);
   assert.match(home,/Design review:/);
   assert.match(lesson,/class="lesson-article"/);
   const nav=home.match(/<nav class="desk-nav" aria-label="Primary navigation">([\s\S]*?)<\/nav>/)?.[1]||"";
   assert.equal((nav.match(/<a /g)||[]).length,5);
   assert.match(nav,/My Studio/);
-  assert.match(nav,/Society/);
-  assert.match(nav,/Recognition/);
-  assert.match(nav,/Academy/);
-  assert.match(nav,/Laboratory/);
+  assert.match(nav,/>Institute<\/a>/);
+  assert.match(nav,/>Research<\/a>/);
+  assert.match(nav,/>Academics<\/a>/);
+  assert.match(nav,/>Laboratories<\/a>/);
   for(const [name,part] of [["mark.svg","The Confluence"],["mark-small.svg","The Confluence"],["observatory.svg","The ANEVUM observatory"]]){
     const response=await req("/"+name);
     assert.equal(response.status,200,name);
