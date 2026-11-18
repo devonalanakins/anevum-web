@@ -6,6 +6,8 @@ on:
     paths:
       - "apps/anevum-institute-preview/**"
       - "tests/anevum-institute-hosted-preview.test.mjs"
+      - "tests/verify-anevum-institute-protected-preview.test.mjs"
+      - "scripts/verify-anevum-institute-protected-preview.mjs"
       - "wrangler.institute-preview.jsonc"
       - ".github/workflows/anevum-institute-hosted-packaging.yml"
 
@@ -26,6 +28,8 @@ jobs:
           node --check apps/anevum-institute-preview/hosted-adapter.mjs
           node --check apps/anevum-institute-preview/hosted-worker.mjs
           node --test tests/anevum-institute-hosted-preview.test.mjs
+      - name: Verify Institute-specific Access probe contracts without credentials
+        run: node --test tests/verify-anevum-institute-protected-preview.test.mjs
       - name: Install pinned Wrangler for local packaging only
         run: npm install --no-package-lock --no-audit --no-fund
       - name: Validate exact protected Worker name and reject production bindings
@@ -87,6 +91,11 @@ jobs:
         env:
           BASE_URL: ${{ steps.preview.outputs.preview_url }}
         run: node scripts/verify-original-works-protected-preview.mjs
+      - name: Prove real Institute pages and assets deny anonymous access
+        if: steps.preview.outcome == 'success'
+        env:
+          BASE_URL: ${{ steps.preview.outputs.preview_url }}
+        run: node scripts/verify-anevum-institute-protected-preview.mjs
       - name: Record remaining authenticated Safari acceptance
         if: steps.preview.outcome == 'success'
         run: |
