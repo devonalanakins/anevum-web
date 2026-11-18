@@ -10,6 +10,7 @@ const output=process.env.RUNNER_TEMP||tmpdir();
 const base="http://127.0.0.1:4183";
 const pages=[
   ["/institute-preview","home"],
+  ["/institute-preview/recognition","recognition"],
   ["/institute-preview/academy","academy"],
   ["/institute-preview/academy/cfp-101","course"],
   ["/institute-preview/learn/cfp-101/transistor-switching","transistor"],
@@ -60,13 +61,17 @@ async function testPage(pathname,label,width,height){
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
   await navigate(pathname);
   const state=await evaluate("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('main h1')?.textContent.trim(),mainCount:document.querySelectorAll('main').length,h1Count:document.querySelectorAll('h1').length,skip:!!document.querySelector('a.skip[href=\"#main\"]'),desktop:!!document.querySelector('nav.desk-nav[aria-label=\"Primary navigation\"]'),mobile:!!document.querySelector('details.mobile-menu'),mobileVisible:getComputedStyle(document.querySelector('details.mobile-menu')).display!=='none',width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,robots:document.querySelector('meta[name=\"robots\"]')?.content,scriptCount:document.scripts.length,allLinksLabelled:[...document.querySelectorAll('a[href]')].every(a=>!!(a.textContent.trim()||a.getAttribute('aria-label'))),scriptsLoaded:!!document.querySelector('script[src=\"/institute-preview/client.js\"]')}))()");
-  const identity=await evaluate("(()=>{const mark=document.querySelector('img.identity-mark');const scene=document.querySelector('.hero');const reader=document.querySelector('.lesson-article');return {markLoaded:!!mark&&mark.complete&&mark.naturalWidth===160,sceneCorrect:!scene||getComputedStyle(scene,'::before').backgroundImage.includes('/institute-preview/observatory.svg'),readerBackground:reader?getComputedStyle(reader).backgroundColor:null,navSize:document.querySelectorAll('nav.desk-nav a').length}})()");
-  verify(identity.markLoaded&&identity.sceneCorrect&&identity.navSize===3,"New identity, scene or navigation is missing",{label,width,identity});
+  const identity=await evaluate("(()=>{const mark=document.querySelector('img.identity-mark');const scene=document.querySelector('.hero');const frontier=document.querySelector('.frontier-art');const reader=document.querySelector('.lesson-article');return {markLoaded:!!mark&&mark.complete&&mark.naturalWidth===160,sceneCorrect:!scene||(!!frontier&&getComputedStyle(frontier).backgroundImage.includes('/institute-preview/assets/research-computation-v1.webp')),readerBackground:reader?getComputedStyle(reader).backgroundColor:null,navSize:document.querySelectorAll('nav.desk-nav a').length}})()");
+  verify(identity.markLoaded&&identity.sceneCorrect&&identity.navSize===4,"New identity, scene or navigation is missing",{label,width,identity});
   if(label==="lesson"||label==="transistor")verify(identity.readerBackground==="rgb(244, 241, 232)","Editorial study surface is missing",{label,width,identity});
   verify(state.mainCount===1&&state.h1Count===1&&state.skip&&state.desktop&&state.mobile&&state.scriptsLoaded&&state.allLinksLabelled,"Accessible landmarks or navigation missing",{label,width,state});
   verify(state.robots.includes("noindex")&&state.scriptCount===1,"Unexpected indexing or scripts",{label,width,state});
   verify(state.width>=width-20&&state.width<=width&&state.scrollWidth<=state.width+1&&state.bodyWidth<=state.width+1,"Horizontal overflow",{label,width,state});
   verify((width<=1100)===state.mobileVisible,"Wrong mobile navigation breakpoint",{label,width,state});
+  if(label==="recognition"&&width===390){
+    const evidence=await evaluate("(()=>({count:document.querySelector('[data-evidence-count]')?.textContent,labels:[...document.querySelectorAll('[data-evidence-activity]')].map(x=>x.getAttribute('data-evidence-state')),status:document.querySelector('[data-evidence-label]')?.textContent}))()");
+    verify(evidence.count==="0 / 3"&&evidence.labels.length===3&&evidence.labels.every(x=>x==="incomplete")&&evidence.status.includes("No completed"),"Fresh visitor must not see invented recognition",evidence);
+  }
   if(label==="academy"&&width===390){
     const layout=await evaluate("(()=>({courseTop:document.querySelector('.course-card')?.getBoundingClientRect().top,schoolsTop:document.querySelector('.catalog-layout>.aside-panel')?.getBoundingClientRect().top}))()");
     verify(layout.courseTop<layout.schoolsTop&&layout.courseTop<height,"Mobile Academy must show the published learning opportunity before planned schools",{width,layout});
@@ -83,7 +88,7 @@ async function testPage(pathname,label,width,height){
   verify(link,"Skip link cannot receive keyboard focus",{label,width});
   if((width===390||width===1440)){
     await screenshot(label+"-"+width);
-    if(label==="home"||label==="laboratory"||label==="lesson"||label==="transistor")await screenshot(label+"-"+width+"-full",true);
+    if(label==="home"||label==="recognition"||label==="laboratory"||label==="lesson"||label==="transistor")await screenshot(label+"-"+width+"-full",true);
   }
   console.log("INSTITUTE_PAGE_QA_PASS",label,width,state.heading);
 }
@@ -110,6 +115,10 @@ async function interactions(){
   verify(assets.every(x=>x.width>100),"Same-origin artwork failed to decode",assets);
   const identityArt=await evaluate("Promise.all(['/institute-preview/mark.svg','/institute-preview/observatory.svg'].map(async url=>{const image=new Image();image.src=url;try{await image.decode();return {url,width:image.naturalWidth}}catch(error){return {url,width:0,error:String(error)}}}))");
   verify(identityArt.length===2&&identityArt[0].width===160&&identityArt[1].width===1600,"New SVG artwork does not decode",identityArt);
+  await navigate("/institute-preview/recognition");
+  const liveEvidence=await evaluate("(()=>({count:document.querySelector('[data-evidence-count]').textContent,flags:[...document.querySelectorAll('[data-evidence-activity]')].map(x=>({key:x.getAttribute('data-evidence-activity'),state:x.getAttribute('data-evidence-state')})),caption:document.querySelector('[data-evidence-label]').textContent}))()");
+  verify(liveEvidence.count==="3 / 3"&&liveEvidence.flags.every(x=>x.state==="complete")&&liveEvidence.caption.includes("not independently verified"),"Evidence counter must reflect real local progress without implying awards",liveEvidence);
+  console.log("INSTITUTE_EVIDENCE_QA_PASS",JSON.stringify(liveEvidence));
   // Notes are scoped to a lesson and must survive navigation without leaking to others.
   await navigate("/institute-preview/learn/cfp-101/transistor-switching");
   const notesSaved=await evaluate("(()=>{const root=document.querySelector('[data-study-lesson]');const text=root.querySelector('[data-study-text]');text.value='Input high enables nMOS; in the ideal model Q=0.';root.querySelector('[data-study-save]').click();root.querySelector('[data-study-bookmark]').click();return {key:root.getAttribute('data-study-lesson'),note:JSON.parse(localStorage.getItem('anevum.institute.study.v1.CFP-101-U01')).note,bookmark:root.querySelector('[data-study-bookmark]').getAttribute('aria-pressed'),status:root.querySelector('[data-study-status]').textContent};})()");
