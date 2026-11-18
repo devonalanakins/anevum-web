@@ -16,7 +16,7 @@ export function encodeToyInstruction(mnemonic,address=null){
   return toBits(OPCODES[mnemonic],2)+toBits(address,2);
 }
 export function decodeToyInstruction(bits){
-  if(typeof bits!=="string"||!/^[01]{4}$/.test(bits))
+  if(typeof bits!=="string"||bits.length!==4||!/^[01]{4}$/.test(bits))
     throw new TypeError("Machine word must contain exactly four binary digits");
   const opcode=parseInt(bits.slice(0,2),2);
   const address=parseInt(bits.slice(2),2);
