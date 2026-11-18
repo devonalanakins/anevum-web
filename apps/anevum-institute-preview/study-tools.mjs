@@ -15,6 +15,12 @@ export function studyToolsHtml(unitId){
     <label for="notes-${unitId}">Your notes</label>
     <textarea id="notes-${unitId}" data-study-text maxlength="8000" rows="6" placeholder="Write a derivation, question, or observation in your own words…"></textarea>
     <div class="study-actions"><button class="btn small" type="button" data-study-save>Save notes</button><button class="btn ghost small" type="button" data-study-download>Export .txt</button></div>
+    <div class="study-import">
+      <label for="notes-import-${unitId}">Bring back exported notes for this lesson (.txt)</label>
+      <input id="notes-import-${unitId}" type="file" accept=".txt,text/plain" data-study-import>
+      <button class="btn ghost small" type="button" data-study-import-apply hidden>Apply imported notes to editor</button>
+      <p class="study-import-disclosure">ANEVUM notes exports from this same lesson only. Importing checks the file locally; your current text and saved notes stay unchanged until you explicitly apply, then save.</p>
+    </div>
     <div class="study-actions secondary"><button class="study-bookmark" type="button" data-study-bookmark aria-pressed="false">Bookmark this lesson</button><button class="study-delete" type="button" data-study-clear>Delete saved notes</button></div>
     <p class="study-status" data-study-status role="status" aria-live="polite">Notes have not been loaded.</p>
     <noscript><p>Interactive notes require JavaScript; you can still read and study every lesson without it.</p></noscript>
