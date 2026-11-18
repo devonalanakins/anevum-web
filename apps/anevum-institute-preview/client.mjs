@@ -48,7 +48,7 @@ export const INSTITUTE_CLIENT = String.raw`
       var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
       var progress=nav.querySelector("[data-study-path-progress]");
       if(progress)progress.textContent=count+" of 3 practice checks recorded on this device.";
-      // Lessons U03 and U04 remain untracked: a correct answer or model event is not course completion.
+      // Lessons U03, U04 and U05 remain untracked: an answer or model event is not course completion.
     });
     // Recognition preview: this is a browser-local practice trace, never an award.
     document.querySelectorAll("[data-evidence-panel]").forEach(function(panel){
@@ -103,7 +103,7 @@ export const INSTITUTE_CLIENT = String.raw`
   // Personal study notes are device-only and scoped to a versioned lesson ID.
   document.querySelectorAll("[data-study-lesson]").forEach(function(panel){
     var unitId=panel.getAttribute("data-study-lesson");
-    if(!/^CFP-101-U0[1234]$/.test(unitId||""))return;
+    if(!/^CFP-101-U0[12345]$/.test(unitId||""))return;
     var key="anevum.institute.study.v1."+unitId;
     var textarea=panel.querySelector("[data-study-text]");
     var feedback=panel.querySelector("[data-study-status]");
@@ -722,6 +722,127 @@ export const INSTITUTE_CLIENT = String.raw`
     refresh();
   })();
 
+
+  // CFP-101 / Unit 05: ideal addressed memory in page-session state only.
+  // Selecting an address reads its word immediately; only explicit WRITE mutates it.
+  (function(){
+    var bench=document.querySelector("[data-memory-bench]");
+    if(!bench)return;
+    var memory=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+    var address=0, data=[0,0,0,0], writes=0, history=[];
+    var addressButtons=bench.querySelectorAll("[data-memory-address]");
+    var dataButtons=bench.querySelectorAll("[data-memory-bit]");
+    var readout=bench.querySelector("[data-memory-read]");
+    var selected=bench.querySelector("[data-memory-selected]");
+    var input=bench.querySelector("[data-memory-input]");
+    var count=bench.querySelector("[data-memory-count]");
+    var status=bench.querySelector("[data-memory-status]");
+    var historyList=bench.querySelector("[data-memory-history]");
+    var exportStatus=bench.querySelector("[data-memory-export-status]");
+    function word(bits){return bits.join("");}
+    function render(){
+      addressButtons.forEach(function(button){
+        var number=Number(button.getAttribute("data-memory-address"));
+        button.setAttribute("aria-pressed",number===address?"true":"false");
+      });
+      dataButtons.forEach(function(button){
+        var index=Number(button.getAttribute("data-memory-bit"));
+        button.setAttribute("aria-pressed",data[index]===1?"true":"false");
+        button.querySelector("[data-memory-bit-value]").textContent=String(data[index]);
+      });
+      selected.textContent=String(address);readout.textContent=word(memory[address]);
+      input.textContent=word(data);count.textContent=String(writes);
+      bench.querySelectorAll("[data-memory-row]").forEach(function(row){
+        var index=Number(row.getAttribute("data-memory-row"));
+        row.querySelector("[data-memory-cell]").textContent=word(memory[index]);
+        if(index===address)row.setAttribute("aria-current","true");else row.removeAttribute("aria-current");
+      });
+    }
+    function refreshHistory(){
+      historyList.replaceChildren();
+      if(!history.length){
+        var empty=document.createElement("li");empty.textContent="No writes recorded.";
+        historyList.appendChild(empty);return;
+      }
+      history.slice(-8).reverse().forEach(function(item){
+        var li=document.createElement("li");
+        li.textContent="Write "+item.operation+": M["+item.address+"] ← "+item.data;
+        historyList.appendChild(li);
+      });
+    }
+    addressButtons.forEach(function(button){
+      button.addEventListener("click",function(){
+        var next=Number(button.getAttribute("data-memory-address"));
+        if(!Number.isInteger(next)||next<0||next>3)return;
+        address=next;render();
+        status.textContent="Read address "+address+": stored word "+word(memory[address])+". Selecting a location did not change memory.";
+      });
+    });
+    dataButtons.forEach(function(button){
+      button.addEventListener("click",function(){
+        var index=Number(button.getAttribute("data-memory-bit"));
+        if(!Number.isInteger(index)||index<0||index>3)return;
+        data[index]=1-data[index];render();
+        status.textContent="Write input now "+word(data)+". Stored M["+address+"] remains "+word(memory[address])+" until Write selected word.";
+      });
+    });
+    bench.querySelector("[data-memory-write]").addEventListener("click",function(){
+      memory[address]=data.slice();writes++;
+      history.push({operation:writes,address:address,data:word(data)});
+      if(history.length>32)history.shift();
+      render();refreshHistory();
+      status.textContent="Write "+writes+": M["+address+"] stored "+word(memory[address])+". Other addresses were not changed.";
+    });
+    bench.querySelector("[data-memory-reset]").addEventListener("click",function(){
+      memory=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+      data=[0,0,0,0];address=0;writes=0;history=[];
+      render();refreshHistory();
+      status.textContent="Ideal memory reset to four zero words. No physical reset timing or persistence is simulated.";
+      exportStatus.textContent="This page-session history was cleared. No external record was changed.";
+    });
+    bench.querySelector("[data-memory-export]").addEventListener("click",function(){
+      try{
+        var record={
+          schemaVersion:1,kind:"browser-local-unverified-simulation",
+          experimentId:"CFP-101-MEM-001",courseId:"CFP-101",unitId:"CFP-101-U05",
+          model:"ideal-four-word-four-bit-addressed-memory",
+          assumptions:["four logical addresses","four binary bits per word","instantaneous ideal read/write","no clock, real RAM or ISA"],
+          writeCount:writes,memory:memory.map(function(row){return row.slice();}),
+          recentWrites:history.slice(),independentlyVerified:false,academicCredit:false
+        };
+        var blob=new Blob([JSON.stringify(record,null,2)+"\n"],{type:"application/json"});
+        var url=URL.createObjectURL(blob);
+        var link=document.createElement("a");link.href=url;
+        link.download="anevum-cfp101-memory-001.json";link.hidden=true;
+        document.body.appendChild(link);link.click();link.remove();
+        setTimeout(function(){URL.revokeObjectURL(url);},5000);
+        exportStatus.textContent="JSON download requested. This record is unverified, browser-local, and not a Research Desk import or physical measurement.";
+      }catch(_){
+        exportStatus.textContent="The browser could not export this page session. No data was transmitted.";
+      }
+    });
+    var quiz=document.querySelector("[data-memory-quiz]");
+    if(quiz){
+      var feedback=quiz.querySelector("[data-memory-quiz-status]");
+      quiz.querySelectorAll("[data-memory-answer]").forEach(function(button){
+        button.addEventListener("click",function(){
+          quiz.querySelectorAll("[data-memory-answer]").forEach(function(choice){
+            choice.setAttribute("aria-pressed","false");
+            choice.classList.remove("selected","correct");
+          });
+          button.setAttribute("aria-pressed","true");button.classList.add("selected");
+          if(button.getAttribute("data-memory-answer")==="1010"){
+            button.classList.add("correct");
+            feedback.textContent="Correct. A write to address 1 leaves the data at address 2 unchanged.";
+          }else{
+            feedback.textContent="Each address selects a separate stored word. Writing address 1 cannot change word 2 in this model.";
+          }
+        });
+      });
+    }
+    render();
+  })();
+
   // The GPU scheduling simulator is a browser-only, lazily loaded module.
   if(document.querySelector("[data-cluster-lab]")){
     import("/institute-preview/cluster-scheduler-client.js").catch(function(){
@@ -756,6 +877,7 @@ export const INSTITUTE_CLIENT = String.raw`
       ["Boolean logic",root+"/learn/cfp-101/logic-gates","and gate lesson 02"],
       ["Half adders",root+"/learn/cfp-101/half-adders","binary arithmetic combinational xor and sum carry lesson 03"],
       ["Clocked registers",root+"/learn/cfp-101/registers","sequential circuits memory d flip-flop clock rising edge four bit register lesson 04"],
+      ["Addressed memory",root+"/learn/cfp-101/addressed-memory","ram words addresses read write store load memory access instruction concepts lesson 05"],
       ["AND-gate laboratory",root+"/laboratory/and-gate","simulation experiment notebook"],
       ["GPU cluster scheduling",root+"/laboratory/cluster-scheduling","compute gpu allocation fifo shortest job first simulator"],
       ["Neuron dynamics laboratory",root+"/laboratory/neuron-dynamics","neuroscience leaky integrate fire membrane potential threshold spike refractory"],
