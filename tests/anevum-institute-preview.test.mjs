@@ -180,6 +180,39 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   assert.doesNotMatch(c,/data-study-lesson="CFP-101-U02"/);
 });
 
+test("CFP-101 reader exposes curriculum-grounded navigation without invented completion",async()=>{
+  const pages=[
+    ["/learn/cfp-101/transistor-switching","CFP-101-U01"],
+    ["/learn/cfp-101/logic-gates","CFP-101-U02"],
+    ["/learn/cfp-101/half-adders","CFP-101-U03"]
+  ];
+  for(const [path,id] of pages){
+    const response=await req(path);
+    assert.equal(response.status,200);
+    const html=await response.text();
+    assert.equal((html.match(/data-study-path(?: |\>)/g)||[]).length,1);
+    assert.match(html,/aria-label="CFP-101 available lesson navigation"/);
+    assert.equal((html.match(/class="study-path-link"/g)||[]).length,3);
+    assert.equal((html.match(/aria-current="page"/g)||[]).length,2,"Expected one mast navigation and one current lesson");
+    assert.match(html,/This is not a course completion record or academic credit/);
+    assert.match(html,/Five units remain in development/);
+    assert.match(html,/data-study-path-progress/);
+    for(const [otherPath,otherId] of pages){
+      assert.ok(html.includes('href="/institute-preview'+otherPath+'"'),"Missing lesson "+otherId);
+      assert.ok(html.includes('data-study-path-status="'+otherId+'"'),"Missing practice status "+otherId);
+    }
+    assert.match(html,new RegExp('aria-current="page" href="/institute-preview'+path.replace(/[.*+?^$()|[\]{}]/g,"\\test("frontier society and evidence-based recognition distinguish working activities from future claims",async()=>{")+'"'));
+    assert.ok(html.includes('data-study-lesson="'+id+'"'),"Notes must exist for "+id);
+  }
+  const js=await (await req("/client.js")).text();
+  assert.match(js,/CFP-101-U0\[123\]/,"All three local notebooks must be initialized");
+  assert.match(js,/data-study-path-status/);
+  assert.match(js,/Lesson U03 remains untracked/);
+  const css=await (await req("/styles.css")).text();
+  assert.match(css,/\.study-path-links\{list-style:none/);
+  assert.match(css,/@media\(max-width:420px\)\{\.study-path-links\{grid-template-columns:1fr\}/);
+});
+
 test("frontier society and evidence-based recognition distinguish working activities from future claims",async()=>{
   const home=await(await req("")).text();
   const recognition=await(await req("/recognition")).text();
