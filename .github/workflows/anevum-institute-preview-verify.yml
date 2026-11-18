@@ -9,6 +9,7 @@ on:
       - "scripts/ops/anevum-institute-preview-readiness.mjs"
       - "scripts/ops/verify-anevum-institute-preview-browser.mjs"
       - "tests/anevum-institute-preview.test.mjs"
+      - "docs/qa/ANEVUM.WEB.QA.2026-11-18.022.OWNER-SAFARI-ACCEPTANCE.md"
       - "tests/anevum-institute-hosted-preview.test.mjs"
       - "wrangler.institute-preview.jsonc"
       - "tests/anevum-institute-preview-readiness.test.mjs"
