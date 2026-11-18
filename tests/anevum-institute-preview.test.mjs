@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {Script} from "node:vm";
+import {readFile} from "node:fs/promises";
+import {createHash} from "node:crypto";
 import {LAB_ART} from "../apps/anevum-public-studio/living-laboratory-art.mjs";
 import worker from "../apps/anevum-institute-preview/worker.mjs";
 import {CFP_101,validateCurriculum} from "../apps/anevum-institute-preview/curriculum.mjs";
@@ -8,7 +10,7 @@ import {studyToolsHtml} from "../apps/anevum-institute-preview/study-tools.mjs";
 import {dossierPage} from "../apps/anevum-institute-preview/dossier-ui.mjs";
 import {EVIDENCE_BROWSER_MODULE,EVIDENCE_FORMAT} from "../apps/anevum-institute-preview/evidence-schema.mjs";
 import {FRONTIER_GL_CLIENT} from "../apps/anevum-institute-preview/frontier-gl.mjs";
-import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
+import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,FRONTIER_REVIEW_ART,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
 const PATHS=["","/recognition","/dossier","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/laboratory/and-gate"];
@@ -162,6 +164,8 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.equal(RECOGNITION_POLICY.profilesEnabled,false);
   assert.equal(RECOGNITION_POLICY.reviewEnabled,false);
   assert.equal(FRONTIER_MEDIA.assetsBundled,false);
+  assert.equal(FRONTIER_REVIEW_ART.previewEnabled,true);
+  assert.equal(FRONTIER_REVIEW_ART.productionApproved,false);
   assert.equal(FRONTIER_MEDIA.ownerApproved,false);
   assert.match(FRONTIER_MEDIA.desktop.name,/\.webp$/);
   assert.match(FRONTIER_MEDIA.overlay.name,/\.mp4$/);
@@ -207,6 +211,33 @@ test("personal research dossier provides real editor controls without exposing p
   assert.equal((await req("/api/evidence")).status,404);
   assert.equal((await req("/accounts")).status,404);
   assert.equal((await req("/awards")).status,404);
+});
+
+test("archived high-resolution hero review blobs preserve provenance and fail closed without media binding",async()=>{
+  for(const art of [FRONTIER_REVIEW_ART.desktop,FRONTIER_REVIEW_ART.mobile]){
+    const file=new Uint8Array(await readFile(new URL("../apps/anevum-institute-preview/media/"+art.name,import.meta.url)));
+    assert.ok(file.length>120000,"Review art must not be a low-resolution placeholder");
+    const gitHash=createHash("sha1").update("blob "+file.length+"\0").update(file).digest("hex");
+    assert.equal(gitHash,art.blobSha,"Reuse must retain the exact verified PR #813 Git blob");
+    assert.equal((await req("/media/"+art.name)).status,404,"Unbound preview media must fail closed");
+    const mediaUrl=new Request(BASE+"/media/"+art.name);
+    const bound=await worker.fetch(mediaUrl,{loadReviewMedia:async key=>key===art.name?file:null});
+    assert.equal(bound.status,200);
+    assert.equal(bound.headers.get("Content-Type"),"image/webp");
+    assert.match(bound.headers.get("Content-Security-Policy"),/default-src 'none'/);
+    assert.equal(Buffer.from(await bound.arrayBuffer()).toString("ascii",0,4),"RIFF");
+    const head=await worker.fetch(new Request(mediaUrl.url,{method:"HEAD"}),{loadReviewMedia:async()=>file});
+    assert.equal(head.status,200);
+    assert.equal((await head.arrayBuffer()).byteLength,0);
+    const refused=await worker.fetch(new Request(mediaUrl.url,{method:"POST",body:"test"}),{loadReviewMedia:async()=>file});
+    assert.equal(refused.status,405);
+  }
+  assert.equal((await req("/media/private.webp")).status,404);
+  const html=await(await req("")).text();
+  assert.match(html,/data-art-source="pr813-review"/);
+  assert.match(html,/observatory-review-desktop\.webp/);
+  assert.match(html,/observatory-review-mobile\.webp/);
+  assert.doesNotMatch(html,/frontier-cavern-desktop\.webp/);
 });
 
 test("real WebGL atmospheric module is isolated, accessible, same-origin, and resilient to failures",async()=>{
