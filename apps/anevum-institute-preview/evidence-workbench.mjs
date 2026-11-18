@@ -1,4 +1,4 @@
-export const EVIDENCE_WORKBENCH_CLIENT=String.raw`import {EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,createEvidenceEnvelope,parseEvidenceEnvelope} from "/institute-preview/evidence-schema.js";
+export const EVIDENCE_WORKBENCH_CLIENT=String.raw`import {EVIDENCE_STORAGE_KEY,EVIDENCE_LIMITS,createEvidenceEnvelope,parseEvidenceEnvelope,evidenceFromAndLabNotebook} from "/institute-preview/evidence-schema.js";
 
 const panel=document.querySelector("[data-evidence-workbench]");
 if(panel){
@@ -10,6 +10,10 @@ if(panel){
   const exporter=panel.querySelector("[data-evidence-export]");
   const importer=panel.querySelector("[data-evidence-import]");
   const deletion=panel.querySelector("[data-evidence-delete]");
+  const labImporter=panel.querySelector("[data-lab-import]");
+  const labApply=panel.querySelector("[data-lab-apply]");
+  const labFeedback=panel.querySelector("[data-lab-feedback]");
+  let stagedLab=null;
   let awaitingDelete=false;
   function report(message){if(status)status.textContent=message;}
   function resetDelete(){awaitingDelete=false;deletion.textContent="Delete saved draft";}
@@ -76,6 +80,27 @@ if(panel){
       report("Checked record structure and SHA-256 integrity. Select Save locally to keep this imported draft.");
     }catch(error){report("Import rejected: "+humanError(error));}
     finally{importer.value="";}
+  });
+  labImporter.addEventListener("change",async function(){
+    stagedLab=null;labApply.hidden=true;
+    const file=labImporter.files?.[0];
+    if(!file)return;
+    try{
+      if(file.size>8192)throw new Error("Laboratory export exceeds 8 KiB");
+      const source=JSON.parse(await file.text());
+      stagedLab=evidenceFromAndLabNotebook(source);
+      labApply.hidden=false;
+      labFeedback.textContent="Validated "+source.observations.length+" of 4 ideal Boolean input states. Select Use checked simulation to replace the current editor fields; nothing is saved or submitted automatically.";
+    }catch(error){
+      labFeedback.textContent="Laboratory import rejected: "+humanError(error)+". Existing editor and saved data were not changed.";
+    }finally{labImporter.value="";}
+  });
+  labApply.addEventListener("click",function(){
+    if(!stagedLab)return;
+    fill(stagedLab);resetReceipt();resetDelete();
+    stagedLab=null;labApply.hidden=true;
+    labFeedback.textContent="Simulated results copied into the editor. Review the method and limitations, then select Save locally if you want to keep them.";
+    report("Checked simulation staged in your research draft. No institutional verification, account or network upload.");
   });
   deletion.addEventListener("click",function(){
     if(!awaitingDelete){
