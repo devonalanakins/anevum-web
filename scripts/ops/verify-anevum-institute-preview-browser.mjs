@@ -230,6 +230,42 @@ async function halfAdderBrowserQA(){
 
 
 
+async function halfAdderResearchHandoffQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await navigate("/institute-preview/learn/cfp-101/half-adders");
+  await evaluate("(()=>{localStorage.removeItem('anevum.institute.evidence-draft.v1');sessionStorage.removeItem('anevum.institute.handoff.half.v1');})()");
+  const before=await evaluate("(()=>({disabled:document.querySelector('[data-half-to-dossier]').disabled,coverage:document.querySelector('[data-half-progress]').textContent}))()");
+  verify(before.disabled&&before.coverage.startsWith("1 of 4"),"Half-adder transfer must start disabled",before);
+  const visited=await evaluate("(()=>{const root=document.querySelector('[data-half-adder]');root.querySelector('[data-half-input=b]').click();root.querySelector('[data-half-input=a]').click();root.querySelector('[data-half-input=b]').click();return {disabled:root.querySelector('[data-half-to-dossier]').disabled,coverage:root.querySelector('[data-half-progress]').textContent};})()");
+  verify(!visited.disabled&&visited.coverage.startsWith("4 of 4"),"Half-adder transfer must unlock only after full ideal coverage",visited);
+  await evaluate("document.querySelector('[data-half-to-dossier]').click()");
+  await waitFor(()=>evaluate("location.pathname==='/institute-preview/dossier'&&location.hash==='#half-import'&&document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"half-adder Research Desk same-tab arrival");
+  const staged=await evaluate("(()=>({hub:document.querySelector('[data-import-hub]').open,source:document.querySelector('#half-import').open,feedback:document.querySelector('[data-half-feedback]').textContent,apply:!document.querySelector('[data-half-apply]').hidden,title:document.querySelector('[data-evidence-field=title]').value,stored:localStorage.getItem('anevum.institute.evidence-draft.v1'),pending:sessionStorage.getItem('anevum.institute.handoff.half.v1')}))()");
+  verify(staged.hub&&staged.source&&staged.apply&&staged.feedback.includes("All four half-adder results")&&staged.title===""&&staged.stored===null&&staged.pending===null,"Handoff must validate only, consume once and preserve existing editor before Apply",staged);
+  await evaluate("document.querySelector('[data-half-apply]').click()");
+  const applied=await evaluate("(()=>({title:document.querySelector('[data-evidence-field=title]').value,scope:document.querySelector('[data-evidence-course]').textContent,observations:document.querySelector('[data-evidence-field=observations]').value,receipt:document.querySelector('[data-evidence-receipt-state]').textContent,stored:localStorage.getItem('anevum.institute.evidence-draft.v1')}))()");
+  verify(applied.title.includes("half-adder")&&applied.scope==="CFP-101"&&applied.observations.includes("11 -> sum 0, carry 1")&&applied.receipt==="Unsaved changes"&&applied.stored===null,"Explicit Apply must stage unreviewed half-adder content but not save it",applied);
+  await evaluate("document.querySelector('[data-evidence-save]').click()");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-status]')?.textContent.startsWith('Personal draft saved')"),"half-adder explicit save");
+  const saved=await evaluate("(()=>{const e=JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1'));return {title:e.record.title,scope:e.record.courseId,kind:e.record.kind,digest:e.digest}})()");
+  verify(saved.title===applied.title&&saved.scope==="CFP-101"&&saved.kind==="personal-unreviewed-draft"&&/^sha256:[a-f0-9]{64}$/.test(saved.digest),"Half-adder explicit save must preserve unreviewed scope and checksum",saved);
+  await navigate("/institute-preview/academy");
+  await send("Page.navigate",{url:base+"/institute-preview/dossier#half-import"});
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"half-adder handoff replay guard");
+  const replay=await evaluate("(()=>({hidden:document.querySelector('[data-half-apply]').hidden,pending:sessionStorage.getItem('anevum.institute.handoff.half.v1'),title:document.querySelector('[data-evidence-field=title]').value}))()");
+  verify(replay.hidden&&replay.pending===null&&replay.title===saved.title,"Half-adder transfer must be single-use, not replay on reload",replay);
+  await navigate("/institute-preview/academy");
+  await evaluate("(()=>{const rows=[{a:0,b:0,sum:0,carry:0},{a:0,b:1,sum:1,carry:0},{a:1,b:0,sum:1,carry:0},{a:1,b:1,sum:1,carry:1}];const file={schemaVersion:1,kind:'browser-local-unverified-simulation',experimentId:'CFP-101-HALF-001',courseId:'CFP-101',unitId:'CFP-101-U03',model:'ideal-Boolean-half-adder',assumptions:['binary inputs only','no physical propagation delay','no voltage, noise or power measurements'],coverage:{observed:4,possible:4,complete:true},observations:rows,independentlyVerified:false,academicCredit:false};sessionStorage.setItem('anevum.institute.handoff.half.v1',JSON.stringify(file));})()");
+  await send("Page.navigate",{url:base+"/institute-preview/dossier#half-import"});
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"forged half-adder transfer");
+  const forged=await evaluate("(()=>({feedback:document.querySelector('[data-half-feedback]').textContent,hidden:document.querySelector('[data-half-apply]').hidden,pending:sessionStorage.getItem('anevum.institute.handoff.half.v1'),title:document.querySelector('[data-evidence-field=title]').value,stored:JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1')).record.title}))()");
+  verify(forged.feedback.startsWith("Same-tab half-adder transfer rejected")&&forged.hidden&&forged.pending===null&&forged.title===saved.title&&forged.stored===saved.title,"Forged half-adder sum must be rejected without replacing editor or saved draft",forged);
+  const partial=await evaluate("(async()=>{const rows=[{a:0,b:0,sum:0,carry:0},{a:0,b:1,sum:1,carry:0}];const notebook={schemaVersion:1,kind:'browser-local-unverified-simulation',experimentId:'CFP-101-HALF-001',courseId:'CFP-101',unitId:'CFP-101-U03',model:'ideal-Boolean-half-adder',assumptions:['binary inputs only','no physical propagation delay','no voltage, noise or power measurements'],coverage:{observed:2,possible:4,complete:false},observations:rows,independentlyVerified:false,academicCredit:false};const input=document.querySelector('[data-half-import]');const dt=new DataTransfer();dt.items.add(new File([JSON.stringify(notebook)],'half.json',{type:'application/json'}));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));for(let i=0;i<40&&document.querySelector('[data-half-apply]').hidden;i++)await new Promise(resolve=>setTimeout(resolve,20));return {feedback:document.querySelector('[data-half-feedback]').textContent,canApply:!document.querySelector('[data-half-apply]').hidden,visible:document.querySelector('[data-evidence-field=title]').value,stored:JSON.parse(localStorage.getItem('anevum.institute.evidence-draft.v1')).record.title};})()");
+  verify(partial.canApply&&partial.feedback.includes("Checked 2 of 4")&&partial.visible===saved.title&&partial.stored===saved.title,"Manual partial notebook must stay incomplete and require Apply",partial);
+  await evaluate("localStorage.removeItem('anevum.institute.evidence-draft.v1')");
+  console.log("ANEVUM_HALF_ADDER_RESEARCH_HANDOFF_QA_PASS",JSON.stringify({fullCoverage:true,singleUse:true,manualPartial:true,tamperRejected:true,explicitSave:true,credentialIssued:false}));
+}
+
 async function neuronDynamicsBrowserQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
@@ -285,7 +321,7 @@ async function compactEvidenceImporterQA(){
   await navigate("/institute-preview/dossier");
   await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"Research Desk with compact import hub");
   const initial=await evaluate("(()=>{const hub=document.querySelector('[data-import-hub]');return {closed:!hub.open,modelCount:hub.querySelectorAll('[data-import-source]').length,sourceClosed:[...hub.querySelectorAll('[data-import-source]')].every(x=>!x.open),save:!!document.querySelector('[data-evidence-save]'),pickers:hub.querySelectorAll('input[type=file]').length,summaryVisible:hub.querySelector('summary').getBoundingClientRect().height};})()");
-  verify(initial.closed&&initial.modelCount===3&&initial.sourceClosed&&initial.save&&initial.pickers===3&&initial.summaryVisible>=44,"Research Desk must start with one compact, accessible importer hub",initial);
+  verify(initial.closed&&initial.modelCount===4&&initial.sourceClosed&&initial.save&&initial.pickers===4&&initial.summaryVisible>=44,"Research Desk must start with one compact, accessible importer hub",initial);
   const keyboard=await evaluate("(()=>{const summary=document.querySelector('[data-import-hub]>summary');summary.focus();return document.activeElement===summary;})()");
   verify(keyboard,"The native experiment import disclosure cannot receive keyboard focus");
   const activated=await evaluate("(()=>{const summary=document.querySelector('[data-import-hub]>summary');summary.click();return document.querySelector('[data-import-hub]').open;})()");
@@ -306,7 +342,7 @@ async function compactEvidenceImporterQA(){
   await waitFor(()=>evaluate("document.querySelector('[data-import-hub]').open&&document.querySelector('#neuron-import').open"),"neuron fragment expansion");
   const focus=await evaluate("(()=>{const summary=document.querySelector('#neuron-import>summary');summary.focus();return {focused:document.activeElement===summary,visible:summary.getBoundingClientRect().height>=40};})()");
   verify(focus.focused&&focus.visible,"Deep-linked neuron importer is not keyboard accessible",focus);
-  console.log("ANEVUM_COMPACT_IMPORT_HUB_QA_PASS",JSON.stringify({modelCount:3,focusable:true,nativeSummaryActivated:true,exclusive:true,deepLinks:true,saveRetained:true}));
+  console.log("ANEVUM_COMPACT_IMPORT_HUB_QA_PASS",JSON.stringify({modelCount:4,focusable:true,nativeSummaryActivated:true,exclusive:true,deepLinks:true,saveRetained:true}));
 }
 
 async function neuronResearchBrowserQA(){
@@ -635,6 +671,7 @@ try{
   await compactEvidenceImporterQA();
   await andResearchDirectHandoffQA();
   await directSimulationHandoffQA();
+  await halfAdderResearchHandoffQA();
   console.log("ANEVUM_INSTITUTE_BROWSER_QA_PASS");
 }finally{
   for(const item of pending.values()){clearTimeout(item.timer);item.reject(Error("Browser ending"));}pending.clear();
