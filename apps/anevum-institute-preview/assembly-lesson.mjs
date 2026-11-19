@@ -70,28 +70,28 @@ export const ASSEMBLY_LESSON_HTML=String.raw`<main id="main" tabindex="-1" class
   <h3 id="assembly-title">Instruction encoding desk</h3>
   <div class="assembly-layout">
   <div class="assembly-control">
-    <form data-assembly-form>
+    <div data-assembly-form>
       <label for="assembly-source">Assembly source</label>
       <div class="assembly-input-row">
         <input id="assembly-source" type="text" maxlength="32" spellcheck="false" autocomplete="off" autocapitalize="characters" data-assembly-source value="LOAD 2" aria-describedby="assembly-format"/>
-        <button type="submit" data-assembly-encode>Assemble</button>
+        <button type="button" data-assembly-encode>Assemble</button>
       </div>
       <p id="assembly-format" class="assembly-fine">Accepted: LOAD 0–3 · STORE 0–3 · ADD 0–3 · HALT. Press Enter to assemble.</p>
-    </form>
+    </div>
     <div class="assembly-examples" role="group" aria-label="Load an example assembly instruction">
       <button type="button" data-assembly-example="LOAD 2">LOAD 2</button>
       <button type="button" data-assembly-example="STORE 1">STORE 1</button>
       <button type="button" data-assembly-example="ADD 3">ADD 3</button>
       <button type="button" data-assembly-example="HALT">HALT</button>
     </div>
-    <form data-assembly-decode-form>
+    <div data-assembly-decode-form>
       <label for="assembly-machine">Machine word (4 bits)</label>
       <div class="assembly-input-row">
         <input id="assembly-machine" type="text" maxlength="4" spellcheck="false" autocomplete="off" inputmode="numeric" data-assembly-machine value="0010" aria-describedby="assembly-reserved"/>
-        <button type="submit" data-assembly-decode>Decode</button>
+        <button type="button" data-assembly-decode>Decode</button>
       </div>
       <p id="assembly-reserved" class="assembly-fine">Binary input must be exactly four 0/1 digits. Reserved encodings are rejected.</p>
-    </form>
+    </div>
   </div>
   <div class="assembly-output">
     <div class="assembly-output-title">Latest valid instruction</div>
