@@ -48,7 +48,7 @@ export const INSTITUTE_CLIENT = String.raw`
       var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
       var progress=nav.querySelector("[data-study-path-progress]");
       if(progress)progress.textContent=count+" of 3 practice checks recorded on this device.";
-      // Lessons U03–U07 remain untracked: an answer or model event is not course completion.
+      // Lessons U03–U08 remain untracked: a model event is not course completion.
     });
     // Recognition preview: this is a browser-local practice trace, never an award.
     document.querySelectorAll("[data-evidence-panel]").forEach(function(panel){
@@ -103,7 +103,7 @@ export const INSTITUTE_CLIENT = String.raw`
   // Personal study notes are device-only and scoped to a versioned lesson ID.
   document.querySelectorAll("[data-study-lesson]").forEach(function(panel){
     var unitId=panel.getAttribute("data-study-lesson");
-    if(!/^CFP-101-U0[1234567]$/.test(unitId||""))return;
+    if(!/^CFP-101-U0[12345678]$/.test(unitId||""))return;
     var key="anevum.institute.study.v1."+unitId;
     var textarea=panel.querySelector("[data-study-text]");
     var feedback=panel.querySelector("[data-study-status]");
@@ -490,7 +490,7 @@ export const INSTITUTE_CLIENT = String.raw`
         unit.hidden=value==="available"&&unit.getAttribute("data-unit-availability")!=="available";
       });
       if(status)status.textContent=value==="available"
-        ?"Showing "+availableCount+" available preview lessons. "+plannedCount+" planned units are hidden, not removed."
+        ?(plannedCount?"Showing "+availableCount+" available preview lessons. "+plannedCount+" planned units are hidden, not removed.":"All "+availableCount+" introductory previews available; no units hidden.")
         :"Showing all "+units.length+" syllabus units, including "+plannedCount+" planned units.";
     }
     controls.forEach(function(button){
@@ -1061,6 +1061,13 @@ export const INSTITUTE_CLIENT = String.raw`
     render();
   })();
 
+  // Capstone interpreter is browser-only and executes no real machine code.
+  if(document.querySelector("[data-cpu-bench]")){
+    import("/institute-preview/cpu-capstone-client.js").catch(function(){
+      var status=document.querySelector("[data-cpu-status]");
+      if(status)status.textContent="The local eight-bit teaching model could not load. No instructions ran.";
+    });
+  }
   // The GPU scheduling simulator is a browser-only, lazily loaded module.
   if(document.querySelector("[data-cluster-lab]")){
     import("/institute-preview/cluster-scheduler-client.js").catch(function(){
@@ -1098,6 +1105,7 @@ export const INSTITUTE_CLIENT = String.raw`
       ["Addressed memory",root+"/learn/cfp-101/addressed-memory","ram words addresses read write store load memory access instruction concepts lesson 05"],
       ["Assembly encoding",root+"/learn/cfp-101/assembly-code","four bit instructions fictional ISA opcode operand LOAD STORE ADD HALT assembler decoder machine code lesson 06"],
       ["Computer systems",root+"/learn/cfp-101/computer-systems","round robin single core cpu scheduling processes operating system software ready queue time slices lesson 07"],
+      ["Eight-bit computer",root+"/learn/cfp-101/eight-bit-computer","instruction set cpu accumulator program counter RAM ROM eight-bit capstone lesson 08"],
       ["AND-gate laboratory",root+"/laboratory/and-gate","simulation experiment notebook"],
       ["GPU cluster scheduling",root+"/laboratory/cluster-scheduling","compute gpu allocation fifo shortest job first simulator"],
       ["Neuron dynamics laboratory",root+"/laboratory/neuron-dynamics","neuroscience leaky integrate fire membrane potential threshold spike refractory"],

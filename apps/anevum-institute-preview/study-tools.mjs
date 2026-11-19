@@ -7,7 +7,8 @@ const LESSONS=Object.freeze({
   "CFP-101-U04":{label:"Lesson 04 · Clocked registers",filename:"anevum-cfp101-u04-notes.txt"},
   "CFP-101-U05":{label:"Lesson 05 · Addressed memory",filename:"anevum-cfp101-u05-notes.txt"},
   "CFP-101-U06":{label:"Lesson 06 · Assembly encoding",filename:"anevum-cfp101-u06-notes.txt"},
-  "CFP-101-U07":{label:"Lesson 07 · Computer systems",filename:"anevum-cfp101-u07-notes.txt"}
+  "CFP-101-U07":{label:"Lesson 07 · Computer systems",filename:"anevum-cfp101-u07-notes.txt"},
+  "CFP-101-U08":{label:"Lesson 08 · Eight-bit computer",filename:"anevum-cfp101-u08-notes.txt"}
 });
 
 export function studyToolsHtml(unitId){
