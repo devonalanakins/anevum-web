@@ -69,7 +69,8 @@ try{
     {name:"phone-393",viewport:{width:393,height:852},isMobile:true,hasTouch:true,deviceScaleFactor:3},
     {name:"desktop-1440",viewport:{width:1440,height:900},isMobile:false,hasTouch:false,deviceScaleFactor:1}
   ]){
-    const context=await browser.newContext({...spec,reducedMotion:"reduce"});
+    const {name:deviceName,...deviceOptions}=spec;
+    const context=await browser.newContext({...deviceOptions,reducedMotion:"reduce"});
     const page=await context.newPage();
     page.on("pageerror",error=>errors.push(spec.name+": "+error.message));
     const unexpected=[];
