@@ -28,14 +28,14 @@ import {FRONTIER_GL_CLIENT} from "../apps/anevum-institute-preview/frontier-gl.m
 import {frontierHome,frontierRecognition,RECOGNITION_POLICY,FRONTIER_MEDIA,FRONTIER_REVIEW_ART,FACILITY_DESIGN_ART,frontierMediaMarkup} from "../apps/anevum-institute-preview/frontier-society.mjs";
 
 const BASE="https://anevum.com/institute-preview";
-const PATHS=["","/research","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/learn/cfp-101/registers","/learn/cfp-101/addressed-memory","/learn/cfp-101/assembly-code","/learn/cfp-101/computer-systems","/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics"];
+const PATHS=["","/research","/recognition","/dossier","/studio","/profile","/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/learn/cfp-101/registers","/learn/cfp-101/addressed-memory","/learn/cfp-101/assembly-code","/learn/cfp-101/computer-systems","/learn/cfp-101/eight-bit-computer","/laboratory/and-gate","/laboratory/cluster-scheduling","/laboratory/neuron-dynamics"];
 const req=(path="",init={})=>worker.fetch(new Request(BASE+path,init));
 
 test("owner Safari release checklist matches implemented preview and makes no release claim",async()=>{
   const guide=await readFile(new URL("../docs/qa/ANEVUM.WEB.QA.2026-11-18.022.OWNER-SAFARI-ACCEPTANCE.md",import.meta.url),"utf8");
-  assert.match(guide,/18 routes/);
-  assert.match(guide,/CFP-101 introductory lessons U01–U07/);
-  assert.match(guide,/U08 remains planned/);
+  assert.match(guide,/19 routes/);
+  assert.match(guide,/CFP-101 introductory lessons U01–U08/);
+  assert.match(guide,/Unit 08 computer simulator/);
   assert.match(guide,/institute-pr-816-anevum-web-nextgen\.devonakins\.workers\.dev\/institute-preview/);
   assert.match(guide,/authenticate with the preexisting owner identity/);
   assert.match(guide,/all four A\/B combinations/);
@@ -48,7 +48,7 @@ test("owner Safari release checklist matches implemented preview and makes no re
   assert.doesNotMatch(guide,/\b(iPhone Safari|actual owner acceptance) (?:is|was) (?:approved|completed|verified)\b/i);
 });
 
-test("eighteen isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
+test("nineteen isolated pages have accurate titles, landmarks, and noindex headers",async()=>{
   for(const path of PATHS){
     const response=await req(path);
     assert.equal(response.status,200,path);
@@ -90,10 +90,10 @@ test("every relative institute navigation link resolves within the preview",asyn
 test("Academy advertises only implemented curriculum lessons and real simulated laboratories",async()=>{
   const html=await(await req("/academy")).text();
   const lessonPaths=CFP_101.units.filter(unit=>unit.availability==="preview");
-  assert.equal(lessonPaths.length,7);
+  assert.equal(lessonPaths.length,8);
   assert.match(html,/data-study-path aria-labelledby="academy-available-title"/);
-  assert.match(html,/7 available previews \/ 1 planned unit/);
-  assert.equal((html.match(/class="academy-unit-link"/g)||[]).length,7);
+  assert.match(html,/8 available previews \/ 0 planned units/);
+  assert.equal((html.match(/class="academy-unit-link"/g)||[]).length,8);
   for(const unit of lessonPaths){
     assert.ok(html.includes('href="/institute-preview'+unit.lessonPath+'"'),"Missing implemented lesson "+unit.id);
     assert.ok(html.includes('data-study-path-status="'+unit.id+'"'),"Missing honest practice marker "+unit.id);
@@ -118,8 +118,8 @@ test("course availability and educational boundaries are explicit",async()=>{
   const lesson=await(await req("/learn/cfp-101/logic-gates")).text();
   assert.match(catalog,/Explore transistor switching, Boolean logic, binary arithmetic, clocked registers, addressed memory, fictional assembly and systems software/i);
   assert.match(catalog,/not operational faculties/i);
-  assert.match(course,/curriculum in development/i);
-  assert.equal((course.match(/Study this lesson/g)||[]).length,7);
+  assert.match(course,/Independent course assessment remains unfinished/i);
+  assert.equal((course.match(/Study this lesson/g)||[]).length,8);
   assert.ok(course.indexOf("Semiconductors and transistor switching")<course.indexOf("Binary logic and gates"),"Transistors-first syllabus order");
   assert.match(lesson,/Q = A ∧ B/);
   assert.match(lesson,/2² = 4/);
@@ -392,14 +392,14 @@ test("versioned curriculum JSON is portable, accurate and fail-closed on invalid
   assert.equal(manifest.accreditation,"none");
   assert.equal(manifest.units.length,8);
   assert.deepEqual(manifest.units.filter(unit=>unit.availability==="preview").map(unit=>unit.lessonPath),[
-    "/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/learn/cfp-101/registers","/learn/cfp-101/addressed-memory","/learn/cfp-101/assembly-code","/learn/cfp-101/computer-systems"
+    "/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/learn/cfp-101/registers","/learn/cfp-101/addressed-memory","/learn/cfp-101/assembly-code","/learn/cfp-101/computer-systems","/learn/cfp-101/eight-bit-computer"
   ]);
-  assert.equal(manifest.units.filter(unit=>unit.availability==="planned").length,1);
+  assert.equal(manifest.units.filter(unit=>unit.availability==="planned").length,0);
   const manifestPage=await(await req("/academy/cfp-101")).text();
   assert.match(manifestPage,/Download portable curriculum metadata/);
-  assert.match(manifestPage,/version 0\.7\.0/);
+  assert.match(manifestPage,/version 0\.8\.0/);
   const invalid=structuredClone(manifest);
-  invalid.units[7].availability="preview";
+  invalid.units[7].availability="planned";
   assert.ok(validateCurriculum(invalid).some(error=>error.includes("Lesson availability mismatch")));
   const badPrerequisite=structuredClone(manifest);
   badPrerequisite.units[0].prerequisites=["CFP-101-U02"];
@@ -410,8 +410,7 @@ test("versioned curriculum JSON is portable, accurate and fail-closed on invalid
   assert.ok(validateCurriculum({schemaVersion:1,id:"CFP-101",version:"0.3.0",status:"preview",units:[{availability:"preview"}]}).length>0);
 });
 
-test("Learning Studio exposes independently keyed, accessible local notebooks for all seven lessons",async()=>{
-  assert.throws(()=>studyToolsHtml("CFP-101-U08"),/Unsupported or unreviewed/);
+test("Learning Studio exposes independently keyed, accessible local notebooks for all eight lessons",async()=>{
   const a=await (await req("/learn/cfp-101/transistor-switching")).text();
   const b=await (await req("/learn/cfp-101/logic-gates")).text();
   const c=await (await req("/learn/cfp-101/half-adders")).text();
@@ -419,7 +418,8 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   const e=await (await req("/learn/cfp-101/addressed-memory")).text();
   const ff=await (await req("/learn/cfp-101/assembly-code")).text();
   const gg=await (await req("/learn/cfp-101/computer-systems")).text();
-  for(const [html,key] of [[a,"CFP-101-U01"],[b,"CFP-101-U02"],[c,"CFP-101-U03"],[d,"CFP-101-U04"],[e,"CFP-101-U05"],[ff,"CFP-101-U06"],[gg,"CFP-101-U07"]]){
+  const hh=await (await req("/learn/cfp-101/eight-bit-computer")).text();
+  for(const [html,key] of [[a,"CFP-101-U01"],[b,"CFP-101-U02"],[c,"CFP-101-U03"],[d,"CFP-101-U04"],[e,"CFP-101-U05"],[ff,"CFP-101-U06"],[gg,"CFP-101-U07"],[hh,"CFP-101-U08"]]){
     assert.match(html,new RegExp('data-study-lesson="'+key+'"'));
     assert.match(html,/data-study-save/);
     assert.match(html,/data-study-import/);
@@ -469,7 +469,7 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   assert.match(css,/\.study-import \[data-study-import-apply\]\[hidden\]\{display:none!important\}/);
 });
 
-test("Seven CFP-101 readers expose curriculum-grounded navigation without invented completion",async()=>{
+test("Eight CFP-101 readers expose curriculum-grounded navigation without invented completion",async()=>{
   const pages=[
     ["/learn/cfp-101/transistor-switching","CFP-101-U01"],
     ["/learn/cfp-101/logic-gates","CFP-101-U02"],
@@ -477,7 +477,8 @@ test("Seven CFP-101 readers expose curriculum-grounded navigation without invent
     ["/learn/cfp-101/registers","CFP-101-U04"],
     ["/learn/cfp-101/addressed-memory","CFP-101-U05"],
     ["/learn/cfp-101/assembly-code","CFP-101-U06"],
-    ["/learn/cfp-101/computer-systems","CFP-101-U07"]
+    ["/learn/cfp-101/computer-systems","CFP-101-U07"],
+    ["/learn/cfp-101/eight-bit-computer","CFP-101-U08"]
   ];
   for(const [path,id] of pages){
     const response=await req(path);
@@ -485,10 +486,10 @@ test("Seven CFP-101 readers expose curriculum-grounded navigation without invent
     const html=await response.text();
     assert.equal((html.match(/data-study-path(?: |\>)/g)||[]).length,1);
     assert.match(html,/aria-label="CFP-101 available lesson navigation"/);
-    assert.equal((html.match(/class="study-path-link"/g)||[]).length,7);
+    assert.equal((html.match(/class="study-path-link"/g)||[]).length,8);
     assert.equal((html.match(/aria-current="page"/g)||[]).length,3,"Expected desktop and mobile mast navigation plus current lesson");
     assert.match(html,/This is not a course completion record or academic credit/);
-    assert.match(html,/One unit remains in development/);
+    assert.match(html,/All eight introductory lessons have previews/);
     assert.match(html,/data-study-path-progress/);
     for(const [otherPath,otherId] of pages){
       assert.ok(html.includes('href="/institute-preview'+otherPath+'"'),"Missing lesson "+otherId);
@@ -498,9 +499,9 @@ test("Seven CFP-101 readers expose curriculum-grounded navigation without invent
     assert.ok(html.includes('data-study-lesson="'+id+'"'),"Notes must exist for "+id);
   }
   const js=await (await req("/client.js")).text();
-  assert.ok(js.includes('/^CFP-101-U0[1234567]$/'),"All seven local notebooks must be initialized");
+  assert.ok(js.includes('/^CFP-101-U0[12345678]$/'),"All eight local notebooks must be initialized");
   assert.match(js,/data-study-path-status/);
-  assert.match(js,/Lessons U03–U07 remain untracked/);
+  assert.match(js,/Lessons U03–U08 remain untracked/);
   const css=await (await req("/styles.css")).text();
   assert.match(css,/\.study-path-links\{list-style:none/);
   assert.match(css,/@media\(max-width:420px\)\{\.study-path-links\{grid-template-columns:1fr\}/);
@@ -512,8 +513,8 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.match(home,/An open institute for <em>serious inquiry/);
   assert.match(home,/Explore the academic catalogue/);
   assert.match(home,/Computing From First Principles/);
-  assert.match(home,/7 lessons available/);
-  assert.match(home,/1 unit in development/);
+  assert.match(home,/8 lesson previews/);
+  assert.match(home,/Assessment in development/);
   assert.match(home,/class="academic-pathways"/);
   assert.match(home,/href="\/institute-preview\/laboratory\/cluster-scheduling"/);
   assert.match(home,/href="\/institute-preview\/laboratory\/neuron-dynamics"/);
@@ -1151,10 +1152,11 @@ test("Unit08 isolated 8-bit CPU core is deterministic, bounded, and accurately l
   assert.equal(state.zero,true);
   const steps=["LDI 7","STORE 1","LDI 4","ADD 1","STORE 2","HALT"];
   for(const op of steps){
-    const previous=structuredClone(state);
+    const previous=structuredClone(state),oldRef=state;
     state=mod.stepCpu(state);
+    assert.deepEqual(oldRef,previous,"CPU step must not mutate its input");
     assert.deepEqual(previous.program,mod.CPU_SAMPLE.slice(),"Program ROM must remain immutable");
-    assert.deepEqual(previous,previous,"Previous snapshot stays unchanged");
+    assert.notStrictEqual(state,oldRef,"Stepping must return a distinct state");
     assert.equal(state.trace.at(-1).operation,op);
   }
   assert.equal(state.halted,true);
@@ -1190,4 +1192,37 @@ test("Unit08 isolated 8-bit CPU core is deterministic, bounded, and accurately l
   const invalid=[null,{},[],{...mod.initialCpu(),acc:256},
     {...mod.initialCpu(),pc:17},{...mod.initialCpu(),trace:[{}]}];
   for(const value of invalid)assert.throws(()=>mod.stepCpu(value));
+});
+
+
+test("Unit08 capstone is a local interactive route with honest limits and isolated assets",async()=>{
+  const response=await req("/learn/cfp-101/eight-bit-computer");
+  assert.equal(response.status,200);
+  const html=await response.text();
+  for(const token of ["CFP-101-U08","data-cpu-bench","data-cpu-source","data-cpu-step",
+      "data-cpu-run","data-cpu-reset","data-cpu-load","data-cpu-export disabled",
+      "data-cpu-memory","data-cpu-rom","data-cpu-trace","data-cpu-quiz",
+      'data-study-lesson="CFP-101-U08"']){
+    assert.ok(html.includes(token),"Missing real capstone control "+token);
+  }
+  assert.match(html,/fictional processor/i);
+  assert.match(html,/32 instructions/);
+  assert.match(html,/no official enrollment, course credit/i);
+  assert.doesNotMatch(html,/<form\b|<iframe\b|onload=|onclick=/i);
+  const css=await(await req("/styles.css")).text();
+  assert.match(css,/\.cpu-grid\{display:grid/);
+  assert.match(css,/@media\(max-width:700px\)\{\.cpu-grid/);
+  const boot=await(await req("/client.js")).text();
+  assert.match(boot,/import\("\/institute-preview\/cpu-capstone-client\.js"\)/);
+  for(const [path,needle] of [["/cpu-capstone-model.js","export function stepCpu"],
+      ["/cpu-capstone-client.js","root.dataset.cpuReady"]]){
+    const asset=await req(path);
+    assert.equal(asset.status,200);
+    assert.equal(asset.headers.get("Content-Type"),"text/javascript; charset=utf-8");
+    assert.match(asset.headers.get("Content-Security-Policy"),/connect-src 'none'/);
+    const js=await asset.text();
+    assert.ok(js.includes(needle),path+" missing executable model/client logic");
+    assert.doesNotMatch(js,/fetch\(|XMLHttpRequest|WebSocket|sendBeacon|eval\(/);
+  }
+  assert.equal((await req("/learn/cfp-101/real-cpu")).status,404);
 });
