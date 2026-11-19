@@ -892,20 +892,30 @@ export const INSTITUTE_CLIENT = String.raw`
       status.textContent=mode+" successful: "+item.assembly+" is "+item.bits+
         ". This is a fictional encoding, not a computer instruction executed here.";
     }
-    bench.querySelector("[data-assembly-form]").addEventListener("submit",function(event){
-      event.preventDefault();
+    // The preview prohibits HTML forms entirely, so use scoped buttons and
+    // intercept Enter on each text input. No network/navigation is involved.
+    var encodeAction=bench.querySelector("[data-assembly-encode]");
+    var decodeAction=bench.querySelector("[data-assembly-decode]");
+    encodeAction.addEventListener("click",function(){
       try{present(decode(assemble(source.value)),"Assembly");}
       catch(error){status.textContent="Assembly rejected: "+error.message+". Previous valid result unchanged.";}
     });
-    bench.querySelector("[data-assembly-decode-form]").addEventListener("submit",function(event){
-      event.preventDefault();
+    decodeAction.addEventListener("click",function(){
       try{present(decode(machine.value),"Disassembly");}
       catch(error){status.textContent="Disassembly rejected: "+error.message+". Previous valid result unchanged.";}
+    });
+    source.addEventListener("keydown",function(event){
+      if(event.key!=="Enter")return;
+      event.preventDefault();encodeAction.click();
+    });
+    machine.addEventListener("keydown",function(event){
+      if(event.key!=="Enter")return;
+      event.preventDefault();decodeAction.click();
     });
     bench.querySelectorAll("[data-assembly-example]").forEach(function(button){
       button.addEventListener("click",function(){
         source.value=button.getAttribute("data-assembly-example");
-        bench.querySelector("[data-assembly-form]").requestSubmit();
+        encodeAction.click();
       });
     });
     bench.querySelector("[data-assembly-clear]").addEventListener("click",function(){
