@@ -250,7 +250,7 @@ async function cpuCapstoneBrowserQA(){
   const undoCutoff=await evaluate("(()=>{const b=document.querySelector('[data-cpu-bench]');b.querySelector('[data-cpu-back]').click();const state={step:b.querySelector('[data-cpu-steps]').textContent,ready:b.querySelector('[data-cpu-reason]').textContent,trace:b.querySelectorAll('[data-cpu-trace] li').length};b.querySelector('[data-cpu-run]').click();return {...state,repeat:b.querySelector('[data-cpu-steps]').textContent,reason:b.querySelector('[data-cpu-reason]').textContent};})()");
   verify(undoCutoff.step.startsWith("31 /")&&undoCutoff.ready==="Ready / stepping"&&undoCutoff.trace===31&&undoCutoff.repeat.startsWith("32 /")&&undoCutoff.reason.includes("cutoff"),"Bounded loop rewind must remain finite and repeatable",undoCutoff);
   const quiz=await evaluate("(()=>{document.querySelector('[data-cpu-answer=\"0B\"]').click();return document.querySelector('[data-cpu-quiz-status]').textContent;})()");
-  verify(quiz.startsWith("Correct."),"CPU sample knowledge check failed",quiz);
+  verify(quiz.startsWith("Correct for the fixed addition example."),"CPU fixed-example feedback mismatch",quiz);
   const reset=await evaluate("(()=>{const b=document.querySelector('[data-cpu-bench]');b.querySelector('[data-cpu-reset]').click();return {steps:b.querySelector('[data-cpu-steps]').textContent,enabled:!b.querySelector('[data-cpu-run]').disabled,trace:b.querySelector('[data-cpu-trace]').textContent}})()");
   verify(reset.steps.startsWith("0 /")&&reset.enabled&&reset.trace.includes("No instructions executed"),"CPU reset must clear execution state",reset);
   const resetUndo=await evaluate("document.querySelector('[data-cpu-back]').disabled");

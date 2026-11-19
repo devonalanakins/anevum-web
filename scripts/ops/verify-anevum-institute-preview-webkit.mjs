@@ -448,8 +448,8 @@ async function cpuCapstone(page){
     "Reset must restore a runnable machine");
   check(await bench.locator("[data-cpu-back]").isDisabled(),"Reset must clear temporary Step Back history");
   await page.locator('[data-cpu-answer="0B"]').click();
-  check((await page.locator("[data-cpu-quiz-status]").textContent()).startsWith("Correct."),
-    "CPU lesson explanatory quiz incorrect");
+  check((await page.locator("[data-cpu-quiz-status]").textContent()).startsWith("Correct for the fixed addition example."),
+    "CPU sample-only feedback must match the explicitly scoped exercise");
   await page.locator("[data-study-text]").fill("Synthetic CPU note: RAM address 2 holds 0B.");
   await page.locator("[data-study-save]").click();
   await page.reload({waitUntil:"load"});
