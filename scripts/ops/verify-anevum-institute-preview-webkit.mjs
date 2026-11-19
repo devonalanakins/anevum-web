@@ -321,6 +321,43 @@ async function cpuCapstone(page){
   check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("32 /")
     &&(await bench.locator("[data-cpu-reason]").textContent()).includes("cutoff"),
     "Infinite loop must stop at the bounded step limit");
+// Staging a preset never changes editor text or the already executed CPU.
+  const select=bench.locator("[data-cpu-example]");
+  await select.selectOption("branch");
+  check((await bench.locator("[data-cpu-example-description]").textContent()).includes("JZ 3")
+    &&(await invalid.inputValue())==="40"
+    &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("32 /"),
+    "Changing the example chooser must not load or run a program");
+  await bench.locator("[data-cpu-insert]").click();
+  check((await invalid.inputValue())==="30 53 39 F0"
+    &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("32 /"),
+    "Copy example must modify editor only");
+  await bench.locator("[data-cpu-load]").click();
+  check((await bench.locator("[data-cpu-rom] tr").nth(1).textContent()).includes("JZ 3"),
+    "ROM display must disassemble the branch instruction");
+  await bench.locator("[data-cpu-run]").click();
+  check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("3 /")
+    &&(await bench.locator("[data-cpu-acc]").textContent())==="00",
+    "Conditional branch example must skip LDI 9 and halt in 3 steps");
+  await invalid.fill("31");
+  await select.selectOption("addition");
+  let cancelled=false;
+  page.once("dialog",async dialog=>{
+    check(dialog.type()==="confirm"&&dialog.message().includes("Replace unsaved program text"),
+      "Example replacement must ask before discarding unsaved custom program text");
+    cancelled=true;await dialog.dismiss();
+  });
+  await bench.locator("[data-cpu-insert]").click();
+  check(cancelled&&(await invalid.inputValue())==="31"
+    &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("3 /"),
+    "Cancelled example insertion must not overwrite editor or machine");
+  let accepted=false;
+  page.once("dialog",async dialog=>{accepted=true;await dialog.accept();});
+  await bench.locator("[data-cpu-insert]").click();
+  check(accepted&&(await invalid.inputValue())==="37 11 34 21 12 F0"
+    &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("3 /"),
+    "Confirmed insertion changes editor but never executes CPU instructions");
+
   await bench.locator("[data-cpu-reset]").click();
   check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("0 /")
     &&await bench.locator("[data-cpu-run]").isEnabled(),

@@ -1144,6 +1144,20 @@ test("Research navigation opens a real methods page, not recognition policy",asy
 test("Unit08 isolated 8-bit CPU core is deterministic, bounded, and accurately labeled",async()=>{
   const mod=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(CPU_CAPSTONE_MODEL_BROWSER_MODULE));
   assert.deepEqual(mod.parseCpuProgram("37 11 34 21 12 F0"),[55,17,52,33,18,240]);
+  assert.deepEqual(mod.CPU_EXAMPLES.map(example=>example.id),["addition","branch","loop"]);
+  for(const example of mod.CPU_EXAMPLES){
+    assert.ok(Object.isFrozen(example)&&Object.isFrozen(example.bytes));
+    assert.deepEqual(mod.parseCpuProgram(example.bytes.map(byte=>byte.toString(16).padStart(2,"0")).join(" ")),example.bytes);
+    assert.equal(typeof example.description,"string");
+    assert.ok(example.description.length>40);
+  }
+  assert.deepEqual(mod.CPU_EXAMPLES[0].bytes,mod.CPU_SAMPLE);
+  assert.deepEqual(mod.CPU_EXAMPLES[1].bytes,[0x30,0x53,0x39,0xF0]);
+  assert.deepEqual(mod.CPU_EXAMPLES[2].bytes,[0x40]);
+  for(const [word,mnemonic] of [[0x37,"LDI 7"],[0x11,"STORE 1"],[0x21,"ADD 1"],[0x53,"JZ 3"],[0x40,"JMP 0"],[0xF0,"HALT"],[0xF1,"RESERVED F1"],[0x60,"UNKNOWN 60"]]){
+    assert.equal(mod.describeCpuWord(word),mnemonic);
+  }
+  for(const word of [-1,256,NaN,Infinity,"37",1.5])assert.throws(()=>mod.describeCpuWord(word));
   for(const source of ["","37 ZZ","F0 3","F0;30","00 ".repeat(17),"aa ".repeat(100)]){
     assert.throws(()=>mod.parseCpuProgram(source),"Unexpectedly accepted "+JSON.stringify(source));
   }
@@ -1204,16 +1218,20 @@ test("Unit08 capstone is a local interactive route with honest limits and isolat
   for(const token of ["CFP-101-U08","data-cpu-bench","data-cpu-source","data-cpu-step",
       "data-cpu-run","data-cpu-reset","data-cpu-load","data-cpu-export disabled",
       "data-cpu-memory","data-cpu-rom","data-cpu-trace","data-cpu-quiz",
+      "data-cpu-example","data-cpu-insert","data-cpu-example-description",
       'data-study-lesson="CFP-101-U08"']){
     assert.ok(html.includes(token),"Missing real capstone control "+token);
   }
   assert.match(html,/fictional processor/i);
   assert.match(html,/32 instructions/);
+  assert.match(html,/Choosing an example only changes the explanation/);
+  assert.equal((html.match(/<option value="(?:addition|branch|loop)"/g)||[]).length,3);
   assert.match(html,/no official enrollment, course credit/i);
   assert.doesNotMatch(html,/<form\b|<iframe\b|onload=|onclick=/i);
   const css=await(await req("/styles.css")).text();
   assert.match(css,/\.cpu-grid\{display:grid/);
   assert.match(css,/@media\(max-width:700px\)\{\.cpu-grid/);
+  assert.match(css,/\.cpu-example-row select:focus-visible/);
   const boot=await(await req("/client.js")).text();
   assert.match(boot,/import\("\/institute-preview\/cpu-capstone-client\.js"\)/);
   for(const [path,needle] of [["/cpu-capstone-model.js","export function stepCpu"],
