@@ -292,8 +292,11 @@ test("Unit06 fictional four-bit assembly encodes, decodes and rejects reserved m
   assert.match(html,/not an industry-standard ISA, an assembler for real hardware, a secure executable/i);
   assert.doesNotMatch(html,/physical assembly execution|real instruction benchmark|accredited degree/i);
   const js=await(await req("/client.js")).text();
-  assert.match(js,/data-assembly-form/);
-  assert.match(js,/data-assembly-decode-form/);
+  assert.match(js,/data-assembly-encode/);
+  assert.match(js,/data-assembly-decode/);
+  assert.match(js,/source\.addEventListener\("keydown"/);
+  assert.match(js,/machine\.addEventListener\("keydown"/);
+  assert.doesNotMatch(html,/<form\b/i);
   assert.match(js,/Reserved encoding: HALT requires operand 00/);
   assert.match(js,/instructionsExecuted:false,realHardware:false/);
   assert.match(js,/independentlyVerified:false,academicCredit:false/);
