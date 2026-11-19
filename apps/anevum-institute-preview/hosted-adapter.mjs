@@ -25,13 +25,28 @@ export function makeInstituteHostedReview({loadReviewMedia}={}){
       if(url.protocol!=="https:"||url.port||!isInstituteReviewHost(url.hostname)){
         return new Response("Not found",{status:404,headers:SAFE_HEADERS});
       }
-      // The core preview deliberately accepts only aneuvum.com internally.
-      // Rewrite the request in memory ONLY: never fetch the public origin.
-      // Keep the original method/path/query for its fail-closed route contract.
-      const internal=new Request("https://anevum.com"+url.pathname+url.search,{
+      // The core preview deliberately rejects all query strings. ChatGPT may
+      // append this single known attribution parameter to otherwise clean links.
+      // Redirect it to the exact same protected preview origin with no query,
+      // only when the route and method are already valid. Never relax Access.
+      // All other queries remain rejected, including duplicate tracking keys.
+      const attribution=url.search!==""
+        &&url.searchParams.size===1
+        &&url.searchParams.get("utm_source")==="chatgpt.com";
+      if(url.search&&!attribution)return new Response("Not found",{status:404,headers:SAFE_HEADERS});
+      // Rewrite in memory ONLY: never fetch public anevum.com or forward cookies.
+      const internal=new Request("https://anevum.com"+url.pathname,{
         method:request.method
       });
-      return institute.fetch(internal,{loadReviewMedia});
+      const result=await institute.fetch(internal,{loadReviewMedia});
+      if(attribution&&result.status===200
+        &&(request.method==="GET"||request.method==="HEAD")){
+        return new Response(null,{status:302,headers:{
+          ...SAFE_HEADERS,
+          Location:url.origin+url.pathname
+        }});
+      }
+      return result;
     }
   };
 }
