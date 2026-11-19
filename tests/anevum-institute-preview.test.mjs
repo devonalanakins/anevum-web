@@ -289,7 +289,7 @@ test("Unit06 fictional four-bit assembly encodes, decodes and rejects reserved m
   assert.equal((html.match(/data-assembly-example=/g)||[]).length,4);
   assert.equal((html.match(/data-assembly-answer=/g)||[]).length,3);
   assert.match(html,/does not fetch instructions, add numbers, alter memory or run programs/);
-  assert.match(html,/not a secure executable/i);
+  assert.match(html,/not an industry-standard ISA, an assembler for real hardware, a secure executable/i);
   assert.doesNotMatch(html,/physical assembly execution|real instruction benchmark|accredited degree/i);
   const js=await(await req("/client.js")).text();
   assert.match(js,/data-assembly-form/);
