@@ -213,7 +213,7 @@ body[data-area="research"]{background:var(--academic-paper);color:var(--academic
 .study-path{margin:0 0 30px;padding:16px 18px 14px;border:1px solid #d0dfd5;background:#e8eee8;border-radius:7px;color:#243d3b}
 .study-path-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:11px;font:750 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.045em;text-transform:uppercase;color:#3a5e54}
 .study-path-heading a{color:#235d54;text-transform:none;text-decoration:underline;text-underline-offset:3px}
-.study-path-links{list-style:none;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:0!important;padding:0!important}
+.study-path-links{list-style:none;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:0!important;padding:0!important}
 .study-path-links li{margin:0!important;min-width:0}
 .study-path-link{display:flex;align-items:center;gap:9px;min-height:58px;padding:10px;border:1px solid #c8d9cf;background:#f8f8f4;color:#284a43!important;border-radius:4px;text-decoration:none!important}
 .study-path-link[aria-current="page"]{border-color:#286356;background:#d7e6db;box-shadow:inset 0 0 0 1px #286356}
@@ -225,6 +225,33 @@ body[data-area="research"]{background:var(--academic-paper);color:var(--academic
 .study-path-details [data-practice-status="recorded"]{color:#216352;font-weight:700}
 .study-path-disclaimer{margin:11px 0 0!important;font-size:11px!important;line-height:1.55!important;color:#54695f!important}
 .study-path a:focus-visible{outline:3px solid #a37c3e;outline-offset:3px}
+/* CFP-101 U07: text-first, accessible process scheduler, no generated imagery. */
+.systems-layer-stack{display:grid;gap:7px;margin:19px 0 22px}
+.systems-layer-stack>div{background:#edf1e8;border:1px solid #d5dfd2;border-radius:5px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:12px 15px}
+.systems-layer-stack strong{color:#24483e;font:700 13px/1.5 system-ui,sans-serif}
+.systems-layer-stack span{font:500 12px/1.5 system-ui,sans-serif;color:#45665a}
+.systems-bench{margin:20px 0 30px;padding:18px;border:1px solid #c2d2c4;background:#e8eee8;border-radius:7px;color:#25463e}
+.systems-header{display:flex;justify-content:space-between;flex-wrap:wrap;gap:7px;color:#46675b;font:700 10px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.025em}
+.lesson-article .systems-bench h3{font:normal 27px/1.2 Georgia,serif;color:#24473f;margin:13px 0 15px}
+.systems-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.systems-panel{min-width:0;border:1px solid #d3dfd5;border-radius:5px;background:#fffefa;padding:14px}
+.systems-label{color:#3e6155;font:700 11px/1.5 ui-monospace,Consolas,monospace}
+.lesson-article .systems-queue{display:block;background:#e1eadf;color:#285647;border-radius:5px;padding:14px 10px;font:700 clamp(17px,2.4vw,25px)/1.3 ui-monospace,Consolas,monospace;letter-spacing:.05em;overflow-wrap:anywhere;margin:13px 0}
+.lesson-article .systems-turn,.lesson-article .systems-current{margin:10px 0;color:#355c50;font:600 12px/1.6 system-ui,sans-serif}
+.systems-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px}
+.systems-actions button{min-height:44px;flex:1 1 140px;border:1px solid #a9c3af;background:#f2f6ed;border-radius:4px;color:#275b4e;font:700 12px/1.4 system-ui,sans-serif;padding:10px}
+.systems-actions button:first-child{background:#285d51;border-color:#285d51;color:#fff}
+.systems-actions button:disabled{opacity:.5;cursor:not-allowed}
+.systems-bench button:focus-visible{outline:3px solid #ae7b4b;outline-offset:3px}
+.systems-table{width:100%;font-size:12px}
+.systems-table th,.systems-table td{padding:8px 7px}
+.systems-table [aria-current=true]{background:#dae8dc;color:#275e4c}
+.lesson-article .systems-status{margin:13px 0 15px;background:#d7e6d9;border-left:3px solid #357b60;padding:11px 13px;font-size:12px;line-height:1.6;color:#285747}
+.lesson-article .systems-bench h4{font:700 13px/1.5 system-ui,sans-serif;margin:8px 0;color:#2d5148}
+.systems-history{padding-left:22px;max-height:210px;overflow:auto;color:#3a5f54;font:500 11px/1.8 ui-monospace,Consolas,monospace}
+.lesson-article .systems-export-status{font-size:11px;line-height:1.6;margin:10px 0 0;color:#526e61}
+@media(max-width:780px){.systems-grid{grid-template-columns:1fr}.systems-bench{padding:12px}}
+@media(max-width:420px){.systems-panel{padding:10px}.systems-actions button{flex-basis:100%}.systems-layer-stack>div{align-items:flex-start;flex-direction:column}}
 /* CFP-101-U06: text-first, fictional four-bit instruction decoding desk. */
 .assembly-bench{margin:22px 0 30px;padding:19px;border:1px solid #bed1c4;background:#e8eee8;border-radius:7px;color:#24443a}
 .assembly-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;font:700 10px/1.5 ui-monospace,Consolas,monospace;color:#46665c}
