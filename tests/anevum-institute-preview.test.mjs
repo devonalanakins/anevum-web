@@ -1291,6 +1291,8 @@ test("Unit08 capstone is a local interactive route with honest limits and isolat
   assert.match(html,/aria-describedby="cpu-quiz-scope"/);
   assert.match(html,/not Nand2Tetris.*Hack machine language or MIT 6\.004.*Beta processor/);
   assert.match(html,/neither resource validates, assesses or endorses this lesson/);
+  assert.doesNotMatch(html,/Nand2Tetris\\'s|6\\.004\\'s/);
+  assert.match(html,/Nand2Tetris's Hack machine language/);
   assert.match(html,/href="https:\/\/www\.nand2tetris\.org\/project05"/);
   assert.match(html,/href="https:\/\/ocw\.mit\.edu\/courses\/6-004-computation-structures-spring-2009\/"/);
   assert.equal((html.match(/<option value="(?:addition|branch|loop)"/g)||[]).length,3);
