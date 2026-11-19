@@ -23,6 +23,7 @@ const pages=[
   ["/institute-preview/learn/cfp-101/registers","register"],
   ["/institute-preview/learn/cfp-101/addressed-memory","memory"],
   ["/institute-preview/learn/cfp-101/assembly-code","assembly"],
+  ["/institute-preview/learn/cfp-101/computer-systems","systems"],
   ["/institute-preview/laboratory/and-gate","laboratory"],
   ["/institute-preview/laboratory/cluster-scheduling","cluster"],
   ["/institute-preview/laboratory/neuron-dynamics","neuron"]
@@ -75,7 +76,7 @@ async function testPage(pathname,label,width,height){
   const state=await evaluate("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('main h1')?.textContent.trim(),mainCount:document.querySelectorAll('main').length,h1Count:document.querySelectorAll('h1').length,skip:!!document.querySelector('a.skip[href=\"#main\"]'),desktop:!!document.querySelector('nav.desk-nav[aria-label=\"Primary navigation\"]'),mobile:!!document.querySelector('details.mobile-menu'),mobileVisible:getComputedStyle(document.querySelector('details.mobile-menu')).display!=='none',width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,robots:document.querySelector('meta[name=\"robots\"]')?.content,scriptCount:document.scripts.length,allLinksLabelled:[...document.querySelectorAll('a[href]')].every(a=>!!(a.textContent.trim()||a.getAttribute('aria-label'))),scriptsLoaded:!!document.querySelector('script[src=\"/institute-preview/client.js\"]')}))()");
   const identity=await evaluate("(()=>{const mark=document.querySelector('img.identity-mark');const scene=document.querySelector('.hero');const frontier=document.querySelector('.frontier-facility-art');const reader=document.querySelector('.lesson-article');return {markLoaded:!!mark&&mark.complete&&mark.naturalWidth===160&&mark.currentSrc.includes('/institute-preview/mark.svg'),iconHref:document.querySelector('link[rel=icon]')?.getAttribute('href'),sceneCorrect:!scene||(!!frontier&&getComputedStyle(frontier).backgroundImage.includes('gradient')&&!!document.querySelector('.facility-poster')),readerBackground:reader?getComputedStyle(reader).backgroundColor:null,navSize:document.querySelectorAll('nav.desk-nav a').length}})()");
   verify(identity.markLoaded&&identity.iconHref==='/institute-preview/mark-small.svg'&&identity.sceneCorrect&&identity.navSize===5,"New identity, scene or navigation is missing",{label,width,identity});
-  if(label==="lesson"||label==="transistor"||label==="adder"||label==="register"||label==="memory"||label==="assembly")verify(identity.readerBackground==="rgb(244, 241, 232)","Editorial study surface is missing",{label,width,identity});
+  if(label==="lesson"||label==="transistor"||label==="adder"||label==="register"||label==="memory"||label==="assembly"||label==="systems")verify(identity.readerBackground==="rgb(244, 241, 232)","Editorial study surface is missing",{label,width,identity});
   verify(state.mainCount===1&&state.h1Count===1&&state.skip&&state.desktop&&state.mobile&&state.scriptsLoaded&&state.allLinksLabelled,"Accessible landmarks or navigation missing",{label,width,state});
   verify(state.robots.includes("noindex")&&state.scriptCount===1,"Unexpected indexing or scripts",{label,width,state});
   verify(state.width>=width-20&&state.width<=width&&state.scrollWidth<=state.width+1&&state.bodyWidth<=state.width+1,"Horizontal overflow",{label,width,state});
@@ -107,7 +108,7 @@ async function testPage(pathname,label,width,height){
   }
   if(label==="academy"){
     const directory=await evaluate("(()=>{const lessons=[...document.querySelectorAll('.academy-unit-link')];const labs=[...document.querySelectorAll('.academy-lab-item > a')];const one=document.querySelector('[data-study-path-progress]');return {lessons:lessons.map(a=>a.getAttribute('href')),labs:labs.map(a=>a.getAttribute('href')),course:document.querySelector('.course-card')?.getBoundingClientRect().top,firstLesson:lessons[0]?.getBoundingClientRect().top,firstLab:labs[0]?.getBoundingClientRect().top,planned:document.querySelector('.catalog-layout>.aside-panel')?.textContent.includes('proposed'),progress:one?.textContent,markers:[...document.querySelectorAll('.academy-unit-copy [data-study-path-status]')].map(x=>x.textContent)}})()");
-    verify(directory.lessons.length===6&&directory.labs.length===3&&directory.lessons.every(x=>x.startsWith('/institute-preview/learn/cfp-101/'))&&directory.labs.every(x=>x.startsWith('/institute-preview/laboratory/'))&&directory.firstLesson>directory.course&&directory.firstLab>directory.firstLesson&&directory.planned&&directory.markers[2].includes('not tracked')&&directory.markers[3].includes('not tracked')&&directory.markers[4].includes('not tracked')&&directory.markers[5].includes('not tracked'),"Academy must show real lesson-to-experiment paths without invented accreditation",{width,directory});
+    verify(directory.lessons.length===7&&directory.labs.length===3&&directory.lessons.every(x=>x.startsWith('/institute-preview/learn/cfp-101/'))&&directory.labs.every(x=>x.startsWith('/institute-preview/laboratory/'))&&directory.firstLesson>directory.course&&directory.firstLab>directory.firstLesson&&directory.planned&&directory.markers[2].includes('not tracked')&&directory.markers[3].includes('not tracked')&&directory.markers[4].includes('not tracked')&&directory.markers[5].includes('not tracked')&&directory.markers[6].includes('not tracked'),"Academy must show real lesson-to-experiment paths without invented accreditation",{width,directory});
   }
   if(label==="academy"&&width===390){
     const layout=await evaluate("(()=>({courseTop:document.querySelector('.course-card')?.getBoundingClientRect().top,schoolsTop:document.querySelector('.catalog-layout>.aside-panel')?.getBoundingClientRect().top}))()");
@@ -121,7 +122,7 @@ async function testPage(pathname,label,width,height){
     const firstField=await evaluate("document.querySelector('[data-evidence-field=title]').getBoundingClientRect().top");
     verify(firstField<height-30,"Personal research activity must be visible in first viewport",{width,height,firstField});
   }
-  if((label==="lesson"||label==="transistor"||label==="adder"||label==="register"||label==="memory"||label==="assembly"||label==="laboratory")&&(width===390||width===1440)){
+  if((label==="lesson"||label==="transistor"||label==="adder"||label==="register"||label==="memory"||label==="assembly"||label==="systems"||label==="laboratory")&&(width===390||width===1440)){
     const workTop=await evaluate("(()=>{const el=document.querySelector('.lesson-article')||document.querySelector('[data-and-lab]');return el?.getBoundingClientRect().top??9999})()");
     verify(workTop<height-30,"Study task is pushed below the initial viewport",{label,width,height,workTop});
   }
@@ -133,7 +134,7 @@ async function testPage(pathname,label,width,height){
   verify(link,"Skip link cannot receive keyboard focus",{label,width});
   if((width===390||width===1440)){
     await screenshot(label+"-"+width);
-    if(label==="home"||label==="research"||label==="recognition"||label==="dossier"||label==="laboratory"||label==="lesson"||label==="transistor"||label==="adder"||label==="register"||label==="memory"||label==="assembly")await screenshot(label+"-"+width+"-full",true);
+    if(label==="home"||label==="research"||label==="recognition"||label==="dossier"||label==="laboratory"||label==="lesson"||label==="transistor"||label==="adder"||label==="register"||label==="memory"||label==="assembly"||label==="systems")await screenshot(label+"-"+width+"-full",true);
   }
   console.log("INSTITUTE_PAGE_QA_PASS",label,width,state.heading);
 }
@@ -196,11 +197,28 @@ async function assemblyLessonBrowserQA(){
   console.log("ANEVUM_ASSEMBLY_LESSON_BROWSER_QA_PASS",JSON.stringify({validMappings:true,decode:true,reservedRejected:true,invalidRejected:true,exportUnverified:true,selfCheck:true,clear:true}));
 }
 
+async function systemsLessonBrowserQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await navigate("/institute-preview/learn/cfp-101/computer-systems");
+  const initial=await evaluate("(()=>{const b=document.querySelector('[data-systems-bench]');return {queue:b.querySelector('[data-systems-queue]').textContent,tick:b.querySelector('[data-systems-tick]').textContent,remaining:[...b.querySelectorAll('[data-systems-left]')].map(x=>x.textContent),note:document.querySelector('[data-study-lesson]')?.dataset.studyLesson}})()");
+  verify(initial.queue==="A → B → C"&&initial.tick==="0"&&initial.remaining.join(",")==="2,1,3"&&initial.note==="CFP-101-U07","System lesson did not initialize",initial);
+  const after=await evaluate("(()=>{const b=document.querySelector('[data-systems-bench]');const a=b.querySelector('[data-systems-advance]');const out=[];for(let i=0;i<6;i++){a.click();out.push({last:b.querySelector('[data-systems-last]').textContent,queue:b.querySelector('[data-systems-queue]').textContent,tick:b.querySelector('[data-systems-tick]').textContent,remaining:[...b.querySelectorAll('[data-systems-left]')].map(x=>Number(x.textContent))});}return {out,disabled:a.disabled,history:b.querySelectorAll('[data-systems-history] li').length}})()");
+  verify(after.out.map(x=>x.last.match(/· ([ABC]) ·/)?.[1]).join(",")==="A,B,C,A,C,C"&&after.out.map(x=>x.tick).join(",")==="1,2,3,4,5,6"&&after.out[0].queue==="B → C → A"&&after.out[1].queue==="C → A"&&after.out[3].queue==="C"&&after.out[5].queue==="All processes finished","Round-robin queue order incorrect",after);
+  verify(after.disabled&&after.history===6&&after.out[5].remaining.every(n=>n===0),"Finished queue should be disabled without inventing another turn",after);
+  const exported=await evaluate("(async()=>{const b=document.querySelector('[data-systems-bench]'),orig=URL.createObjectURL;let blob=null,name='';const onClick=e=>{const link=e.target.closest('a[download]');if(link){name=link.download;e.preventDefault();}};document.addEventListener('click',onClick,true);URL.createObjectURL=value=>{blob=value;return 'blob:systems-fixture';};try{b.querySelector('[data-systems-export]').click();return {name,record:blob?JSON.parse(await blob.text()):null};}finally{URL.createObjectURL=orig;document.removeEventListener('click',onClick,true);}})()");
+  verify(exported.name==="anevum-cfp101-systems-001.json"&&exported.record?.completedTurns===6&&exported.record?.turnHistory?.map(x=>x.process).join("")==="ABCACC"&&exported.record?.runQueue?.length===0&&exported.record?.realProcessesExecuted===false&&exported.record?.realHardware===false&&exported.record?.academicCredit===false,"Systems export must disclose toy simulation and preserve real state",exported);
+  const quiz=await evaluate("(()=>{document.querySelectorAll('[data-systems-answer]')[0].click();return document.querySelector('[data-systems-quiz-status]').textContent;})()");
+  verify(quiz.startsWith("Correct.")&&quiz.includes("B is next"),"Scheduler learning check incorrect",quiz);
+  const reset=await evaluate("(()=>{const b=document.querySelector('[data-systems-bench]');b.querySelector('[data-systems-reset]').click();return {tick:b.querySelector('[data-systems-tick]').textContent,queue:b.querySelector('[data-systems-queue]').textContent,disabled:b.querySelector('[data-systems-advance]').disabled,history:b.querySelector('[data-systems-history]').textContent}})()");
+  verify(reset.tick==="0"&&reset.queue==="A → B → C"&&!reset.disabled&&reset.history.includes("No scheduling turns"),"Systems model reset failed",reset);
+  console.log("ANEVUM_SYSTEMS_LESSON_BROWSER_QA_PASS",JSON.stringify({roundRobin:"A,B,C,A,C,C",singleCore:true,doneDisabled:true,exportUnverified:true,selfCheck:true,reset:true}));
+}
+
 async function compactShellQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await navigate("/institute-preview/academy");
   const open=await evaluate("(()=>{const trigger=document.querySelector('[data-search-open]');trigger.click();const d=document.querySelector('[data-command-dialog]');return {modal:d.open,focused:document.activeElement===d.querySelector('[data-command-query]'),count:d.querySelectorAll('.command-result').length};})()");
-  verify(open.modal&&open.focused&&open.count===17,"Compact palette did not open with actual routes",open);
+  verify(open.modal&&open.focused&&open.count===18,"Compact palette did not open with actual routes",open);
   const search=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');const q=d.querySelector('[data-command-query]');q.value='transistor';q.dispatchEvent(new Event('input',{bubbles:true}));return [...d.querySelectorAll('.command-result')].map(a=>a.getAttribute('href'));})()");
   verify(search.includes("/institute-preview/learn/cfp-101/transistor-switching")&&search.every(url=>url.startsWith("/institute-preview/")),"Search did not resolve the existing lesson",search);
   const closed=await evaluate("(()=>{const d=document.querySelector('[data-command-dialog]');d.querySelector('[data-command-close]').click();return !d.open;})()");
@@ -233,20 +251,21 @@ async function compactCourseUsabilityQA(){
     verify(academy.href==="/institute-preview"+entry[1]&&academy.text.includes(entry[2])&&academy.status.includes("No academic credit"),"Academy next step is inconsistent with saved local practice",{stage:entry[0],academy});
     await navigate("/institute-preview/academy/cfp-101");
     const course=await evaluate("(()=>{const a=document.querySelector('[data-course-resume]');return {href:a?.getAttribute('href'),text:a?.textContent,display:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,planned:document.querySelectorAll('[data-unit-availability=planned]').length};})()");
-    verify(course.href==="/institute-preview"+entry[1]&&course.text.includes(entry[2])&&course.display===8&&course.planned===2,"Course syllabus continuation or availability incorrect",{stage:entry[0],course});
+    verify(course.href==="/institute-preview"+entry[1]&&course.text.includes(entry[2])&&course.display===8&&course.planned===1,"Course syllabus continuation or availability incorrect",{stage:entry[0],course});
   }
-  // The learner can move among six actual lessons; only the original three local checks are tracked.
+  // Seven actual lessons can be navigated; only the first three local activity flags are tracked.
   for(const [lessonPath,unitId] of [
     ["/learn/cfp-101/transistor-switching","CFP-101-U01"],
     ["/learn/cfp-101/logic-gates","CFP-101-U02"],
     ["/learn/cfp-101/half-adders","CFP-101-U03"],
     ["/learn/cfp-101/registers","CFP-101-U04"],
     ["/learn/cfp-101/addressed-memory","CFP-101-U05"],
-    ["/learn/cfp-101/assembly-code","CFP-101-U06"]
+    ["/learn/cfp-101/assembly-code","CFP-101-U06"],
+    ["/learn/cfp-101/computer-systems","CFP-101-U07"]
   ]){
     await navigate("/institute-preview"+lessonPath);
     const nav=await evaluate("(()=>{const root=document.querySelector('[data-study-path]');return {current:root?.querySelector('[aria-current=page]')?.getAttribute('href'),count:root?.querySelectorAll('.study-path-link').length,labels:[...root.querySelectorAll('[data-study-path-status]')].map(x=>({unit:x.getAttribute('data-study-path-status'),text:x.textContent.trim()})),note:document.querySelector('[data-study-lesson]')?.getAttribute('data-study-lesson'),scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}})()");
-    verify(nav.current==="/institute-preview"+lessonPath&&nav.count===6&&nav.note===unitId&&nav.scroll<=nav.width+1&&nav.labels[2].text.includes("not tracked")&&nav.labels[3].text.includes("not tracked")&&nav.labels[4].text.includes("not tracked")&&nav.labels[5].text.includes("not tracked"),"Accessible study path must show six real lessons without inventing completion",{lessonPath,nav});
+    verify(nav.current==="/institute-preview"+lessonPath&&nav.count===7&&nav.note===unitId&&nav.scroll<=nav.width+1&&nav.labels[2].text.includes("not tracked")&&nav.labels[3].text.includes("not tracked")&&nav.labels[4].text.includes("not tracked")&&nav.labels[5].text.includes("not tracked")&&nav.labels[6].text.includes("not tracked"),"Accessible study path must show seven real lessons without inventing completion",{lessonPath,nav});
   }
   await navigate("/institute-preview/learn/cfp-101/half-adders");
   const notes=await evaluate("(()=>{const p=document.querySelector('[data-study-lesson=CFP-101-U03]');const t=p?.querySelector('[data-study-text]');const save=p?.querySelector('[data-study-save]');if(!t||!save)return null;t.value='Local test notebook for combinational arithmetic';t.dispatchEvent(new Event('input',{bubbles:true}));save.click();return {message:p.querySelector('[data-study-status]')?.textContent,value:t.value,stored:localStorage.getItem('anevum.institute.study.v1.CFP-101-U03')}})()");
@@ -258,10 +277,10 @@ async function compactCourseUsabilityQA(){
   console.log("ANEVUM_STUDY_PATH_AND_U03_NOTES_QA_PASS");
   await navigate("/institute-preview/academy/cfp-101");
   const toggled=await evaluate("(()=>{const b=document.querySelector('[data-unit-filter=available]');b.click();return {pressed:b.getAttribute('aria-pressed'),shown:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,hidden:document.querySelectorAll('[data-unit-availability][hidden]').length,status:document.querySelector('[data-unit-filter-status]').textContent};})()");
-  verify(toggled.pressed==="true"&&toggled.shown===6&&toggled.hidden===2&&toggled.status.includes("hidden, not removed"),"Available-only course filtering is inaccurate",toggled);
+  verify(toggled.pressed==="true"&&toggled.shown===7&&toggled.hidden===1&&toggled.status.includes("hidden, not removed"),"Available-only course filtering is inaccurate",toggled);
   const restored=await evaluate("(()=>{document.querySelector('[data-unit-filter=all]').click();return {shown:document.querySelectorAll('[data-unit-availability]:not([hidden])').length,selected:document.querySelector('[data-unit-filter=all]').getAttribute('aria-pressed')};})()");
   verify(restored.shown===8&&restored.selected==="true","All-units filter did not restore full syllabus",restored);
-  for(const p of ["/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/learn/cfp-101/registers","/learn/cfp-101/addressed-memory","/learn/cfp-101/assembly-code","/laboratory/and-gate"]){
+  for(const p of ["/academy","/academy/cfp-101","/learn/cfp-101/transistor-switching","/learn/cfp-101/logic-gates","/learn/cfp-101/half-adders","/learn/cfp-101/registers","/learn/cfp-101/addressed-memory","/learn/cfp-101/assembly-code","/learn/cfp-101/computer-systems","/laboratory/and-gate"]){
     await navigate("/institute-preview"+p);
     const legible=await evaluate("(()=>{const el=document.querySelector('.page-hero');const bg=getComputedStyle(el,'::before');return {bg:el&&getComputedStyle(el).backgroundImage,deco:bg.content,overlay:bg.backgroundImage};})()");
     verify(legible.deco==="none"&&legible.overlay==="none","Mobile study hero remains obscured by decorative diagram",{p,legible});
@@ -736,6 +755,7 @@ try{
   await registerLessonBrowserQA();
   await memoryLessonBrowserQA();
   await assemblyLessonBrowserQA();
+  await systemsLessonBrowserQA();
   await halfAdderBrowserQA();
   await clusterSchedulerBrowserQA();
   await neuronDynamicsBrowserQA();
