@@ -24,6 +24,7 @@ const routes=[
   "/institute-preview/learn/cfp-101/half-adders",
   "/institute-preview/learn/cfp-101/registers",
   "/institute-preview/learn/cfp-101/addressed-memory",
+  "/institute-preview/learn/cfp-101/assembly-code",
   "/institute-preview/laboratory/and-gate",
   "/institute-preview/laboratory/cluster-scheduling",
   "/institute-preview/laboratory/neuron-dynamics"
@@ -289,6 +290,92 @@ async function studyNotePortability(page){
   }));
 }
 
+async function assemblyLesson(page){
+  const route="/institute-preview/learn/cfp-101/assembly-code";
+  const key="anevum.institute.study.v1.CFP-101-U06";
+  await visit(page,route);
+  await page.evaluate(key=>localStorage.removeItem(key),key);
+  const bench=page.locator("[data-assembly-bench]");
+  const source=bench.locator("[data-assembly-source]");
+  const machine=bench.locator("[data-assembly-machine]");
+  const bits=bench.locator("[data-assembly-bits]");
+  const result=bench.locator("[data-assembly-result]");
+  const status=bench.locator("[data-assembly-status]");
+  check((await bits.textContent())==="0010"&&(await source.inputValue())==="LOAD 2",
+    "Instruction encoder failed initial state");
+  await source.fill("LOAD 2");
+  await source.press("Enter");
+  check((await bits.textContent())==="0010"&&(await result.textContent())==="LOAD 2",
+    "Enter key did not assemble LOAD 2");
+  await source.fill("STORE 1");
+  await source.press("Enter");
+  check((await bits.textContent())==="0101"&&(await result.textContent())==="STORE 1",
+    "Instruction encoding STORE 1 failed");
+  await bench.locator('[data-assembly-example="ADD 3"]').click();
+  check((await bits.textContent())==="1011"&&(await result.textContent())==="ADD 3",
+    "Assembly example ADD 3 failed");
+  await machine.fill("0110");
+  await machine.press("Enter");
+  check((await result.textContent())==="STORE 2"&&(await bits.textContent())==="0110",
+    "Machine word did not decode as STORE 2");
+  await bench.locator('[data-assembly-example="HALT"]').click();
+  check((await bits.textContent())==="1100"&&(await result.textContent())==="HALT",
+    "Canonical HALT encoding failed");
+  const previous=(await bits.textContent());
+  await machine.fill("1111");
+  await machine.press("Enter");
+  check((await bits.textContent())===previous&&(await status.textContent()).includes("Reserved encoding"),
+    "Reserved HALT code must be rejected without overwriting valid output");
+  await source.fill("LOAD 4");
+  await source.press("Enter");
+  check((await bits.textContent())===previous&&(await status.textContent()).includes("Assembly rejected"),
+    "Invalid assembler operand must preserve last valid output");
+  const recorded=await bench.evaluate(async root=>{
+    const orig=URL.createObjectURL;
+    let blob=null;
+    const stop=e=>{if(e.target.closest("a[download]"))e.preventDefault();};
+    document.addEventListener("click",stop,true);
+    URL.createObjectURL=value=>{blob=value;return "blob:anevum-assembly-webkit";};
+    try{
+      root.querySelector("[data-assembly-export]").click();
+      return blob?JSON.parse(await blob.text()):null;
+    }finally{
+      URL.createObjectURL=orig;
+      document.removeEventListener("click",stop,true);
+    }
+  });
+  check(recorded?.model==="fictional-four-bit-instruction-encoding"
+      &&recorded?.recentConversions?.length===5
+      &&recorded?.reservedEncodings?.includes("1111")
+      &&recorded?.instructionsExecuted===false
+      &&recorded?.realHardware===false
+      &&recorded?.academicCredit===false,
+    "Assembly export invented execution, research verification or an academic credential",recorded);
+  await page.locator('[data-assembly-answer="0110"]').click();
+  check((await page.locator("[data-assembly-quiz-status]").textContent()).includes("Correct."),
+    "Assembly opcode self-check was incorrect");
+  await page.locator("[data-assembly-clear]").click();
+  check((await page.locator("[data-assembly-history]").textContent()).includes("No conversions recorded"),
+    "Session conversion history was not cleared");
+  await page.locator("[data-study-text]").fill("Synthetic note: STORE 2 maps to 0110.");
+  await page.locator("[data-study-save]").click();
+  await page.reload({waitUntil:"load"});
+  check((await page.locator("[data-study-text]").inputValue()).includes("STORE 2")
+      &&(await page.locator("[data-study-lesson]").getAttribute("data-study-lesson"))==="CFP-101-U06"
+      &&(await page.locator("[data-assembly-history]").textContent()).includes("No conversions recorded"),
+    "Notebook persistence or ephemeral assembly history is incorrect");
+  await page.locator("[data-study-clear]").click();
+  await page.locator("[data-study-clear]").click();
+  check(await page.evaluate(key=>localStorage.getItem(key)===null,key),
+    "Synthetic assembly note was not removed");
+  await screenshot(page,"assembly-mobile");
+  console.log("ANEVUM_WEBKIT_ASSEMBLY_LESSON_PASS",JSON.stringify({
+    keyboardAssembly:true,encoding:true,decoding:true,reservedRejected:true,
+    invalidOperandRejected:true,exportHonest:true,selfCheck:true,
+    noteRestored:true,sessionEphemeral:true,academicCredit:false
+  }));
+}
+
 async function memoryLesson(page){
   const route="/institute-preview/learn/cfp-101/addressed-memory";
   const key="anevum.institute.study.v1.CFP-101-U05";
@@ -488,6 +575,7 @@ try{
   await halfAdder(phone);
   await registerLesson(phone);
   await memoryLesson(phone);
+  await assemblyLesson(phone);
   await visit(phone,"/institute-preview/dossier");
   await screenshot(phone,"research-desk-mobile");
   await phoneContext.close();
@@ -501,7 +589,7 @@ try{
   await desktopContext.close();
   check(errors.length===0,"Unhandled WebKit page errors",errors);
   console.log("ANEVUM_INSTITUTE_WEBKIT_PREFLIGHT_PASS",
-    JSON.stringify({routes:32,touchMenu:true,registerLesson:true,memoryLesson:true,studyNotesPreserved:true,unsavedNavigationGuard:true,portableNoteImport:true,halfAdderHandoff:true,
+    JSON.stringify({routes:34,touchMenu:true,registerLesson:true,memoryLesson:true,assemblyLesson:true,studyNotesPreserved:true,unsavedNavigationGuard:true,portableNoteImport:true,halfAdderHandoff:true,
       ownerSafariAcceptance:false,publicDeployment:false}));
 }finally{
   if(browser)await browser.close();
