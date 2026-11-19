@@ -14,6 +14,7 @@ import {HALF_ADDER_LESSON_HTML} from "./half-adder-lesson.mjs";
 import {REGISTER_LESSON_HTML} from "./register-lesson.mjs";
 import {MEMORY_LESSON_HTML} from "./memory-lesson.mjs";
 import {ASSEMBLY_LESSON_HTML} from "./assembly-lesson.mjs";
+import {SYSTEMS_LESSON_HTML} from "./systems-lesson.mjs";
 import {CLUSTER_SCHEDULER_HTML} from "./cluster-scheduler-ui.mjs";
 import {CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE} from "./cluster-scheduler-model.mjs";
 import {CLUSTER_SCHEDULER_CLIENT_BROWSER_MODULE} from "./cluster-scheduler-client.mjs";
@@ -58,7 +59,7 @@ function navigation(active){
 function footer(){
   return `<footer class="footer"><div class="shell footer-inner">
     <div><div class="footer-brand">ANEVUM <span style="font-family:system-ui,sans-serif;letter-spacing:.09em;font-size:10px;color:#b6c6c6">THE OPEN INSTITUTE / INDEPENDENT EDUCATION</span></div><p>An independent, non-accredited open-education and research project. No degrees or academic credit are offered. The learning demo stores notes locally; accessing this private review requires owner authentication through Cloudflare Access.</p></div>
-    <div><div class="preview-flag">Isolated design review / Not a public launch</div><p>The Academy currently contains six introductory computing lessons, two Boolean experiments, a simulated GPU scheduler and a single-neuron teaching model. Full degrees, real compute and clinical programs remain proposed.</p><p><a href="/original-works/archive">Visit the existing ANEVUM archive</a> · <a href="${BASE}">Return to Institute</a></p></div>
+    <div><div class="preview-flag">Isolated design review / Not a public launch</div><p>The Academy currently contains seven introductory computing lessons, two Boolean experiments, a simulated GPU scheduler and a single-neuron teaching model. Full degrees, real compute and clinical programs remain proposed.</p><p><a href="/original-works/archive">Visit the existing ANEVUM archive</a> · <a href="${BASE}">Return to Institute</a></p></div>
   </div></footer>`;
 }
 
@@ -149,7 +150,7 @@ function academy(){
       <aside class="aside-panel"><div class="kicker">Six disciplines / proposed</div><h2>Fields of study</h2><ul class="discipline-list"><li>Computing &amp; systems engineering</li><li>Artificial intelligence &amp; machine learning</li><li>Mathematics &amp; physical sciences</li><li>Neuroscience &amp; cognitive science</li><li>Biology &amp; biophysics</li><li>Neuropsychology &amp; human behavior</li></ul><p>These groupings are proposed—not operational faculties, degrees, or clinical qualifications.</p></aside>
       <div class="academy-main"><div class="academy-tools"><span class="kicker">Ready to study / 01 course</span><a class="academy-jump" data-course-resume href="${BASE}/learn/cfp-101/transistor-switching">Begin lesson 01 →</a><span class="academy-practice" data-course-activity-status>Browser-local practice only</span></div>
         <article class="course-card"><div><div class="course-meta"><span>CFP-101</span><span>Foundational</span><span>Free / Self-paced</span></div>
-          <h3>Computing From First Principles</h3><p>Explore transistor switching, Boolean logic, binary arithmetic, clocked registers, addressed memory and fictional machine-code encoding through six original preview lessons, an inverter demonstration and two ideal Boolean experiments. The full eight-unit course remains unfinished.</p>
+          <h3>Computing From First Principles</h3><p>Explore transistor switching, Boolean logic, binary arithmetic, clocked registers, addressed memory, fictional assembly and systems software through seven original preview lessons, an inverter demonstration and two ideal Boolean experiments. The full eight-unit course remains unfinished.</p>
           <a class="btn small" href="${BASE}/academy/cfp-101">Open course ↗</a>
         </div></article>
         ${academyLearningDirectory(BASE)}
@@ -177,7 +178,7 @@ function program(){
   const cards=units.map(([number,name,state,href])=>`<article class="unit${href?' current':''}" data-unit-availability="${href?'available':'planned'}"><div class="index">${number}</div><div><h3>${name}</h3><p>${state}</p><div class="mark">${href?`<a href="${BASE}${href}">Study this lesson →</a>`:"Planned / Not yet published"}</div></div></article>`).join("");
   return layout("CFP-101 Course","Course",`<main id="main" tabindex="-1" class="site-main">
    <section class="page-hero"><div class="shell"><div class="crumb"><a href="${BASE}/academy">Academy</a> / School of Computing / CFP-101</div><div class="kicker">Founding course / 001</div>
-    <h1 class="serif">Computing from <em>first principles.</em></h1><p>From semiconductors and switching through digital logic and computer architecture. The eight-unit program is a planned syllabus; six introductory preview lessons and two ideal Boolean experiments are currently implemented.</p></div></section>
+    <h1 class="serif">Computing from <em>first principles.</em></h1><p>From semiconductors and switching through digital logic and computer architecture. The eight-unit program is a planned syllabus; seven introductory preview lessons and two ideal Boolean experiments are currently implemented.</p></div></section>
    <section class="shell section compact-course"><div class="section-head"><div><div class="kicker">The learning path / ${CFP_101.version}</div><h2 class="serif">Eight units. ${available} lessons available.</h2></div><a class="text-link" data-course-resume href="${BASE}/learn/cfp-101/transistor-switching">Begin lesson 01 →</a></div>
     <div class="course-controls"><div class="course-filter-buttons" role="group" aria-label="Filter syllabus units"><button type="button" data-unit-filter="all" aria-pressed="true">All 8 units</button><button type="button" data-unit-filter="available" aria-pressed="false">Available ${available} lessons</button></div><span class="course-activity" data-course-activity-status>Browser-local practice only</span><span class="course-filter-status" role="status" aria-live="polite" data-unit-filter-status>Showing all 8 units.</span></div>
     <div class="program-grid" data-course-units>${cards}</div>
@@ -201,6 +202,9 @@ function memoryLesson(){
 }
 function assemblyLesson(){
   return layout("Lesson — Machine Code and Assembly","Classroom",ASSEMBLY_LESSON_HTML.replace("</article>",studyToolsHtml("CFP-101-U06")+"</article>"),"CFP-101-U06");
+}
+function systemsLesson(){
+  return layout("Lesson — Computer Systems and Software","Classroom",SYSTEMS_LESSON_HTML.replace("</article>",studyToolsHtml("CFP-101-U07")+"</article>"),"CFP-101-U07");
 }
 
 function gateFigure(){
@@ -281,7 +285,7 @@ function lab(){
   </main>`);
 }
 
-const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/research",research],[BASE+"/recognition",recognition],[BASE+"/dossier",dossier],[BASE+"/studio",memberStudio],[BASE+"/profile",memberProfile],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/learn/cfp-101/half-adders",halfAdderLesson],[BASE+"/learn/cfp-101/registers",registerLesson],[BASE+"/learn/cfp-101/addressed-memory",memoryLesson],[BASE+"/learn/cfp-101/assembly-code",assemblyLesson],[BASE+"/laboratory/and-gate",lab],[BASE+"/laboratory/cluster-scheduling",clusterScheduling],[BASE+"/laboratory/neuron-dynamics",neuronLab]]);
+const PAGES=new Map([[BASE,home],[BASE+"/",home],[BASE+"/academy",academy],[BASE+"/academy/cfp-101",program],[BASE+"/research",research],[BASE+"/recognition",recognition],[BASE+"/dossier",dossier],[BASE+"/studio",memberStudio],[BASE+"/profile",memberProfile],[BASE+"/learn/cfp-101/transistor-switching",transistorLesson],[BASE+"/learn/cfp-101/logic-gates",lesson],[BASE+"/learn/cfp-101/half-adders",halfAdderLesson],[BASE+"/learn/cfp-101/registers",registerLesson],[BASE+"/learn/cfp-101/addressed-memory",memoryLesson],[BASE+"/learn/cfp-101/assembly-code",assemblyLesson],[BASE+"/learn/cfp-101/computer-systems",systemsLesson],[BASE+"/laboratory/and-gate",lab],[BASE+"/laboratory/cluster-scheduling",clusterScheduling],[BASE+"/laboratory/neuron-dynamics",neuronLab]]);
 
 const ASSETS=new Map([
   [BASE+"/curriculum/cfp-101.json",["application/json; charset=utf-8",JSON.stringify(CFP_101,null,2)+"\n"]],
