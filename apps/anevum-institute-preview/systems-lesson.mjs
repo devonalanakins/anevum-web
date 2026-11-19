@@ -123,16 +123,16 @@ export const SYSTEMS_LESSON_HTML=String.raw`<main id="main" tabindex="-1" class=
 
 <h2 id="limits">5. A scheduling example is not an operating system</h2>
 <p>A real kernel must handle interrupts, blocking I/O, system calls, priorities, memory protection, context-switch overhead, concurrency and security, along with processes that arrive or finish unpredictably. Round-robin behavior also depends on quantum length and actual scheduling rules. This six-turn sequence does not prove fairness or predict real-world performance.</p>
-<p><strong>No application code runs, no CPU instructions are interpreted, and no physical process or operating-system scheduler is created.</strong> In Unit 08, a separate planned capstone may bring a fictional processor, registers and memory together; it is not implemented by this lesson.</p>
+<p><strong>No application code runs, no CPU instructions are interpreted, and no physical process or operating-system scheduler is created.</strong> <a href="/institute-preview/learn/cfp-101/eight-bit-computer">Lesson 08</a> separately introduces a bounded, fictional eight-bit accumulator computer with instruction ROM, data RAM and registers. That computer is not this scheduler, runs no real operating system or hardware, and does not provide academic credit.</p>
 <h3>Further reading</h3>
 <ul><li><a href="https://pages.cs.wisc.edu/~remzi/OSTEP/">Operating Systems: Three Easy Pieces</a> — chapters on process scheduling and CPU virtualization.</li>
 <li><a href="https://ocw.mit.edu/courses/6-s081-operating-system-engineering-fall-2020/">MIT OpenCourseWare — Operating System Engineering</a> — actual OS concepts and teaching exercises.</li></ul>
-<p><a href="/institute-preview/academy/cfp-101">Full CFP-101 syllabus →</a> · <a href="/institute-preview/learn/cfp-101/assembly-code">← Previous: Machine Code and Assembly</a></p>
+<p><a href="/institute-preview/academy/cfp-101">Full CFP-101 syllabus →</a> · <a href="/institute-preview/learn/cfp-101/assembly-code">← Previous: Machine Code and Assembly</a> · <a href="/institute-preview/learn/cfp-101/eight-bit-computer">Next: Lesson 08 — Eight-bit computer →</a></p>
 </article>
 <aside class="lesson-sidebar" aria-label="Lesson index">
  <div class="kicker">Lesson 07 / Index</div><h2>Inside this lesson</h2>
  <ul><li><a href="#layers">Software and hardware</a></li><li><a href="#time">Round-robin scheduling</a></li><li><a href="#bench">Scheduler workbench</a></li><li><a href="#predict">Prediction</a></li><li><a href="#limits">Model boundaries</a></li></ul>
  <p>Estimated reading and practice: 12–18 minutes. No account, academic credit or verified completion.</p>
- <p><a href="/institute-preview/learn/cfp-101/assembly-code">← Lesson 06: Assembly</a></p><p><a href="/institute-preview/academy/cfp-101">Full course outline →</a></p>
+ <p><a href="/institute-preview/learn/cfp-101/assembly-code">← Lesson 06: Assembly</a></p><p><a href="/institute-preview/learn/cfp-101/eight-bit-computer">Next: Lesson 08 — Eight-bit computer →</a></p><p><a href="/institute-preview/academy/cfp-101">Full course outline →</a></p>
 </aside></div></section></main>
 `;

@@ -469,6 +469,9 @@ async function systemsLesson(page){
   const key="anevum.institute.study.v1.CFP-101-U07";
   await visit(page,route);
   await page.evaluate(key=>localStorage.removeItem(key),key);
+  const nextUnit=page.locator('aside.lesson-sidebar a[href="/institute-preview/learn/cfp-101/eight-bit-computer"]');
+  check(await nextUnit.isVisible()&&(await nextUnit.textContent()).includes("Next: Lesson 08"),
+    "Mobile systems lesson must have an accessible next capstone link");
   const bench=page.locator("[data-systems-bench]");
   const tick=bench.locator("[data-systems-tick]");
   const queue=bench.locator("[data-systems-queue]");

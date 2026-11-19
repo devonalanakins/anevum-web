@@ -469,6 +469,37 @@ test("Learning Studio exposes independently keyed, accessible local notebooks fo
   assert.match(css,/\.study-import \[data-study-import-apply\]\[hidden\]\{display:none!important\}/);
 });
 
+test("CFP-101 reading path keeps direct next and previous links in sync with course metadata",async()=>{
+  const units=CFP_101.units.filter(unit=>unit.availability==="preview");
+  assert.equal(units.length,8);
+  for(let i=0;i<units.length;i++){
+    const unit=units[i];
+    const response=await req(unit.lessonPath);
+    assert.equal(response.status,200);
+    const html=await response.text();
+    const start=html.indexOf('<article class="lesson-article">');
+    const end=html.indexOf("</aside>",start);
+    assert.ok(start>=0&&end>start,"Lesson must have accessible article and sidebar: "+unit.id);
+    const reader=html.slice(start,end+"</aside>".length);
+    if(i>0){
+      const prior=units[i-1];
+      assert.ok(reader.includes('href="/institute-preview'+prior.lessonPath+'"'),
+        "Missing direct previous-unit link in lesson content: "+unit.id);
+    }
+    if(i<units.length-1){
+      const next=units[i+1];
+      assert.ok(reader.includes('href="/institute-preview'+next.lessonPath+'"'),
+        "Missing direct next-unit link in lesson content: "+unit.id);
+    }else{
+      assert.match(reader,/CFP-101 syllabus/);
+    }
+  }
+  const systems=await(await req("/learn/cfp-101/computer-systems")).text();
+  assert.match(systems,/Next: Lesson 08 — Eight-bit computer/);
+  assert.doesNotMatch(systems,/a separate planned capstone may bring/);
+  assert.match(systems,/does not provide academic credit/);
+});
+
 test("Eight CFP-101 readers expose curriculum-grounded navigation without invented completion",async()=>{
   const pages=[
     ["/learn/cfp-101/transistor-switching","CFP-101-U01"],
