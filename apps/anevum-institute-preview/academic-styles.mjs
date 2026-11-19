@@ -231,7 +231,7 @@ body[data-area="research"]{background:var(--academic-paper);color:var(--academic
 .lesson-article .assembly-bench h3{font:normal 27px/1.2 Georgia,serif;color:#24473f;margin:13px 0 15px}
 .assembly-layout{display:grid;grid-template-columns:1.18fr .82fr;gap:12px}
 .assembly-control,.assembly-output{padding:15px;border-radius:5px;border:1px solid #d1dfd3;background:#fffef9;min-width:0}
-.assembly-control form{margin:0 0 13px}
+.assembly-control [data-assembly-form],.assembly-control [data-assembly-decode-form]{margin:0 0 13px}
 .assembly-control label{display:block;font:700 12px/1.5 system-ui,sans-serif;color:#2c594e;margin:0 0 7px}
 .assembly-input-row{display:flex;flex-wrap:wrap;gap:6px}
 .assembly-input-row input{min-width:0;flex:1 1 135px;min-height:44px;border:1px solid #afc4b4;background:#fff;border-radius:4px;padding:9px 10px;font:700 16px/1.5 ui-monospace,Consolas,monospace;color:#265143}
