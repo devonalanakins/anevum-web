@@ -25,6 +25,7 @@ const routes=[
   "/institute-preview/learn/cfp-101/registers",
   "/institute-preview/learn/cfp-101/addressed-memory",
   "/institute-preview/learn/cfp-101/assembly-code",
+  "/institute-preview/learn/cfp-101/computer-systems",
   "/institute-preview/laboratory/and-gate",
   "/institute-preview/laboratory/cluster-scheduling",
   "/institute-preview/laboratory/neuron-dynamics"
@@ -287,6 +288,78 @@ async function studyNotePortability(page){
     filePicker:true,stagedOnly:true,explicitApply:true,explicitSave:true,
     recoveredAfterReload:true,wrongLessonRejected:true,oversizedRejected:true,
     concurrentEditAndDeletionSafe:true
+  }));
+}
+
+async function systemsLesson(page){
+  const route="/institute-preview/learn/cfp-101/computer-systems";
+  const key="anevum.institute.study.v1.CFP-101-U07";
+  await visit(page,route);
+  await page.evaluate(key=>localStorage.removeItem(key),key);
+  const bench=page.locator("[data-systems-bench]");
+  const tick=bench.locator("[data-systems-tick]");
+  const queue=bench.locator("[data-systems-queue]");
+  const next=bench.locator("[data-systems-advance]");
+  check((await tick.textContent())==="0"&&(await queue.textContent())==="A → B → C"&&await next.isEnabled(),
+    "Systems scheduler initial state incorrect");
+  const expected=[
+    ["A","B → C → A"],["B","C → A"],["C","A → C"],
+    ["A","C"],["C","C"],["C","All processes finished"]
+  ];
+  for(let i=0;i<expected.length;i++){
+    await next.click();
+    const last=await bench.locator("[data-systems-last]").textContent();
+    check(last.includes("· "+expected[i][0]+" ·")&&(await queue.textContent())===expected[i][1]
+      &&(await tick.textContent())===String(i+1),
+      "Systems scheduler failed at turn "+String(i+1),{last,queue:await queue.textContent()});
+  }
+  check(await next.isDisabled()&&(await bench.locator("[data-systems-left]").allTextContents()).join(",")==="0,0,0"
+    &&await bench.locator("[data-systems-history] li").count()===6,
+    "Completed systems model must not retain runnable work");
+  const record=await bench.evaluate(async root=>{
+    const create=URL.createObjectURL;
+    let captured=null;
+    const intercept=e=>{if(e.target.closest("a[download]"))e.preventDefault();};
+    document.addEventListener("click",intercept,true);
+    URL.createObjectURL=blob=>{captured=blob;return "blob:anevum-systems-webkit-fixture";};
+    try{
+      root.querySelector("[data-systems-export]").click();
+      return captured?JSON.parse(await captured.text()):null;
+    }finally{
+      URL.createObjectURL=create;
+      document.removeEventListener("click",intercept,true);
+    }
+  });
+  check(record?.model==="ideal-single-core-round-robin-three-processes"
+      &&record?.completedTurns===6
+      &&record?.turnHistory?.map(x=>x.process).join("")==="ABCACC"
+      &&record?.runQueue?.length===0
+      &&record?.realProcessesExecuted===false
+      &&record?.realHardware===false
+      &&record?.academicCredit===false,
+    "Export asserted real scheduling or contained incorrect state",record);
+  await page.locator('[data-systems-answer="B"]').click();
+  check((await page.locator("[data-systems-quiz-status]").textContent()).includes("Correct."),
+    "Process scheduling self-check failed");
+  await bench.locator("[data-systems-reset]").click();
+  check((await tick.textContent())==="0"&&(await queue.textContent())==="A → B → C"
+    &&await next.isEnabled()&&(await bench.locator("[data-systems-history]").textContent()).includes("No scheduling turns"),
+    "Scheduler reset failed");
+  await page.locator("[data-study-text]").fill("Synthetic note: ready queue is A, B, C.");
+  await page.locator("[data-study-save]").click();
+  await page.reload({waitUntil:"load"});
+  check((await page.locator("[data-study-text]").inputValue()).includes("A, B, C.")
+    &&(await page.locator("[data-study-lesson]").getAttribute("data-study-lesson"))==="CFP-101-U07"
+    &&(await page.locator("[data-systems-tick]").textContent())==="0",
+    "Systems notebook or page-session persistence boundary incorrect");
+  await page.locator("[data-study-clear]").click();
+  await page.locator("[data-study-clear]").click();
+  check(await page.evaluate(key=>localStorage.getItem(key)===null,key),
+    "Synthetic systems notebook was not cleared");
+  await screenshot(page,"systems-mobile");
+  console.log("ANEVUM_WEBKIT_SYSTEMS_LESSON_PASS",JSON.stringify({
+    roundRobin:"A,B,C,A,C,C",completedDisabled:true,exportHonest:true,
+    selfCheck:true,reset:true,notesPersist:true,sessionEphemeral:true,academicCredit:false
   }));
 }
 
@@ -576,6 +649,7 @@ try{
   await registerLesson(phone);
   await memoryLesson(phone);
   await assemblyLesson(phone);
+  await systemsLesson(phone);
   await visit(phone,"/institute-preview/dossier");
   await screenshot(phone,"research-desk-mobile");
   await phoneContext.close();
@@ -589,7 +663,7 @@ try{
   await desktopContext.close();
   check(errors.length===0,"Unhandled WebKit page errors",errors);
   console.log("ANEVUM_INSTITUTE_WEBKIT_PREFLIGHT_PASS",
-    JSON.stringify({routes:34,touchMenu:true,registerLesson:true,memoryLesson:true,assemblyLesson:true,studyNotesPreserved:true,unsavedNavigationGuard:true,portableNoteImport:true,halfAdderHandoff:true,
+    JSON.stringify({routes:36,touchMenu:true,registerLesson:true,memoryLesson:true,assemblyLesson:true,systemsLesson:true,studyNotesPreserved:true,unsavedNavigationGuard:true,portableNoteImport:true,halfAdderHandoff:true,
       ownerSafariAcceptance:false,publicDeployment:false}));
 }finally{
   if(browser)await browser.close();
