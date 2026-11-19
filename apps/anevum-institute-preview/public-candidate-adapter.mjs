@@ -79,10 +79,12 @@ export function makeInstitutePublicCandidate({loadReviewMedia}={}){
       if(url.pathname===PUBLIC+"/sitemap.xml"){
         if(attribution)return new Response(null,{status:302,headers:{...SAFE_DENIAL,Location:ORIGIN+url.pathname}});
         const xml=sitemap();
-        return new Response(request.method==="HEAD"?null:xml,{headers:{
-          ...SAFE_DENIAL,"Content-Type":"application/xml; charset=utf-8",
-          "X-Anevum-Surface":"open-institute-public-candidate-v1"
-        }});
+        const headers=new Headers(SAFE_DENIAL);
+        // Robots directives apply to pages, not the submitted sitemap itself.
+        headers.delete("X-Robots-Tag");
+        headers.set("Content-Type","application/xml; charset=utf-8");
+        headers.set("X-Anevum-Surface","open-institute-public-candidate-v1");
+        return new Response(request.method==="HEAD"?null:xml,{headers});
       }
       const subpath=url.pathname.slice(PUBLIC.length);
       const internalPath=INTERNAL+(subpath===""?"":subpath);
