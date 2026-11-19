@@ -1286,6 +1286,13 @@ test("Unit08 capstone is a local interactive route with honest limits and isolat
   assert.match(html,/Choosing an example only changes the explanation/);
   assert.match(html,/Compilation validates the instructions and proposes hexadecimal bytes/);
   assert.match(html,/No labels or macros/);
+  assert.match(html,/data-cpu-quiz-scope="worked-sample-only"/);
+  assert.match(html,/This question always concerns the fixed worked example above, not the program currently loaded/);
+  assert.match(html,/aria-describedby="cpu-quiz-scope"/);
+  assert.match(html,/not Nand2Tetris.*Hack machine language or MIT 6\.004.*Beta processor/);
+  assert.match(html,/neither resource validates, assesses or endorses this lesson/);
+  assert.match(html,/href="https:\/\/www\.nand2tetris\.org\/project05"/);
+  assert.match(html,/href="https:\/\/ocw\.mit\.edu\/courses\/6-004-computation-structures-spring-2009\/"/);
   assert.equal((html.match(/<option value="(?:addition|branch|loop)"/g)||[]).length,3);
   assert.match(html,/no official enrollment, course credit/i);
   assert.doesNotMatch(html,/<form\b|<iframe\b|onload=|onclick=/i);
@@ -1305,6 +1312,7 @@ test("Unit08 capstone is a local interactive route with honest limits and isolat
     assert.match(asset.headers.get("Content-Security-Policy"),/connect-src 'none'/);
     const js=await asset.text();
     assert.ok(js.includes(needle),path+" missing executable model/client logic");
+    if(path==="/cpu-capstone-client.js")assert.match(js,/Correct for the fixed addition example/);
     assert.doesNotMatch(js,/fetch\(|XMLHttpRequest|WebSocket|sendBeacon|eval\(/);
   }
   assert.equal((await req("/learn/cfp-101/real-cpu")).status,404);

@@ -409,6 +409,18 @@ async function cpuCapstone(page){
   check((await bench.locator("[data-cpu-acc]").textContent())==="02"
     &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("2 /"),
     "Two-instruction compiled program must halt with accumulator 02");
+
+  const sampleQuestion=page.locator("[data-cpu-quiz]");
+  check((await sampleQuestion.getAttribute("data-cpu-quiz-scope"))==="worked-sample-only"
+    &&(await sampleQuestion.locator("h3").textContent()).includes("37 11 34 21 12 F0")
+    &&(await sampleQuestion.locator("#cpu-quiz-scope").textContent()).includes("not the program currently loaded"),
+    "Sample-only question must distinguish demonstration from custom program");
+  await sampleQuestion.locator('[data-cpu-answer="0B"]').click();
+  check((await sampleQuestion.locator("[data-cpu-quiz-status]").textContent()).includes("fixed addition example")
+    &&(await bench.locator("[data-cpu-acc]").textContent())==="02"
+    &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("2 /"),
+    "Sample-only quiz feedback must not change custom CPU execution state");
+
   await asm.fill("LDI 16");
   await bench.locator("[data-cpu-assemble]").click();
   check((await invalid.inputValue())==="32 F0"
