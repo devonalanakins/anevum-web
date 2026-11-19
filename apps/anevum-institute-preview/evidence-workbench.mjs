@@ -13,6 +13,7 @@ if(panel){
   const save=panel.querySelector("[data-evidence-save]");
   const exporter=panel.querySelector("[data-evidence-export]");
   const importer=panel.querySelector("[data-evidence-import]");
+  const evidenceImportApply=panel.querySelector("[data-evidence-import-apply]");
   const deletion=panel.querySelector("[data-evidence-delete]");
   const labImporter=panel.querySelector("[data-lab-import]");
   const labApply=panel.querySelector("[data-lab-apply]");
@@ -51,6 +52,13 @@ if(panel){
     });
     window.addEventListener("hashchange",revealImportHash);
     revealImportHash();
+  }
+  let stagedEvidence=null;
+  let evidenceImportVersion=0;
+  function clearStagedEvidence(){
+    evidenceImportVersion++;
+    stagedEvidence=null;
+    evidenceImportApply.hidden=true;
   }
   let stagedLab=null;
   let stagedHalf=null;
@@ -109,6 +117,7 @@ if(panel){
     try{
       const envelope=await createEvidenceEnvelope(inputs());
       localStorage.setItem(EVIDENCE_STORAGE_KEY,JSON.stringify(envelope));
+      clearStagedEvidence();
       showReceipt(envelope,"Saved in this browser");
       report("Personal draft saved locally. It is not encrypted, submitted, reviewed or published.");
     }catch(error){report("Not saved: "+humanError(error));}
@@ -123,20 +132,36 @@ if(panel){
     }catch(error){report("Export not created: "+humanError(error));}
   });
   importer.addEventListener("change",async function(){
+    clearStagedEvidence();
     clearStagedLab();clearStagedCluster();clearStagedNeuron();clearStagedHalf();
     resetDelete();
     const file=importer.files?.[0];
     if(!file)return;
+    const version=evidenceImportVersion;
     try{
       if(file.size>EVIDENCE_LIMITS.maxImportBytes)throw new Error("File exceeds 32 KiB maximum");
       const envelope=await parseEvidenceEnvelope(await file.text());
-      fill(envelope.record);
-      showReceipt(envelope,"Imported to editor; not saved");
-      report("Checked record structure and SHA-256 integrity. Select Save locally to keep this imported draft.");
-    }catch(error){report("Import rejected: "+humanError(error));}
-    finally{importer.value="";}
+      // The user can select another file while a large or slow file is being parsed.
+      // Only the latest selection may become available for explicit application.
+      if(version!==evidenceImportVersion)return;
+      stagedEvidence=envelope;
+      evidenceImportApply.hidden=false;
+      report("Evidence file structure and SHA-256 checked. Select Apply checked draft to editor to replace current unsaved fields. No changes have been applied or saved.");
+    }catch(error){
+      if(version===evidenceImportVersion)report("Import rejected: "+humanError(error)+". Current editor and saved draft are unchanged.");
+    }finally{importer.value="";}
+  });
+  evidenceImportApply.addEventListener("click",function(){
+    if(!stagedEvidence)return;
+    const envelope=stagedEvidence;
+    clearStagedEvidence();
+    fill(envelope.record);
+    resetReceipt();
+    resetDelete();
+    report("Checked evidence draft applied to editor, but not saved. Review its contents and explicitly select Save locally to persist it.");
   });
   labImporter.addEventListener("change",async function(){
+    clearStagedEvidence();
     clearStagedLab();
     clearStagedCluster();
     clearStagedNeuron();
@@ -164,6 +189,7 @@ if(panel){
     report("Checked simulation staged in your research draft. No institutional verification, account or network upload.");
   });
   halfImporter.addEventListener("change",async function(){
+    clearStagedEvidence();
     clearStagedHalf();clearStagedLab();clearStagedCluster();clearStagedNeuron();
     halfFeedback.textContent="Checking the half-adder XOR/AND observations and completeness…";
     const file=halfImporter.files?.[0];
@@ -187,6 +213,7 @@ if(panel){
     report("Half-adder arithmetic was staged as an unreviewed local draft. No independent verification, credential or physical circuit evidence.");
   });
   clusterImporter.addEventListener("change",async function(){
+    clearStagedEvidence();
     clearStagedCluster();
     clearStagedLab();
     clearStagedNeuron();
@@ -223,6 +250,7 @@ if(panel){
   });
 
   neuronImporter.addEventListener("change",async function(){
+    clearStagedEvidence();
     clearStagedNeuron();
     clearStagedHalf();
     clearStagedLab();
@@ -267,6 +295,7 @@ if(panel){
     }
     try{
       localStorage.removeItem(EVIDENCE_STORAGE_KEY);
+      clearStagedEvidence();
       fill({title:"",question:"",method:"",observations:"",limitations:"",references:[]});
       state.textContent="No local draft";digest.textContent="Not computed";
       resetDelete();
