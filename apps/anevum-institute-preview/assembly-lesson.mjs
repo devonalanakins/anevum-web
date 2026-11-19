@@ -130,7 +130,7 @@ export const ASSEMBLY_LESSON_HTML=String.raw`<main id="main" tabindex="-1" class
  <li><a href="https://www.nand2tetris.org/project04">Nand2Tetris — Project 04: Machine Language</a> (instruction encodings and assembly).</li>
  <li><a href="https://ocw.mit.edu/courses/6-004-computation-structures-spring-2009/">MIT OpenCourseWare — Computation Structures</a> (stored-program concepts).</li>
 </ul>
-<p><a href="/institute-preview/academy/cfp-101">Return to the CFP-101 syllabus →</a> · <a href="/institute-preview/learn/cfp-101/addressed-memory">← Review Lesson 05</a></p>
+<p><a href="/institute-preview/academy/cfp-101">Return to the CFP-101 syllabus →</a> · <a href="/institute-preview/learn/cfp-101/addressed-memory">← Review Lesson 05</a> · <a href="/institute-preview/learn/cfp-101/computer-systems">Next: Computer Systems →</a></p>
 </article>
 <aside class="lesson-sidebar" aria-label="Lesson index">
  <div class="kicker">Lesson 06 / Index</div><h2>Inside this lesson</h2>
