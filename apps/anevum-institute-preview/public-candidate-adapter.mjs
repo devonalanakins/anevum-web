@@ -36,7 +36,18 @@ function sitemap(){
   return '<?xml version="1.0" encoding="UTF-8"?>\n'+
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+urls+'\n</urlset>\n';
 }
-function publicHtml(html,path){
+export function publicHtml(html,path){
+  // Prevent a future protected-preview template change from silently becoming
+  // public, indexable HTML with stale owner-login or review-only claims.
+  const markers=[
+    '<meta name="robots" content="noindex,nofollow,noarchive">',
+    ' — ANEVUM Open Institute (Design Preview)',
+    '<div class="preview-ribbon"><strong>Design review:</strong>',
+    'accessing this private review requires owner authentication through Cloudflare Access.',
+    'Isolated design review / Not a public launch'
+  ];
+  if(typeof html!=="string"||markers.some(marker=>!html.includes(marker)))
+    throw new Error("Institute public content template is unreviewed");
   const canonical=ORIGIN+canonicalPath(path);
   // Preview links are all fixed, root-relative and same-origin. No external fetches.
   let result=html.replaceAll(INTERNAL,PUBLIC);
@@ -59,6 +70,9 @@ function publicHtml(html,path){
   );
   result=result.replace("Isolated design review / Not a public launch",
     "Independent education / Non-accredited");
+  if(result.includes(INTERNAL)||result.includes("Cloudflare Access")||
+    result.includes("Not a public launch")||result.includes("Design Preview"))
+    throw new Error("Institute public content still includes protected preview claims");
   return result;
 }
 
@@ -103,8 +117,11 @@ export function makeInstitutePublicCandidate({loadReviewMedia}={}){
         const noindex=NONINDEX.has(subpath);
         if(noindex)headers.set("X-Robots-Tag","noindex, nofollow");
         else headers.delete("X-Robots-Tag");
-        const html=publicHtml(await upstream.text(),url.pathname);
-        return new Response(request.method==="HEAD"?null:html,{status:200,headers});
+        if(request.method==="HEAD")return new Response(null,{status:200,headers});
+        let html;
+        try{html=publicHtml(await upstream.text(),url.pathname);}
+        catch{return new Response("Public candidate unavailable",{status:503,headers:SAFE_DENIAL});}
+        return new Response(html,{status:200,headers});
       }
       if(kind.startsWith("text/javascript")||kind.startsWith("text/css")){
         const body=(await upstream.text()).replaceAll(INTERNAL,PUBLIC);
