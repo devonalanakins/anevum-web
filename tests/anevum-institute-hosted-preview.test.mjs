@@ -61,6 +61,43 @@ test("exact-host preview rewrites in memory and preserves strict isolated routes
   assert.equal(denied.status,405);
 });
 
+test("ChatGPT attribution is removed by a same-host redirect on valid GET/HEAD paths only",async()=>{
+  for(const path of ["/institute-preview","/institute-preview/academy",
+    "/institute-preview/learn/cfp-101/eight-bit-computer"]){
+    const canonical=ROOT+path;
+    const tagged=await req(path+"?utm_source=chatgpt.com");
+    assert.equal(tagged.status,302,path);
+    assert.equal(tagged.headers.get("Location"),canonical);
+    assert.equal(tagged.headers.get("Cache-Control"),"no-store");
+    assert.match(tagged.headers.get("X-Robots-Tag"),/noindex/);
+    assert.equal(await tagged.text(),"","Redirect must not render protected content");
+    const destination=await worker.fetch(new Request(tagged.headers.get("Location")));
+    assert.equal(destination.status,200,"Clean redirect target must resolve");
+  }
+  const head=await req("/institute-preview?utm_source=chatgpt.com",{method:"HEAD"});
+  assert.equal(head.status,302);
+  assert.equal(head.headers.get("Location"),ROOT+"/institute-preview");
+  assert.equal(await head.text(),"");
+  for(const path of ["/institute-preview?utm_source=chatgpt.com&next=%2Fcommand",
+    "/institute-preview?utm_source=chatgpt.com&utm_source=chatgpt.com",
+    "/institute-preview?utm_source=chatgpt.com&",
+    "/institute-preview?utm_source=evil.example",
+    "/institute-preview?utm_source=chatgpt.com%0D%0ALocation%3Aevil.example",
+    "/institute-preview?redirect=https://example.com",
+    "/institute-preview/not-a-route?utm_source=chatgpt.com",
+    "/command?utm_source=chatgpt.com",
+    "/api/command?utm_source=chatgpt.com",
+    "/institute-preview/../command?utm_source=chatgpt.com"]){
+    const response=await req(path);
+    assert.equal(response.status,404,"No permissive redirect for "+path);
+    assert.equal(response.headers.get("Location"),null);
+  }
+  const post=await req("/institute-preview?utm_source=chatgpt.com",{method:"POST"});
+  assert.equal(post.status,404,"Attribution exception must not expand permitted methods");
+  const publicOrigin=await worker.fetch(new Request("https://anevum.com/institute-preview?utm_source=chatgpt.com"));
+  assert.equal(publicOrigin.status,404,"Attribution must not bypass exact preview host");
+});
+
 test("host restriction denies public origin, spoofed host and port without media or application routing",async()=>{
   let reads=0;
   const denied=makeInstituteHostedReview({loadReviewMedia:async()=>{reads++;return new Uint8Array(5000)}});
