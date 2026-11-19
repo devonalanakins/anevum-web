@@ -301,6 +301,13 @@ async function cpuCapstone(page){
   const bench=page.locator("[data-cpu-bench]");
   await bench.locator("[data-cpu-step]").click();
   check((await bench.locator("[data-cpu-acc]").textContent())==="07","CPU first LDI failed");
+  check(await bench.locator("[data-cpu-back]").isEnabled(),"Step should enable Step Back");
+  await bench.locator("[data-cpu-back]").click();
+  check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("0 /")
+    &&(await bench.locator("[data-cpu-acc]").textContent())==="00"
+    &&await bench.locator("[data-cpu-back]").isDisabled(),
+    "WebKit Step Back should restore initial state and disable itself");
+  await bench.locator("[data-cpu-step]").click();
   check((await bench.locator("[data-cpu-next]").textContent()).includes("STORE 1")
     &&(await bench.locator("[data-cpu-prediction]").textContent()).includes("RAM[1] 00 → 07")
     &&(await bench.locator("[data-cpu-last]").textContent()).includes("Step 1 executed LDI 7"),
@@ -314,6 +321,16 @@ async function cpuCapstone(page){
     &&await bench.locator("[data-cpu-step]").isDisabled()
     &&await bench.locator("[data-cpu-trace] li").count()===6,
     "CPU sample execution, trace, or HALT behavior incorrect",{memory});
+  await bench.locator("[data-cpu-back]").click();
+  check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("5 /")
+    &&(await bench.locator("[data-cpu-next]").textContent()).includes("HALT")
+    &&await bench.locator("[data-cpu-step]").isEnabled()
+    &&await bench.locator("[data-cpu-trace] li").count()===5,
+    "WebKit Step Back should restore pre-HALT state after Run");
+  await bench.locator("[data-cpu-run]").click();
+  check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("6 /")
+    &&await bench.locator("[data-cpu-step]").isDisabled(),
+    "WebKit resumed Run should restore exact HALT after rewind");
   check((await bench.locator("[data-cpu-next]").textContent()).includes("CPU stopped: HALT")
     &&(await bench.locator("[data-cpu-prediction]").textContent()).includes("No further instructions")
     &&!(await bench.locator("[data-cpu-status]").textContent()).includes("RAM[2]="),
@@ -332,6 +349,13 @@ async function cpuCapstone(page){
   check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("32 /")
     &&(await bench.locator("[data-cpu-reason]").textContent()).includes("cutoff"),
     "Infinite loop must stop at the bounded step limit");
+  await bench.locator("[data-cpu-back]").click();
+  check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("31 /")
+    &&await bench.locator("[data-cpu-run]").isEnabled(),
+    "WebKit rewind must restore step 31 after bounded loop");
+  await bench.locator("[data-cpu-run]").click();
+  check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("32 /"),
+    "WebKit repeated bounded Run must stop again at step 32");
 // Staging a preset never changes editor text or the already executed CPU.
   const select=bench.locator("[data-cpu-example]");
   await select.selectOption("branch");
@@ -344,6 +368,7 @@ async function cpuCapstone(page){
     &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("32 /"),
     "Copy example must modify editor only");
   await bench.locator("[data-cpu-load]").click();
+  check(await bench.locator("[data-cpu-back]").isDisabled(),"Load program must clear Step Back history");
   check((await bench.locator("[data-cpu-rom] tr").nth(1).textContent()).includes("JZ 3"),
     "ROM display must disassemble the branch instruction");
   await bench.locator("[data-cpu-run]").click();
@@ -409,6 +434,7 @@ async function cpuCapstone(page){
   check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("0 /")
     &&await bench.locator("[data-cpu-run]").isEnabled(),
     "Reset must restore a runnable machine");
+  check(await bench.locator("[data-cpu-back]").isDisabled(),"Reset must clear temporary Step Back history");
   await page.locator('[data-cpu-answer="0B"]').click();
   check((await page.locator("[data-cpu-quiz-status]").textContent()).startsWith("Correct."),
     "CPU lesson explanatory quiz incorrect");

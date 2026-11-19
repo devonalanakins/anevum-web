@@ -1270,7 +1270,7 @@ test("Unit08 capstone is a local interactive route with honest limits and isolat
   assert.equal(response.status,200);
   const html=await response.text();
   for(const token of ["CFP-101-U08","data-cpu-bench","data-cpu-source","data-cpu-step",
-      "data-cpu-run","data-cpu-reset","data-cpu-load","data-cpu-export disabled",
+      "data-cpu-run","data-cpu-back disabled","data-cpu-reset","data-cpu-load","data-cpu-export disabled",
       "data-cpu-memory","data-cpu-rom","data-cpu-trace","data-cpu-quiz",
       "data-cpu-next","data-cpu-prediction","data-cpu-last",
       "data-cpu-example","data-cpu-insert","data-cpu-example-description",
@@ -1281,6 +1281,7 @@ test("Unit08 capstone is a local interactive route with honest limits and isolat
   assert.match(html,/fictional processor/i);
   assert.match(html,/32 instructions/);
   assert.match(html,/Next instruction \/ preview only/);
+  assert.match(html,/Step back restores the previous simulated operation/);
   assert.match(html,/Previously executed instruction/);
   assert.match(html,/Choosing an example only changes the explanation/);
   assert.match(html,/Compilation validates the instructions and proposes hexadecimal bytes/);
