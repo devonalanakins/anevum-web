@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import {CFP_101} from "../apps/anevum-institute-preview/curriculum.mjs";
 import previewWorker from "../apps/anevum-institute-preview/worker.mjs";
-import {makeInstitutePublicCandidate} from "../apps/anevum-institute-preview/public-candidate-adapter.mjs";
+import {makeInstitutePublicCandidate,publicHtml} from "../apps/anevum-institute-preview/public-candidate-adapter.mjs";
 
 const ORIGIN="https://anevum.com";
 const MEDIA=new Set([
@@ -67,6 +67,24 @@ test("indexable public Institute and all eight lessons have canonical SEO, worki
     assert.match(html,/src="\/institute\/client.js"/);
     assert.match(html,/href="\/institute\/styles.css"/);
   }
+});
+
+test("public rendering rejects unknown preview templates instead of publishing stale claims",async()=>{
+  assert.throws(()=>publicHtml('<html><title>Unreviewed template</title></html>',"/institute/academy"),
+    /unreviewed/);
+  const preview=await previewWorker.fetch(new Request(ORIGIN+"/institute-preview/academy"));
+  const source=await preview.text();
+  assert.match(publicHtml(source,"/institute/academy"),/index,follow/);
+  for(const mutated of [
+    source.replace('Design review:</strong>','Review changed:</strong>'),
+    source.replace('noindex,nofollow,noarchive','index,follow'),
+    source.replace('Isolated design review / Not a public launch','New publishing claim')
+  ]){
+    assert.throws(()=>publicHtml(mutated,"/institute/academy"),/unreviewed/);
+  }
+  const head=await req("/institute/academy",{method:"HEAD"});
+  assert.equal(head.status,200,"HEAD requires no HTML body transformation");
+  assert.equal(await head.text(),"");
 });
 
 test("Research Desk and browser-only learner tools are available but noindex, without server identity or transport",async()=>{
