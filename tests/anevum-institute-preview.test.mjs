@@ -1145,6 +1145,43 @@ test("Unit08 isolated 8-bit CPU core is deterministic, bounded, and accurately l
   const mod=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(CPU_CAPSTONE_MODEL_BROWSER_MODULE));
   assert.deepEqual(mod.parseCpuProgram("37 11 34 21 12 F0"),[55,17,52,33,18,240]);
 
+  const fresh=mod.initialCpu();
+  const oldFresh=structuredClone(fresh);
+  const firstPreview=mod.inspectCpuCycle(fresh);
+  assert.match(firstPreview.next,/PC 00 · 37 · LDI 7/);
+  assert.match(firstPreview.prediction,/A 00 → 07/);
+  assert.match(firstPreview.prediction,/PC 00 → 01/);
+  assert.match(firstPreview.prediction,/RAM unchanged/);
+  assert.match(firstPreview.last,/No instruction has been executed/);
+  assert.deepEqual(fresh,oldFresh,"Inspection must not mutate loaded machine");
+  const afterLdi=mod.stepCpu(fresh);
+  const storedPreview=mod.inspectCpuCycle(afterLdi);
+  assert.match(storedPreview.next,/STORE 1/);
+  assert.match(storedPreview.prediction,/RAM\[1\] 00 → 07/);
+  assert.match(storedPreview.last,/Step 1 executed LDI 7/);
+  const afterStore=mod.stepCpu(afterLdi);
+  assert.equal(afterStore.memory[1],7);
+  assert.match(mod.inspectCpuCycle(afterStore).last,/RAM\[1\]=07/);
+  const branched=mod.stepCpu(mod.initialCpu({program:[0x30,0x53,0x39,0xF0]}));
+  const branchForecast=mod.inspectCpuCycle(branched);
+  assert.match(branchForecast.next,/JZ 3/);
+  assert.match(branchForecast.prediction,/PC 01 → 03/);
+  const notTaken=mod.stepCpu(mod.initialCpu({program:[0x31,0x53,0xF0]}));
+  assert.match(mod.inspectCpuCycle(notTaken).prediction,/PC 01 → 02/);
+  const halted=mod.runCpu(mod.initialCpu());
+  assert.match(mod.inspectCpuCycle(halted).next,/CPU stopped: HALT/);
+  assert.match(mod.inspectCpuCycle(halted).prediction,/No further instructions/);
+  const looped=mod.runCpu(mod.initialCpu({program:[0x40]}));
+  assert.match(mod.inspectCpuCycle(looped).next,/32-step safety limit/);
+  const illegal=mod.runCpu(mod.initialCpu({program:[0xF1]}));
+  assert.match(mod.inspectCpuCycle(illegal).next,/invalid instruction/);
+  const pastRom=mod.stepCpu(mod.initialCpu({program:[0x31]}));
+  assert.match(mod.inspectCpuCycle(pastRom).next,/beyond the loaded instruction ROM/);
+  const exhausted=mod.stepCpu(pastRom);
+  assert.match(mod.inspectCpuCycle(exhausted).next,/out-of-range fetch/);
+  for(const invalid of [null,{}, {...fresh,acc:900}])assert.throws(()=>mod.inspectCpuCycle(invalid));
+
+
   const arithmetic="LDI 7\nSTORE 1\nLDI 4\nADD 1\nSTORE 2\nHALT";
   assert.deepEqual(mod.assembleCpuSource(arithmetic),mod.CPU_SAMPLE);
   assert.deepEqual(mod.assembleCpuSource("# header\r\n ldi 7 ; immediate\r\n store 1\r\n # skip\r\n LDI 4\r\n add 1\r\n STORE 2\r\n HALT # done"),
@@ -1235,6 +1272,7 @@ test("Unit08 capstone is a local interactive route with honest limits and isolat
   for(const token of ["CFP-101-U08","data-cpu-bench","data-cpu-source","data-cpu-step",
       "data-cpu-run","data-cpu-reset","data-cpu-load","data-cpu-export disabled",
       "data-cpu-memory","data-cpu-rom","data-cpu-trace","data-cpu-quiz",
+      "data-cpu-next","data-cpu-prediction","data-cpu-last",
       "data-cpu-example","data-cpu-insert","data-cpu-example-description",
       "data-cpu-assembly","data-cpu-assembly-source","data-cpu-assemble","data-cpu-assembly-status",
       'data-study-lesson="CFP-101-U08"']){
@@ -1242,6 +1280,8 @@ test("Unit08 capstone is a local interactive route with honest limits and isolat
   }
   assert.match(html,/fictional processor/i);
   assert.match(html,/32 instructions/);
+  assert.match(html,/Next instruction \/ preview only/);
+  assert.match(html,/Previously executed instruction/);
   assert.match(html,/Choosing an example only changes the explanation/);
   assert.match(html,/Compilation validates the instructions and proposes hexadecimal bytes/);
   assert.match(html,/No labels or macros/);
@@ -1253,6 +1293,7 @@ test("Unit08 capstone is a local interactive route with honest limits and isolat
   assert.match(css,/@media\(max-width:700px\)\{\.cpu-grid/);
   assert.match(css,/\.cpu-example-row select:focus-visible/);
   assert.match(css,/\.cpu-assembly>summary:focus-visible/);
+  assert.match(css,/\.cpu-cycle-next/);
   const boot=await(await req("/client.js")).text();
   assert.match(boot,/import\("\/institute-preview\/cpu-capstone-client\.js"\)/);
   for(const [path,needle] of [["/cpu-capstone-model.js","export function stepCpu"],

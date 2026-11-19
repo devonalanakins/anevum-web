@@ -301,6 +301,11 @@ async function cpuCapstone(page){
   const bench=page.locator("[data-cpu-bench]");
   await bench.locator("[data-cpu-step]").click();
   check((await bench.locator("[data-cpu-acc]").textContent())==="07","CPU first LDI failed");
+  check((await bench.locator("[data-cpu-next]").textContent()).includes("STORE 1")
+    &&(await bench.locator("[data-cpu-prediction]").textContent()).includes("RAM[1] 00 → 07")
+    &&(await bench.locator("[data-cpu-last]").textContent()).includes("Step 1 executed LDI 7"),
+    "WebKit CPU forecast after LDI must match the actual next STORE instruction");
+
   await bench.locator("[data-cpu-run]").click();
   const memory=await bench.locator("[data-cpu-memory] tr").allTextContents();
   check((await bench.locator("[data-cpu-acc]").textContent())==="0B"
@@ -309,6 +314,11 @@ async function cpuCapstone(page){
     &&await bench.locator("[data-cpu-step]").isDisabled()
     &&await bench.locator("[data-cpu-trace] li").count()===6,
     "CPU sample execution, trace, or HALT behavior incorrect",{memory});
+  check((await bench.locator("[data-cpu-next]").textContent()).includes("CPU stopped: HALT")
+    &&(await bench.locator("[data-cpu-prediction]").textContent()).includes("No further instructions")
+    &&!(await bench.locator("[data-cpu-status]").textContent()).includes("RAM[2]="),
+    "WebKit halted-cycle display should be explanatory and not hardcode RAM[2]");
+
   const invalid=bench.locator("[data-cpu-source]");
   await invalid.fill("ZZ");
   await bench.locator("[data-cpu-load]").click();
@@ -318,6 +328,7 @@ async function cpuCapstone(page){
   await invalid.fill("40");
   await bench.locator("[data-cpu-load]").click();
   await bench.locator("[data-cpu-run]").click();
+  check((await bench.locator("[data-cpu-next]").textContent()).includes("32-step safety limit"),"Loop cutoff preview should describe halted state");
   check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("32 /")
     &&(await bench.locator("[data-cpu-reason]").textContent()).includes("cutoff"),
     "Infinite loop must stop at the bounded step limit");
