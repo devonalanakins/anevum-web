@@ -495,6 +495,31 @@ async function compactEvidenceImporterQA(){
   console.log("ANEVUM_COMPACT_IMPORT_HUB_QA_PASS",JSON.stringify({modelCount:4,focusable:true,nativeSummaryActivated:true,exclusive:true,deepLinks:true,saveRetained:true}));
 }
 
+async function researchDeskEvidenceFileImportQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await navigate("/institute-preview/dossier");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"evidence import QA initialization");
+  const initial=await evaluate("(async()=>{const m=await import('/institute-preview/evidence-schema.js');const saved=await m.createEvidenceEnvelope({schemaVersion:1,kind:'personal-unreviewed-draft',courseId:'CFP-101',title:'Synthetic saved evidence',question:'What does the model show?',method:'Run all four input states and record the Boolean outcomes.',observations:'Ideal truth-table outputs only.',limitations:'No physical measurements.',references:[]});localStorage.setItem(m.EVIDENCE_STORAGE_KEY,JSON.stringify(saved));return {stored:localStorage.getItem(m.EVIDENCE_STORAGE_KEY),title:saved.record.title};})()");
+  await navigate("/institute-preview/academy");
+  await navigate("/institute-preview/dossier");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"saved evidence restored");
+  const old=await evaluate("(()=>{const field=document.querySelector('[data-evidence-field=title]');field.value='Unsaved current research';field.dispatchEvent(new Event('input',{bubbles:true}));return {title:field.value,saved:localStorage.getItem('anevum.institute.evidence-draft.v1'),applyHidden:document.querySelector('[data-evidence-import-apply]').hidden};})()");
+  verify(old.saved===initial.stored&&old.applyHidden&&old.title==="Unsaved current research","Initial saved and unsaved evidence states are inconsistent",old);
+  const staged=await evaluate("(async()=>{const m=await import('/institute-preview/evidence-schema.js');const imported=await m.createEvidenceEnvelope({schemaVersion:1,kind:'personal-unreviewed-draft',courseId:'CFP-101',title:'Synthetic imported evidence',question:'Does the example model work?',method:'Reproduce all ideal states and note their expected outcomes.',observations:'An example with no actual data.',limitations:'This is only a model.',references:[]});const dt=new DataTransfer();dt.items.add(new File([JSON.stringify(imported)],'synthetic-import.json',{type:'application/json'}));const input=document.querySelector('[data-evidence-import]');input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));for(let n=0;n<150&&document.querySelector('[data-evidence-import-apply]').hidden;n++)await new Promise(r=>setTimeout(r,20));return {available:!document.querySelector('[data-evidence-import-apply]').hidden,title:document.querySelector('[data-evidence-field=title]').value,saved:localStorage.getItem(m.EVIDENCE_STORAGE_KEY),status:document.querySelector('[data-evidence-status]').textContent};})()");
+  verify(staged.available&&staged.title===old.title&&staged.saved===old.saved&&staged.status.includes("No changes have been applied"),"File selection must validate only, preserving editor and saved draft",staged);
+  const applied=await evaluate("(()=>{document.querySelector('[data-evidence-import-apply]').click();return {title:document.querySelector('[data-evidence-field=title]').value,saved:localStorage.getItem('anevum.institute.evidence-draft.v1'),receipt:document.querySelector('[data-evidence-receipt-state]').textContent,applyHidden:document.querySelector('[data-evidence-import-apply]').hidden};})()");
+  verify(applied.title==="Synthetic imported evidence"&&applied.saved===initial.stored&&applied.receipt==="Unsaved changes"&&applied.applyHidden,"Apply must change only unsaved editor and invalidate prior receipt",applied);
+  await navigate("/institute-preview/academy");
+  await navigate("/institute-preview/dossier");
+  await waitFor(()=>evaluate("document.querySelector('[data-evidence-workbench]')?.dataset.evidenceReady==='true'"),"unapplied evidence must not persist");
+  const reloaded=await evaluate("(()=>({title:document.querySelector('[data-evidence-field=title]').value,saved:localStorage.getItem('anevum.institute.evidence-draft.v1')}))()");
+  verify(reloaded.title===initial.title&&reloaded.saved===initial.stored,"Reload must restore saved version, not merely applied unsaved import",reloaded);
+  const rejected=await evaluate("(async()=>{const m=await import('/institute-preview/evidence-schema.js');const bad=JSON.parse(localStorage.getItem(m.EVIDENCE_STORAGE_KEY));bad.record.title='Forged file without matching digest';const dt=new DataTransfer();dt.items.add(new File([JSON.stringify(bad)],'invalid.json',{type:'application/json'}));const input=document.querySelector('[data-evidence-import]');input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));for(let n=0;n<150&&!document.querySelector('[data-evidence-status]').textContent.startsWith('Import rejected');n++)await new Promise(r=>setTimeout(r,20));return {hidden:document.querySelector('[data-evidence-import-apply]').hidden,title:document.querySelector('[data-evidence-field=title]').value,saved:localStorage.getItem(m.EVIDENCE_STORAGE_KEY),status:document.querySelector('[data-evidence-status]').textContent};})()");
+  verify(rejected.hidden&&rejected.title===initial.title&&rejected.saved===initial.stored&&rejected.status.includes("Integrity mismatch"),"Forged file must fail closed without editor or storage mutation",rejected);
+  await evaluate("localStorage.removeItem('anevum.institute.evidence-draft.v1')");
+  console.log("ANEVUM_EVIDENCE_FILE_IMPORT_QA_PASS",JSON.stringify({validatedBeforeApply:true,unsavedPreserved:true,explicitApply:true,saveSeparate:true,forgeryRejected:true,reloadRestoresSaved:true}));
+}
+
 async function neuronResearchBrowserQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await navigate("/institute-preview/laboratory/neuron-dynamics");
@@ -831,6 +856,7 @@ try{
   await clusterResearchBrowserQA();
   await neuronResearchBrowserQA();
   await compactEvidenceImporterQA();
+  await researchDeskEvidenceFileImportQA();
   await andResearchDirectHandoffQA();
   await directSimulationHandoffQA();
   await halfAdderResearchHandoffQA();
