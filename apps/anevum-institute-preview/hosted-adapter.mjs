@@ -30,17 +30,15 @@ export function makeInstituteHostedReview({loadReviewMedia}={}){
       // Redirect it to the exact same protected preview origin with no query,
       // only when the route and method are already valid. Never relax Access.
       // All other queries remain rejected, including duplicate tracking keys.
-      const attribution=url.search!==""
-        &&url.searchParams.size===1
-        &&url.searchParams.get("utm_source")==="chatgpt.com";
+      const attribution=url.search==="?utm_source=chatgpt.com"
+        &&(request.method==="GET"||request.method==="HEAD");
       if(url.search&&!attribution)return new Response("Not found",{status:404,headers:SAFE_HEADERS});
       // Rewrite in memory ONLY: never fetch public anevum.com or forward cookies.
       const internal=new Request("https://anevum.com"+url.pathname,{
         method:request.method
       });
       const result=await institute.fetch(internal,{loadReviewMedia});
-      if(attribution&&result.status===200
-        &&(request.method==="GET"||request.method==="HEAD")){
+      if(attribution&&result.status===200){
         return new Response(null,{status:302,headers:{
           ...SAFE_HEADERS,
           Location:url.origin+url.pathname
