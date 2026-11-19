@@ -48,7 +48,7 @@ export const INSTITUTE_CLIENT = String.raw`
       var count=Number(result.transistor)+Number(result.lesson)+Number(result.experiment);
       var progress=nav.querySelector("[data-study-path-progress]");
       if(progress)progress.textContent=count+" of 3 practice checks recorded on this device.";
-      // Lessons U03–U06 remain untracked: an answer or model event is not course completion.
+      // Lessons U03–U07 remain untracked: an answer or model event is not course completion.
     });
     // Recognition preview: this is a browser-local practice trace, never an award.
     document.querySelectorAll("[data-evidence-panel]").forEach(function(panel){
@@ -103,7 +103,7 @@ export const INSTITUTE_CLIENT = String.raw`
   // Personal study notes are device-only and scoped to a versioned lesson ID.
   document.querySelectorAll("[data-study-lesson]").forEach(function(panel){
     var unitId=panel.getAttribute("data-study-lesson");
-    if(!/^CFP-101-U0[123456]$/.test(unitId||""))return;
+    if(!/^CFP-101-U0[1234567]$/.test(unitId||""))return;
     var key="anevum.institute.study.v1."+unitId;
     var textarea=panel.querySelector("[data-study-text]");
     var feedback=panel.querySelector("[data-study-status]");
@@ -963,6 +963,104 @@ export const INSTITUTE_CLIENT = String.raw`
     }
   })();
 
+
+  // CFP-101 Unit 07 — ideal single-core process-scheduling exercise.
+  // Each click is a discrete turn, not real CPU execution, a timer or OS.
+  (function(){
+    var bench=document.querySelector("[data-systems-bench]");
+    if(!bench)return;
+    var initial={A:2,B:1,C:3};
+    var remaining={A:2,B:1,C:3},queue=["A","B","C"],tick=0,history=[];
+    var ready=bench.querySelector("[data-systems-queue]");
+    var tickText=bench.querySelector("[data-systems-tick]");
+    var lastText=bench.querySelector("[data-systems-last]");
+    var status=bench.querySelector("[data-systems-status]");
+    var historyList=bench.querySelector("[data-systems-history]");
+    var advance=bench.querySelector("[data-systems-advance]");
+    var exportStatus=bench.querySelector("[data-systems-export-status]");
+    function render(){
+      ready.textContent=queue.length?queue.join(" → "):"All processes finished";
+      tickText.textContent=String(tick);
+      advance.disabled=queue.length===0;
+      bench.querySelectorAll("[data-systems-row]").forEach(function(row){
+        var id=row.getAttribute("data-systems-row");
+        row.querySelector("[data-systems-left]").textContent=String(remaining[id]);
+        row.querySelector("[data-systems-state]").textContent=remaining[id]===0?"Finished":queue[0]===id?"Next":"Ready";
+        if(queue[0]===id)row.setAttribute("aria-current","true");else row.removeAttribute("aria-current");
+      });
+      historyList.replaceChildren();
+      if(!history.length){
+        var empty=document.createElement("li");
+        empty.textContent="No scheduling turns recorded.";
+        historyList.appendChild(empty);
+      }else history.forEach(function(item){
+        var li=document.createElement("li");
+        li.textContent="Turn "+item.tick+": "+item.process+" → "+item.outcome+" ("+item.remaining+" left)";
+        historyList.appendChild(li);
+      });
+    }
+    advance.addEventListener("click",function(){
+      if(!queue.length)return;
+      var process=queue.shift();
+      remaining[process]-=1;
+      var outcome=remaining[process]===0?"finished":"requeued";
+      if(outcome==="requeued")queue.push(process);
+      tick++;
+      var event={tick:tick,process:process,remaining:remaining[process],outcome:outcome};
+      history.push(event);
+      lastText.textContent="Turn "+tick+" · "+process+" · "+outcome;
+      status.textContent="Process "+process+" used one abstract CPU turn and "+
+        (outcome==="finished"?"finished.":"returned to the queue.")+
+        (queue.length?" Next: "+queue[0]+".":" All six turns complete.");
+      render();
+    });
+    bench.querySelector("[data-systems-reset]").addEventListener("click",function(){
+      remaining={...initial};queue=["A","B","C"];tick=0;history=[];
+      lastText.textContent="None yet";
+      status.textContent="Teaching model reset. All three processes are ready; no CPU work has been executed.";
+      exportStatus.textContent="Local scheduling history cleared. Saved study notes were not changed.";
+      render();
+    });
+    bench.querySelector("[data-systems-export]").addEventListener("click",function(){
+      try{
+        var record={schemaVersion:1,kind:"browser-local-unverified-simulation",
+          experimentId:"CFP-101-SYS-001",courseId:"CFP-101",unitId:"CFP-101-U07",
+          model:"ideal-single-core-round-robin-three-processes",
+          assumptions:["three simultaneously ready CPU-bound processes","one discrete ideal quantum per click",
+            "no I/O blocking or arrivals","no real timer, process, operating system or machine execution"],
+          initialWork:{...initial},completedTurns:tick,runQueue:queue.slice(),
+          remainingWork:{...remaining},turnHistory:history.map(function(x){return {...x};}),
+          realProcessesExecuted:false,realHardware:false,
+          independentlyVerified:false,academicCredit:false
+        };
+        var blob=new Blob([JSON.stringify(record,null,2)+"\n"],{type:"application/json"});
+        var url=URL.createObjectURL(blob),link=document.createElement("a");
+        link.href=url;link.download="anevum-cfp101-systems-001.json";link.hidden=true;
+        document.body.appendChild(link);link.click();link.remove();
+        setTimeout(function(){URL.revokeObjectURL(url);},5000);
+        exportStatus.textContent="JSON download requested. These are unverified toy scheduling decisions, not real OS telemetry or research evidence.";
+      }catch(_){exportStatus.textContent="This browser could not export the page session. Nothing was transmitted.";}
+    });
+    var quiz=document.querySelector("[data-systems-quiz]");
+    if(quiz){
+      var feedback=quiz.querySelector("[data-systems-quiz-status]");
+      quiz.querySelectorAll("[data-systems-answer]").forEach(function(button){
+        button.addEventListener("click",function(){
+          quiz.querySelectorAll("[data-systems-answer]").forEach(function(choice){
+            choice.setAttribute("aria-pressed","false");
+            choice.classList.remove("selected","correct");
+          });
+          button.setAttribute("aria-pressed","true");button.classList.add("selected");
+          if(button.getAttribute("data-systems-answer")==="B"){
+            button.classList.add("correct");
+            feedback.textContent="Correct. After A uses its first quantum, it moves behind B and C; B is next.";
+          }else feedback.textContent="Round-robin chooses the head of the ready queue. A returns behind B and C.";
+        });
+      });
+    }
+    render();
+  })();
+
   // The GPU scheduling simulator is a browser-only, lazily loaded module.
   if(document.querySelector("[data-cluster-lab]")){
     import("/institute-preview/cluster-scheduler-client.js").catch(function(){
@@ -999,6 +1097,7 @@ export const INSTITUTE_CLIENT = String.raw`
       ["Clocked registers",root+"/learn/cfp-101/registers","sequential circuits memory d flip-flop clock rising edge four bit register lesson 04"],
       ["Addressed memory",root+"/learn/cfp-101/addressed-memory","ram words addresses read write store load memory access instruction concepts lesson 05"],
       ["Assembly encoding",root+"/learn/cfp-101/assembly-code","four bit instructions fictional ISA opcode operand LOAD STORE ADD HALT assembler decoder machine code lesson 06"],
+      ["Computer systems",root+"/learn/cfp-101/computer-systems","round robin single core cpu scheduling processes operating system software ready queue time slices lesson 07"],
       ["AND-gate laboratory",root+"/laboratory/and-gate","simulation experiment notebook"],
       ["GPU cluster scheduling",root+"/laboratory/cluster-scheduling","compute gpu allocation fifo shortest job first simulator"],
       ["Neuron dynamics laboratory",root+"/laboratory/neuron-dynamics","neuroscience leaky integrate fire membrane potential threshold spike refractory"],
