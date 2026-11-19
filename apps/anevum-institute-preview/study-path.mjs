@@ -59,6 +59,6 @@ export function academyLearningDirectory(base="/institute-preview"){
     <p class="academy-directory-intro">Eight introductory CFP-101 lesson previews are available without an account. Each explains an educational model; independent course assessment and academic credit are not provided.</p>
     <ol class="academy-unit-list">${links}</ol>
     <div class="academy-directory-foot"><span data-study-path-progress>0 of 3 practice checks recorded on this device.</span><span>Local practice only · No course credit or verified completion</span></div>
-    <a class="academy-directory-syllabus" href="${base}/academy/cfp-101">Inspect all ${CFP_101.units.length} syllabus units, including planned topics →</a>
+    <a class="academy-directory-syllabus" href="${base}/academy/cfp-101">Inspect all ${CFP_101.units.length} syllabus units and their editorial status →</a>
   </section>`;
 }

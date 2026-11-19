@@ -514,6 +514,8 @@ test("frontier society and evidence-based recognition distinguish working activi
   assert.match(home,/Explore the academic catalogue/);
   assert.match(home,/Computing From First Principles/);
   assert.match(home,/8 lesson previews/);
+  assert.match(home,/8 INTRODUCTORY LESSONS/);
+  assert.doesNotMatch(home,/7 LESSONS READY/);
   assert.match(home,/Assessment in development/);
   assert.match(home,/class="academic-pathways"/);
   assert.match(home,/href="\/institute-preview\/laboratory\/cluster-scheduling"/);

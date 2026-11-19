@@ -51,7 +51,7 @@ const HOME=`
     </div>
     <div class="academic-offering-grid">
       <article class="academic-offering">
-        <div class="academic-offering-top"><span>COURSE · CFP-101</span><span class="academic-status">7 LESSONS READY</span></div>
+        <div class="academic-offering-top"><span>COURSE · CFP-101</span><span class="academic-status">8 INTRODUCTORY LESSONS</span></div>
         <h3>Computing From First Principles</h3>
         <p>Semiconductors, Boolean logic, binary arithmetic, clocked registers, addressed memory, fictional assembly and computer systems. Eight introductory lesson previews are available, including a bounded eight-bit computer. The full curriculum and assessment remain under development.</p>
         <a href="%BASE%/academy/cfp-101">Explore CFP-101 <span aria-hidden="true">→</span></a>
