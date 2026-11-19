@@ -173,6 +173,7 @@ test("public sitemap enumerates only indexable reachable pages, never private, s
   const r=await req("/institute/sitemap.xml");
   assert.equal(r.status,200);
   assert.match(r.headers.get("Content-Type"),/application\/xml/);
+  assert.equal(r.headers.get("X-Robots-Tag"),null,"Public sitemap must remain readable by crawlers");
   const xml=await r.text();
   const urls=[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
   assert.equal(urls.length,16);
