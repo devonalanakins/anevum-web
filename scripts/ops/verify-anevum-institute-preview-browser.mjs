@@ -178,6 +178,24 @@ async function memoryLessonBrowserQA(){
   console.log("ANEVUM_MEMORY_LESSON_BROWSER_QA_PASS",JSON.stringify({inputDoesNotWrite:true,addressIsolation:true,explicitWrite:true,exportUnverified:true,selfCheck:true,reset:true}));
 }
 
+async function assemblyLessonBrowserQA(){
+  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await navigate("/institute-preview/learn/cfp-101/assembly-code");
+  const initial=await evaluate("(()=>({bits:document.querySelector('[data-assembly-bits]').textContent,source:document.querySelector('[data-assembly-source]').value,history:document.querySelector('[data-assembly-history]').textContent,notes:document.querySelector('[data-study-lesson]')?.dataset.studyLesson}))()");
+  verify(initial.bits==="0010"&&initial.source==="LOAD 2"&&initial.history.includes("No conversions")&&initial.notes==="CFP-101-U06","Assembly lesson did not initialize",initial);
+  const results=await evaluate("(()=>{const root=document.querySelector('[data-assembly-bench]');const form=root.querySelector('[data-assembly-form]'),src=root.querySelector('[data-assembly-source]'),machine=root.querySelector('[data-assembly-machine]');const snap=()=>({bits:root.querySelector('[data-assembly-bits]').textContent,readback:root.querySelector('[data-assembly-result]').textContent,history:root.querySelectorAll('[data-assembly-history] li').length,status:root.querySelector('[data-assembly-status]').textContent});form.requestSubmit();const load=snap();src.value='STORE 1';form.requestSubmit();const store=snap();root.querySelector('[data-assembly-example=\"ADD 3\"]').click();const add=snap();machine.value='0110';root.querySelector('[data-assembly-decode-form]').requestSubmit();const decoded=snap();root.querySelector('[data-assembly-example=\"HALT\"]').click();const halt=snap();src.value='NOP 2';form.requestSubmit();const malformed=snap();machine.value='1111';root.querySelector('[data-assembly-decode-form]').requestSubmit();const reserved=snap();return {load,store,add,decoded,halt,malformed,reserved}})()");
+  verify(results.load.bits==="0010"&&results.load.readback==="LOAD 2"&&results.store.bits==="0101"&&results.store.readback==="STORE 1"&&results.add.bits==="1011"&&results.add.readback==="ADD 3","Assembly mappings are incorrect",results);
+  verify(results.decoded.bits==="0110"&&results.decoded.readback==="STORE 2"&&results.halt.bits==="1100"&&results.halt.readback==="HALT"&&results.halt.history===5,"Disassembly or HALT encoding failed",results);
+  verify(results.malformed.bits==="1100"&&results.malformed.history===5&&results.malformed.status.includes("rejected")&&results.reserved.bits==="1100"&&results.reserved.history===5&&results.reserved.status.includes("Reserved encoding"),"Invalid or reserved instructions changed the last valid result",results);
+  const exported=await evaluate("(async()=>{const root=document.querySelector('[data-assembly-bench]'),orig=URL.createObjectURL;let blob=null,name='';const stop=e=>{const link=e.target.closest('a[download]');if(link){name=link.download;e.preventDefault();}};document.addEventListener('click',stop,true);URL.createObjectURL=b=>{blob=b;return 'blob:assembly-fixture';};try{root.querySelector('[data-assembly-export]').click();return {name,record:blob?JSON.parse(await blob.text()):null};}finally{URL.createObjectURL=orig;document.removeEventListener('click',stop,true);}})()");
+  verify(exported.name==="anevum-cfp101-assembly-001.json"&&exported.record?.recentConversions?.length===5&&exported.record?.model==="fictional-four-bit-instruction-encoding"&&exported.record?.instructionsExecuted===false&&exported.record?.realHardware===false&&exported.record?.academicCredit===false,"Assembly export exaggerated review or execution scope",exported);
+  const quiz=await evaluate("(()=>{document.querySelectorAll('[data-assembly-answer]')[0].click();return document.querySelector('[data-assembly-quiz-status]').textContent;})()");
+  verify(quiz.startsWith("Correct.")&&quiz.includes("0110"),"Instruction encoding self-check failed",quiz);
+  const cleared=await evaluate("(()=>{document.querySelector('[data-assembly-clear]').click();return document.querySelector('[data-assembly-history]').textContent;})()");
+  verify(cleared.includes("No conversions recorded"),"Assembly history failed to clear",cleared);
+  console.log("ANEVUM_ASSEMBLY_LESSON_BROWSER_QA_PASS",JSON.stringify({validMappings:true,decode:true,reservedRejected:true,invalidRejected:true,exportUnverified:true,selfCheck:true,clear:true}));
+}
+
 async function compactShellQA(){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await navigate("/institute-preview/academy");
@@ -717,6 +735,7 @@ try{
   await compactCourseUsabilityQA();
   await registerLessonBrowserQA();
   await memoryLessonBrowserQA();
+  await assemblyLessonBrowserQA();
   await halfAdderBrowserQA();
   await clusterSchedulerBrowserQA();
   await neuronDynamicsBrowserQA();
