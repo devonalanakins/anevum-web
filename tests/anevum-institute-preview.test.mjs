@@ -1144,6 +1144,23 @@ test("Research navigation opens a real methods page, not recognition policy",asy
 test("Unit08 isolated 8-bit CPU core is deterministic, bounded, and accurately labeled",async()=>{
   const mod=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(CPU_CAPSTONE_MODEL_BROWSER_MODULE));
   assert.deepEqual(mod.parseCpuProgram("37 11 34 21 12 F0"),[55,17,52,33,18,240]);
+
+  const arithmetic="LDI 7\nSTORE 1\nLDI 4\nADD 1\nSTORE 2\nHALT";
+  assert.deepEqual(mod.assembleCpuSource(arithmetic),mod.CPU_SAMPLE);
+  assert.deepEqual(mod.assembleCpuSource("# header\r\n ldi 7 ; immediate\r\n store 1\r\n # skip\r\n LDI 4\r\n add 1\r\n STORE 2\r\n HALT # done"),
+    mod.CPU_SAMPLE);
+  assert.deepEqual(mod.assembleCpuSource("ldi 0\njz 3\nldi 9\nhalt"),mod.CPU_EXAMPLES[1].bytes);
+  assert.deepEqual(mod.assembleCpuSource("jmp 0"),[0x40]);
+  assert.deepEqual(mod.assembleCpuSource("LOAD 15\nSTORE 0\nADD 10\nLDI 9\nJMP 15\nJZ 0\nHALT"),
+    [0x0F,0x10,0x2A,0x39,0x4F,0x50,0xF0]);
+  assert.equal(mod.assembleCpuSource(Array(16).fill("HALT").join("\n")).length,16);
+  for(const bad of ["", "  # comments only\n; nothing", "LDI 16","LDI -1","LDI 01","JMP 0xF",
+      "HALT 0","LOAD","ADD 1 2","LDI 1.5","NOP 0","JMP 0\nSTORE 2\nXYZ 1",
+      Array(17).fill("HALT").join("\n"),"HALT".repeat(300),null]){
+    assert.throws(()=>mod.assembleCpuSource(bad),"Unexpectedly assembled "+String(bad).slice(0,50));
+  }
+  assert.throws(()=>mod.assembleCpuSource("LDI 1\nJZ 17"),/Line 2:/);
+
   assert.deepEqual(mod.CPU_EXAMPLES.map(example=>example.id),["addition","branch","loop"]);
   for(const example of mod.CPU_EXAMPLES){
     assert.ok(Object.isFrozen(example)&&Object.isFrozen(example.bytes));
@@ -1219,12 +1236,15 @@ test("Unit08 capstone is a local interactive route with honest limits and isolat
       "data-cpu-run","data-cpu-reset","data-cpu-load","data-cpu-export disabled",
       "data-cpu-memory","data-cpu-rom","data-cpu-trace","data-cpu-quiz",
       "data-cpu-example","data-cpu-insert","data-cpu-example-description",
+      "data-cpu-assembly","data-cpu-assembly-source","data-cpu-assemble","data-cpu-assembly-status",
       'data-study-lesson="CFP-101-U08"']){
     assert.ok(html.includes(token),"Missing real capstone control "+token);
   }
   assert.match(html,/fictional processor/i);
   assert.match(html,/32 instructions/);
   assert.match(html,/Choosing an example only changes the explanation/);
+  assert.match(html,/Compilation validates the instructions and proposes hexadecimal bytes/);
+  assert.match(html,/No labels or macros/);
   assert.equal((html.match(/<option value="(?:addition|branch|loop)"/g)||[]).length,3);
   assert.match(html,/no official enrollment, course credit/i);
   assert.doesNotMatch(html,/<form\b|<iframe\b|onload=|onclick=/i);
@@ -1232,6 +1252,7 @@ test("Unit08 capstone is a local interactive route with honest limits and isolat
   assert.match(css,/\.cpu-grid\{display:grid/);
   assert.match(css,/@media\(max-width:700px\)\{\.cpu-grid/);
   assert.match(css,/\.cpu-example-row select:focus-visible/);
+  assert.match(css,/\.cpu-assembly>summary:focus-visible/);
   const boot=await(await req("/client.js")).text();
   assert.match(boot,/import\("\/institute-preview\/cpu-capstone-client\.js"\)/);
   for(const [path,needle] of [["/cpu-capstone-model.js","export function stepCpu"],

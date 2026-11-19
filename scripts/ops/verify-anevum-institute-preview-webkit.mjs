@@ -358,6 +358,42 @@ async function cpuCapstone(page){
     &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("3 /"),
     "Confirmed insertion changes editor but never executes CPU instructions");
 
+
+  await bench.locator("[data-cpu-assembly] > summary").click();
+  const asm=bench.locator("[data-cpu-assembly-source]");
+  await asm.fill("LDI 2\nHALT");
+  const beforeCompile=await bench.locator("[data-cpu-steps]").textContent();
+  await bench.locator("[data-cpu-assemble]").click();
+  check((await invalid.inputValue())==="32 F0"
+    &&(await bench.locator("[data-cpu-steps]").textContent())===beforeCompile
+    &&(await bench.locator("[data-cpu-assembly-status]").textContent()).includes("No instructions executed"),
+    "Mnemonic assembly must not mutate a running machine");
+  await bench.locator("[data-cpu-load]").click();
+  await bench.locator("[data-cpu-run]").click();
+  check((await bench.locator("[data-cpu-acc]").textContent())==="02"
+    &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("2 /"),
+    "Two-instruction compiled program must halt with accumulator 02");
+  await asm.fill("LDI 16");
+  await bench.locator("[data-cpu-assemble]").click();
+  check((await invalid.inputValue())==="32 F0"
+    &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("2 /")
+    &&(await bench.locator("[data-cpu-assembly-status]").textContent()).includes("Compilation rejected"),
+    "Out-of-range mnemonic operand must preserve loaded machine and hex editor");
+  await invalid.fill("31");
+  await asm.fill("LDI 5\nHALT");
+  let asmCancelled=false;
+  page.once("dialog",async dialog=>{asmCancelled=true;await dialog.dismiss();});
+  await bench.locator("[data-cpu-assemble]").click();
+  check(asmCancelled&&(await invalid.inputValue())==="31"
+    &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("2 /"),
+    "Cancelling mnemonic overwrite must preserve dirty custom hex text");
+  let asmConfirmed=false;
+  page.once("dialog",async dialog=>{asmConfirmed=true;await dialog.accept();});
+  await bench.locator("[data-cpu-assemble]").click();
+  check(asmConfirmed&&(await invalid.inputValue())==="35 F0"
+    &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("2 /"),
+    "Confirmed mnemonic compilation must stage text but not run instructions");
+
   await bench.locator("[data-cpu-reset]").click();
   check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("0 /")
     &&await bench.locator("[data-cpu-run]").isEnabled(),
