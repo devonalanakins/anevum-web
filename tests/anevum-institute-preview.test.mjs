@@ -11,6 +11,7 @@ import {evaluateClockedRegister,REGISTER_LESSON_HTML} from "../apps/anevum-insti
 import {emptyMemory,readMemoryWord,writeMemoryWord,MEMORY_LESSON_HTML} from "../apps/anevum-institute-preview/memory-lesson.mjs";
 import {encodeToyInstruction,decodeToyInstruction,assembleToyLine,ASSEMBLY_LESSON_HTML} from "../apps/anevum-institute-preview/assembly-lesson.mjs";
 import {TOY_PROCESSES,initialSystemState,advanceRoundRobin,SYSTEMS_LESSON_HTML} from "../apps/anevum-institute-preview/systems-lesson.mjs";
+import {CPU_CAPSTONE_MODEL_BROWSER_MODULE} from "../apps/anevum-institute-preview/cpu-capstone-model.mjs";
 import {CLUSTER_SCHEDULER_HTML} from "../apps/anevum-institute-preview/cluster-scheduler-ui.mjs";
 import {CLUSTER_SCHEDULER_MODEL_BROWSER_MODULE} from "../apps/anevum-institute-preview/cluster-scheduler-model.mjs";
 import {CLUSTER_SCHEDULER_CSS} from "../apps/anevum-institute-preview/cluster-scheduler-styles.mjs";
@@ -1134,4 +1135,59 @@ test("Research navigation opens a real methods page, not recognition policy",asy
     assert.ok(research.includes('href="/institute-preview'+path+'"'),"Missing working destination: "+path);
   }
   assert.doesNotMatch(research,/<canvas|<video|<picture|<form\b/i);
+});
+
+
+test("Unit08 isolated 8-bit CPU core is deterministic, bounded, and accurately labeled",async()=>{
+  const mod=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(CPU_CAPSTONE_MODEL_BROWSER_MODULE));
+  assert.deepEqual(mod.parseCpuProgram("37 11 34 21 12 F0"),[55,17,52,33,18,240]);
+  for(const source of ["","37 ZZ","F0 3","F0;30","00 ".repeat(17),"aa ".repeat(100)]){
+    assert.throws(()=>mod.parseCpuProgram(source),"Unexpectedly accepted "+JSON.stringify(source));
+  }
+  let state=mod.initialCpu();
+  assert.equal(state.acc,0);
+  assert.equal(state.memory[2],0);
+  assert.equal(state.pc,0);
+  assert.equal(state.zero,true);
+  const steps=["LDI 7","STORE 1","LDI 4","ADD 1","STORE 2","HALT"];
+  for(const op of steps){
+    const previous=structuredClone(state);
+    state=mod.stepCpu(state);
+    assert.deepEqual(previous.program,mod.CPU_SAMPLE.slice(),"Program ROM must remain immutable");
+    assert.deepEqual(previous,previous,"Previous snapshot stays unchanged");
+    assert.equal(state.trace.at(-1).operation,op);
+  }
+  assert.equal(state.halted,true);
+  assert.equal(state.reason,"halt");
+  assert.equal(state.acc,11);
+  assert.equal(state.memory[1],7);
+  assert.equal(state.memory[2],11);
+  assert.equal(state.steps,6);
+  assert.equal(mod.stepCpu(state).steps,6,"A halted CPU cannot advance");
+  const notebook=mod.cpuNotebook(state);
+  assert.equal(notebook.state.acc,11);
+  assert.deepEqual(notebook.trace.map(row=>row.operation),steps);
+  assert.equal(notebook.realHardware,false);
+  assert.equal(notebook.realProcessesExecuted,false);
+  assert.equal(notebook.independentlyVerified,false);
+  assert.equal(notebook.academicCredit,false);
+  assert.ok(notebook.instructionSet.includes("Separate from Unit 06"));
+  const branch=mod.runCpu(mod.initialCpu({program:[0x30,0x53,0x39,0xF0]}));
+  assert.equal(branch.acc,0,"JZ should skip the LDI 9 instruction");
+  assert.equal(branch.steps,3);
+  const wrap=mod.runCpu(mod.initialCpu({program:[0x31,0x2F,0xF0],
+    memory:Array.from({length:16},(_,i)=>i===15?255:0)}));
+  assert.equal(wrap.acc,0,"ADD must wrap at eight bits");
+  assert.equal(wrap.zero,true,"Zero flag follows eight-bit arithmetic");
+  const reserved=mod.runCpu(mod.initialCpu({program:[0xF1]}));
+  assert.equal(reserved.reason,"illegal-instruction");
+  assert.equal(reserved.steps,1);
+  const infinite=mod.runCpu(mod.initialCpu({program:[0x40]}));
+  assert.equal(infinite.reason,"step-limit");
+  assert.equal(infinite.steps,32);
+  assert.equal(infinite.trace.length,32);
+  assert.equal(infinite.halted,true);
+  const invalid=[null,{},[],{...mod.initialCpu(),acc:256},
+    {...mod.initialCpu(),pc:17},{...mod.initialCpu(),trace:[{}]}];
+  for(const value of invalid)assert.throws(()=>mod.stepCpu(value));
 });
