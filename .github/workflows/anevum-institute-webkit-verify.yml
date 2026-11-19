@@ -7,6 +7,8 @@ on:
       - "apps/anevum-institute-preview/**"
       - "scripts/ops/anevum-institute-preview-server.mjs"
       - "scripts/ops/verify-anevum-institute-preview-webkit.mjs"
+      - "scripts/ops/anevum-institute-public-candidate-server.mjs"
+      - "scripts/ops/verify-anevum-institute-public-candidate-webkit.mjs"
       - ".github/workflows/anevum-institute-webkit-verify.yml"
   workflow_dispatch:
 
@@ -28,19 +30,26 @@ jobs:
         with:
           node-version: "22"
       - name: Check isolated WebKit smoke script syntax
-        run: node --check scripts/ops/verify-anevum-institute-preview-webkit.mjs
+        run: |
+          node --check scripts/ops/verify-anevum-institute-preview-webkit.mjs
+          node --check scripts/ops/verify-anevum-institute-public-candidate-webkit.mjs
+          node --check scripts/ops/anevum-institute-public-candidate-server.mjs
       - name: Install pinned test-only Playwright without changing repo dependencies
         run: npm install --no-save --no-package-lock --ignore-scripts --no-audit --no-fund playwright@1.56.1
       - name: Confirm pinned WebKit image has its browser installed
         run: test -d /ms-playwright && npx --no-install playwright --version
       - name: Run loopback-only WebKit phone and desktop acceptance preflight
         run: node scripts/ops/verify-anevum-institute-preview-webkit.mjs
+      - name: Test isolated public Institute candidate in WebKit (loopback only)
+        run: node scripts/ops/verify-anevum-institute-public-candidate-webkit.mjs
       - name: Preserve WebKit screenshots for visual review
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: anevum-institute-webkit-preflight
-          path: "${{ runner.temp }}/anevum-institute-webkit-*.png"
+          path: |
+            ${{ runner.temp }}/anevum-institute-webkit-*.png
+            ${{ runner.temp }}/anevum-institute-public-candidate-webkit-*.png
           if-no-files-found: warn
           retention-days: 7
 
