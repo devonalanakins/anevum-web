@@ -26,6 +26,7 @@ const routes=[
   "/institute-preview/learn/cfp-101/addressed-memory",
   "/institute-preview/learn/cfp-101/assembly-code",
   "/institute-preview/learn/cfp-101/computer-systems",
+  "/institute-preview/learn/cfp-101/eight-bit-computer",
   "/institute-preview/laboratory/and-gate",
   "/institute-preview/laboratory/cluster-scheduling",
   "/institute-preview/laboratory/neuron-dynamics"
@@ -289,6 +290,56 @@ async function studyNotePortability(page){
     recoveredAfterReload:true,wrongLessonRejected:true,oversizedRejected:true,
     concurrentEditAndDeletionSafe:true
   }));
+}
+
+async function cpuCapstone(page){
+  const route="/institute-preview/learn/cfp-101/eight-bit-computer";
+  const key="anevum.institute.study.v1.CFP-101-U08";
+  await visit(page,route);
+  await page.evaluate(key=>localStorage.removeItem(key),key);
+  await page.locator('[data-cpu-ready="true"]').waitFor({timeout:12000});
+  const bench=page.locator("[data-cpu-bench]");
+  await bench.locator("[data-cpu-step]").click();
+  check((await bench.locator("[data-cpu-acc]").textContent())==="07","CPU first LDI failed");
+  await bench.locator("[data-cpu-run]").click();
+  const memory=await bench.locator("[data-cpu-memory] tr").allTextContents();
+  check((await bench.locator("[data-cpu-acc]").textContent())==="0B"
+    &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("6 /")
+    &&memory[2].includes("0B")
+    &&await bench.locator("[data-cpu-step]").isDisabled()
+    &&await bench.locator("[data-cpu-trace] li").count()===6,
+    "CPU sample execution, trace, or HALT behavior incorrect",{memory});
+  const invalid=bench.locator("[data-cpu-source]");
+  await invalid.fill("ZZ");
+  await bench.locator("[data-cpu-load]").click();
+  check((await bench.locator("[data-cpu-status]").textContent()).includes("rejected")
+    &&(await bench.locator("[data-cpu-steps]").textContent()).startsWith("6 /"),
+    "Malformed hex must not modify the previous executed program");
+  await invalid.fill("40");
+  await bench.locator("[data-cpu-load]").click();
+  await bench.locator("[data-cpu-run]").click();
+  check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("32 /")
+    &&(await bench.locator("[data-cpu-reason]").textContent()).includes("cutoff"),
+    "Infinite loop must stop at the bounded step limit");
+  await bench.locator("[data-cpu-reset]").click();
+  check((await bench.locator("[data-cpu-steps]").textContent()).startsWith("0 /")
+    &&await bench.locator("[data-cpu-run]").isEnabled(),
+    "Reset must restore a runnable machine");
+  await page.locator('[data-cpu-answer="0B"]').click();
+  check((await page.locator("[data-cpu-quiz-status]").textContent()).startsWith("Correct."),
+    "CPU lesson explanatory quiz incorrect");
+  await page.locator("[data-study-text]").fill("Synthetic CPU note: RAM address 2 holds 0B.");
+  await page.locator("[data-study-save]").click();
+  await page.reload({waitUntil:"load"});
+  check((await page.locator("[data-study-text]").inputValue()).includes("RAM address 2")
+    &&(await page.locator("[data-study-lesson]").getAttribute("data-study-lesson"))==="CFP-101-U08"
+    &&(await page.locator("[data-cpu-steps]").textContent()).startsWith("0 /"),
+    "CPU session/notebook preservation boundary incorrect");
+  await page.locator("[data-study-clear]").click();
+  await page.locator("[data-study-clear]").click();
+  check(await page.evaluate(key=>localStorage.getItem(key)===null,key),"Synthetic Unit08 notebook not deleted");
+  await screenshot(page,"cpu-capstone-mobile");
+  console.log("ANEVUM_WEBKIT_CPU_CAPSTONE_PASS",JSON.stringify({sample:true,loopBound:32,quiz:true,notes:true,noHardware:true}));
 }
 
 async function systemsLesson(page){
@@ -650,6 +701,7 @@ try{
   await memoryLesson(phone);
   await assemblyLesson(phone);
   await systemsLesson(phone);
+  await cpuCapstone(phone);
   await visit(phone,"/institute-preview/dossier");
   await screenshot(phone,"research-desk-mobile");
   await phoneContext.close();
@@ -663,7 +715,7 @@ try{
   await desktopContext.close();
   check(errors.length===0,"Unhandled WebKit page errors",errors);
   console.log("ANEVUM_INSTITUTE_WEBKIT_PREFLIGHT_PASS",
-    JSON.stringify({routes:36,touchMenu:true,registerLesson:true,memoryLesson:true,assemblyLesson:true,systemsLesson:true,studyNotesPreserved:true,unsavedNavigationGuard:true,portableNoteImport:true,halfAdderHandoff:true,
+    JSON.stringify({routes:38,touchMenu:true,registerLesson:true,memoryLesson:true,assemblyLesson:true,systemsLesson:true,cpuCapstone:true,studyNotesPreserved:true,unsavedNavigationGuard:true,portableNoteImport:true,halfAdderHandoff:true,
       ownerSafariAcceptance:false,publicDeployment:false}));
 }finally{
   if(browser)await browser.close();
