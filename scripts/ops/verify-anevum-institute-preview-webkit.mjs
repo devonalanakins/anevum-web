@@ -803,6 +803,57 @@ async function halfAdder(page){
   await page.evaluate(()=>localStorage.removeItem("anevum.institute.evidence-draft.v1"));
   console.log("ANEVUM_WEBKIT_HALF_ADDER_RESEARCH_PASS");
 }
+async function evidenceFileImport(page){
+  await visit(page,"/institute-preview/dossier");
+  const data=await page.evaluate(async()=>{
+    const m=await import("/institute-preview/evidence-schema.js");
+    const saved=await m.createEvidenceEnvelope({
+      schemaVersion:1,kind:"personal-unreviewed-draft",courseId:"CFP-101",
+      title:"Synthetic saved evidence",question:"What does the model show?",
+      method:"Run all four input states and record the Boolean outcomes.",
+      observations:"Ideal truth-table outputs only.",limitations:"No physical measurements.",references:[]
+    });
+    const imported=await m.createEvidenceEnvelope({
+      schemaVersion:1,kind:"personal-unreviewed-draft",courseId:"CFP-101",
+      title:"Synthetic imported evidence",question:"Does the example model work?",
+      method:"Reproduce all ideal states and note their expected outcomes.",
+      observations:"An example with no actual data.",limitations:"This is only a model.",references:[]
+    });
+    localStorage.setItem(m.EVIDENCE_STORAGE_KEY,JSON.stringify(saved));
+    return {saved:JSON.stringify(saved),imported:JSON.stringify(imported)};
+  });
+  await page.reload({waitUntil:"load"});
+  await page.locator('[data-evidence-ready="true"]').waitFor();
+  await page.locator('[data-evidence-field="title"]').fill("Unsaved current research");
+  const picker=page.locator("[data-evidence-import]");
+  const apply=page.locator("[data-evidence-import-apply]");
+  check(await apply.isHidden(),"Import Apply must be hidden before selecting an evidence file");
+  await picker.setInputFiles({name:"synthetic-evidence.json",mimeType:"application/json",buffer:Buffer.from(data.imported)});
+  await apply.waitFor({state:"visible"});
+  check((await page.locator('[data-evidence-field="title"]').inputValue())==="Unsaved current research"
+    &&(await page.evaluate(()=>localStorage.getItem("anevum.institute.evidence-draft.v1")))===data.saved,
+    "File selection overwrote unsaved or saved research before explicit Apply");
+  await apply.click();
+  check((await page.locator('[data-evidence-field="title"]').inputValue())==="Synthetic imported evidence"
+    &&(await page.locator("[data-evidence-receipt-state]").textContent())==="Unsaved changes"
+    &&(await page.evaluate(()=>localStorage.getItem("anevum.institute.evidence-draft.v1")))===data.saved,
+    "Explicit Apply must update only the editor without persisting the imported draft");
+  await page.reload({waitUntil:"load"});
+  await page.locator('[data-evidence-ready="true"]').waitFor();
+  check((await page.locator('[data-evidence-field="title"]').inputValue())==="Synthetic saved evidence",
+    "An unsaved applied import must not replace persisted data after reload");
+  const tampered=JSON.parse(data.imported);
+  tampered.record.title="Forged title without a matching digest";
+  await picker.setInputFiles({name:"tampered-evidence.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(tampered))});
+  await page.waitForFunction(()=>document.querySelector("[data-evidence-status]")?.textContent.startsWith("Import rejected"));
+  check(await apply.isHidden()
+    &&(await page.locator('[data-evidence-field="title"]').inputValue())==="Synthetic saved evidence"
+    &&(await page.evaluate(()=>localStorage.getItem("anevum.institute.evidence-draft.v1")))===data.saved,
+    "Tampered evidence must be rejected without editor or saved-data mutation");
+  await page.evaluate(()=>localStorage.removeItem("anevum.institute.evidence-draft.v1"));
+  console.log("ANEVUM_WEBKIT_EVIDENCE_FILE_IMPORT_PASS",
+    JSON.stringify({stageBeforeApply:true,explicitApply:true,reloadRecovery:true,invalidRejected:true,ownerSafariAcceptance:false}));
+}
 async function screenshot(page,name){
   await page.screenshot({path:path.join(output,"anevum-institute-webkit-"+name+".png"),
     fullPage:true,animations:"disabled"});
@@ -822,6 +873,7 @@ try{
   await studyUnsavedNavigation(phone);
   await studyNotePortability(phone);
   await halfAdder(phone);
+  await evidenceFileImport(phone);
   await registerLesson(phone);
   await memoryLesson(phone);
   await assemblyLesson(phone);
