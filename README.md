@@ -1,8 +1,27 @@
-# ANEVUM Web
+<p align="center"><img src=".github/assets/anevum-institute-hero.svg" alt="ANEVUM: a cinematic illustrated institute and creative archive, with botanical study and celestial motifs. Conceptual scene, not an existing institution." width="100%" /></p>
 
-ANEVUM's public studio website and protected Command interface.
+# Anevum — Web
 
-ANEVUM is currently an independent software studio run by Devon Akins. The public website presents the studio, its products, Field Notes, and founder background without treating internal RHEN modules as separate companies or top-level commercial products.
+> **Public documentation note · November 19, 2026:** This repository contains a legacy integrated website plus isolated, unmerged design and research proposals. The original site, protected previews and production `anevum.com` are distinct. Source code and draft PRs do not prove that a public service, institution or organization has launched.
+
+[Public website](https://anevum.com) · [Ongoing development](https://github.com/devonalanakins/anevum-web/pulls)
+
+ANEVUM's public web source, educational research previews, creative archives and historically protected Command interface.
+
+ANEVUM is an independent creative and research initiative led by Devon Alan Akins. Its emerging direction combines open technical learning, carefully documented experiments, nature and bonsai journals, original writing and creative experiences. The long-term public-interest mission is **a direction, not a statement of nonprofit incorporation, academic accreditation or formal institutional status**.
+
+## Current development tracks
+
+<p align="center"><img src=".github/assets/anevum-directions.svg" alt="Three ANEVUM directions: Open Institute, Original Creative Work, and Preserved Legacy. Original illustrative artwork; actual release statuses are stated below." width="100%" /></p>
+
+| Track | Review source | Status / limits |
+| --- | --- | --- |
+| **Open Institute** | [Draft PR #816](https://github.com/devonalanakins/anevum-web/pull/816) | Protected owner-review prototype of an independent, non-accredited learning environment. Introductory computer-systems lessons, educational simulators and a browser-local Research Desk are in review; no academic credit, certified research or public launch. |
+| **Bonsai Living Atlas** | [Draft PR #815](https://github.com/devonalanakins/anevum-web/pull/815) | Isolated editorial specimen archive and design review. Illustrative concepts are not authentic specimen photos; production release remains gated. |
+| **Original writing and worlds** | [Public portfolio index](https://github.com/devonalanakins/anevum) | Creative history and original works are preserved; earlier concepts are not evidence of active public products. |
+| **Legacy integrated web / Command** | This repository's default branch | Earlier architecture retained for traceability. Do not assume its documented routes or financial research are the current ANEVUM mission. |
+
+The repository contains multiple generations of work, with independent branches and release boundaries. See individual PRs for exact implementation and test evidence; neither protected preview has authorization to replace the public homepage.
 
 ## Open source
 
@@ -10,9 +29,9 @@ The code and documentation in this repository are licensed under the [Apache Lic
 
 This repository is intentionally the public web surface. Private credentials, broker secrets, authenticated operator data, and non-public execution state do not belong here.
 
-## Public information architecture
+## Legacy integrated route architecture (source-level; verify live release separately)
 
-- `/` — live ANEVUM home
+- `/` — legacy integrated homepage source
 - `/products` — canonical public product registry
 - `/feed` — releases, Field Notes, public-safe runtime events, and research decisions
 - `/field-notes` — public build / research journal
@@ -25,13 +44,13 @@ This repository is intentionally the public web surface. Private credentials, br
 - `/command` — protected operator surface
 - `/command/public` — operator view of the public projection / truth boundary
 
-Legacy public URLs such as `/live`, `/research`, `/architecture`, and `/releases` redirect to their canonical product-scoped routes.
+The legacy source defines redirects for earlier `/live`, `/research`, `/architecture` and `/releases` URLs. The deployed routing and actual owners must be checked separately.
 
-RHEN is the current flagship R&D system. IREN, GRAEN, VELUM, and NOSTRA remain named internal RHEN responsibilities rather than top-level ANEVUM products. Future software can be added beside RHEN without restructuring the company around the trading system.
+RHEN is a separate financial systems research project, with its own repository and operational boundaries; it is not the primary identity of Anevum's creative studio. IREN, GRAEN, VELUM and NOSTRA are internal RHEN research responsibilities, not standalone public creative-studio products.
 
-## RHEN public evidence boundary
+## Historical financial-system evidence boundary
 
-RHEN public performance remains governed by `PUBLIC-PERFORMANCE-v1`. Public views may show sanitized runtime state, active public version information, aggregate activity, normalized percentage performance and drawdown, aggregate trade statistics, architecture, methodology, research state, and release history.
+The older integrated RHEN financial-research source used the `PUBLIC-PERFORMANCE-v1` public projection contract. Historical public-safe views were limited to sanitized runtime state, aggregate percentage performance/drawdown, activity, research methodology and release evidence. This is not an active ANEVUM Open Institute feature or an investment-performance claim.
 
 Public views must **not** expose:
 
@@ -47,9 +66,9 @@ Live results remain separate from replay, backtest, development, and research ev
 
 ## Operator — `/command`
 
-Command remains the protected operational interface. It contains private operator telemetry and controls. Cloudflare Access protects private routes and the Worker verifies the signed Access assertion before forwarding private requests.
+The legacy code includes a protected Command interface for operator telemetry and controls. Its source-level security design uses Cloudflare Access assertions and Worker checks; these are **not proof of the current production configuration or of a newly approved Institute/Atlas operator service**.
 
-The public header contains a deliberately low-prominence Command entrance. Search engines are instructed not to index protected routes. Command includes a Public workspace that exposes the health and provenance of the same sanitized projection used by the public site.
+Existing Command routes and public/private projection contracts must remain isolated during any future public-site transition.
 
 ## Stack
 
@@ -57,7 +76,7 @@ The public header contains a deliberately low-prominence Command entrance. Searc
 - Vite
 - Cloudflare Workers / static assets
 - Cloudflare Access for Command identity
-- Railway compute for RHEN
+- RHEN compute and deployment are independently owned; older integration notes do not establish the current hosting provider
 - GitHub Actions verification; release ownership is documented separately
 
 ## Commands
