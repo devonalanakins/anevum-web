@@ -4,6 +4,7 @@ import { reviewerSchemaReady, reviewerEndpoint, exportReviewerConnection } from 
 import { commonsSocialEndpoint, socialSchemaReady, exportMemberSocial } from "./commons-social.mjs";
 import { moderationEndpoint } from "./commons-moderation.mjs";
 import { studioEndpoint } from "./studio-content.mjs";
+import {LEARNER_PROFILE_PATH,memberLearningProfileEndpoint} from "./member-learning-profile.mjs";
 import { memberRhenDraftSchemaReady, readMemberRhenDraft, saveMemberRhenDraft, deleteMemberRhenDraft, validateRhenDraft, draftExpectedMemberMatches } from "./member-rhen-draft.mjs";
 import { resolveMemberOrigin, memberSchemaReady } from "./member-preflight.mjs";
 import { preferenceExpectedMemberMatches } from "./member-preference-guard.mjs";
@@ -155,6 +156,11 @@ export async function memberEndpoint(request, env, pathname, verifiedContext = {
   }
 
   const db = env.MEMBER_DB;
+  // Source-only learner profile uses the existing verified Better Auth member session.
+  // It is preview-flagged and cannot become an alternative identity or public profile.
+  if(pathname===LEARNER_PROFILE_PATH){
+    return memberLearningProfileEndpoint(request,env,user,verifiedOrigin);
+  }
   if (pathname.startsWith("/api/member/studio/")) {
     return studioEndpoint(request,env,user,verifiedOrigin,pathname,verifiedContext.studioAccessEmail);
   }

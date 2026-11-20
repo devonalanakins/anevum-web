@@ -92,6 +92,10 @@ test("manual beta deployment never targets production or reviewer and does not a
  assert.match(yml,/scripts\/verify-v5-beta-deploy\.mjs --generated/);
  assert.match(yml,/anevum-v5-beta/);
  assert.match(yml,/0004_member_rhen_workspaces\.sql/);
+ assert.ok(yml.includes('Check isolated beta workers.dev exposure (read-only, never enable)'));
+ assert.ok(yml.includes('workers/scripts/anevum-v5-beta/subdomain'));
+ assert.ok(yml.includes('.result.enabled == true'));
+ assert.match(yml,/V5 beta URL intentionally unavailable/);
  assert.match(yml,/if: github\.event_name == 'workflow_dispatch'/);
  assert.doesNotMatch(yml,/wrangler d1 migrations apply|wrangler d1 execute.*--command.*(DROP|DELETE|INSERT|UPDATE)/i);
  assert.doesNotMatch(yml,/wrangler\.alpaca-review-staging\.jsonc.*deploy/);

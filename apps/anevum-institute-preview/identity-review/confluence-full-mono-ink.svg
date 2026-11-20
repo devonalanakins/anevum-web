@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-labelledby="title desc">
+<title id="title">ANEVUM — The Confluence / full mark — mono-ink</title>
+<desc id="desc">The Confluence: paired scientific field lines meeting at a central discovery point, with a calibrated axis. An editable identity review candidate, not an approved public mark.</desc>
+<path d="M28 57 C41 17 119 17 132 57" fill="none" stroke="#071016" stroke-width="1.8" stroke-linecap="round" opacity=".8"/>
+<g stroke="#071016" fill="none" stroke-linecap="round">
+<path d="M80 11 V147" stroke-width="1.8" opacity=".92"/>
+<path d="M74 27 H86 M76 40 H84 M73 53 H87 M76 115 H84 M73 129 H87" stroke-width="1.7" opacity=".88"/>
+</g>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M80 85 C61 54 31 49 17 67 C3 85 23 105 44 98 C56 95 69 90 80 85" stroke="#071016" stroke-width="3.3"/>
+<path d="M80 85 C64 66 41 63 30 76 C20 88 34 98 52 95 C66 92 74 88 80 85" stroke="#071016" stroke-width="2.5"/>
+<path d="M80 85 C65 75 54 74 47 80 C40 86 51 92 80 85" stroke="#071016" stroke-width="1.9" opacity=".72"/>
+<path d="M80 85 C64 102 39 113 17 132" stroke="#071016" stroke-width="2.2"/>
+</g>
+<g transform="translate(160 0) scale(-1 1)"><g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M80 85 C61 54 31 49 17 67 C3 85 23 105 44 98 C56 95 69 90 80 85" stroke="#071016" stroke-width="3.3"/>
+<path d="M80 85 C64 66 41 63 30 76 C20 88 34 98 52 95 C66 92 74 88 80 85" stroke="#071016" stroke-width="2.5"/>
+<path d="M80 85 C65 75 54 74 47 80 C40 86 51 92 80 85" stroke="#071016" stroke-width="1.9" opacity=".72"/>
+<path d="M80 85 C64 102 39 113 17 132" stroke="#071016" stroke-width="2.2"/>
+</g></g>
+<path d="M80 71 Q83 82 95 85 Q83 88 80 100 Q77 88 65 85 Q77 82 80 71Z" fill="#071016"/>
+<circle cx="80" cy="85" r="3.6" fill="#071016"/>
+</svg>

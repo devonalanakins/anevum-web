@@ -1,0 +1,126 @@
+name: ANEVUM Institute Hosted Preview Packaging
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/anevum-institute-preview/**"
+      - "tests/anevum-institute-hosted-preview.test.mjs"
+      - "tests/verify-anevum-institute-protected-preview.test.mjs"
+      - "scripts/verify-anevum-institute-protected-preview.mjs"
+      - "wrangler.institute-preview.jsonc"
+      - "wrangler.institute-public-candidate.jsonc"
+      - "tests/anevum-institute-public-candidate.test.mjs"
+      - ".github/workflows/anevum-institute-hosted-packaging.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  package-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check hosted-preview adapter without remote credentials
+        run: |
+          node --check apps/anevum-institute-preview/hosted-adapter.mjs
+          node --check apps/anevum-institute-preview/hosted-worker.mjs
+          node --test tests/anevum-institute-hosted-preview.test.mjs
+      - name: Check isolated public candidate routing, SEO and safety (no deploy)
+        run: |
+          node --check apps/anevum-institute-preview/public-candidate-adapter.mjs
+          node --check apps/anevum-institute-preview/public-candidate-worker.mjs
+          node --test tests/anevum-institute-public-candidate.test.mjs
+      - name: Verify Institute-specific Access probe contracts without credentials
+        run: node --test tests/verify-anevum-institute-protected-preview.test.mjs
+      - name: Install pinned Wrangler for local packaging only
+        run: npm install --no-package-lock --no-audit --no-fund
+      - name: Validate exact protected Worker name and reject production bindings
+        run: |
+          node --test tests/anevum-institute-hosted-preview.test.mjs
+      - name: Bundle Institute-only Worker without deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/anevum-institute-hosted-bundle"
+          # This command only bundles the isolated Institute entrypoint. Never remove --dry-run:
+          # the config uses the existing, Cloudflare Access-protected target Worker name.
+          npx --no-install wrangler deploy --config wrangler.institute-preview.jsonc --dry-run --outdir "$dir"
+          bundle_file="$(find "$dir" -type f \( -name '*.js' -o -name '*.mjs' \) -print -quit)"
+          test -n "$bundle_file"
+          test -s "$bundle_file"
+          BUNDLE_FILE="$bundle_file" node --input-type=module <<'NODE'
+          import {statSync} from 'node:fs';
+          const bytes=statSync(process.env.BUNDLE_FILE).size;
+          if(bytes<=0||bytes>8*1024*1024)throw Error('Review-only bundle outside safe size boundary');
+          console.log('ANEVUM_INSTITUTE_HOSTED_DRY_RUN_PASS',JSON.stringify({bytes}));
+          NODE
+      - name: Dry-run bundle isolated public Institute candidate (never deploy)
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/anevum-institute-public-candidate-bundle"
+          # Source-only release artifact. NEVER remove --dry-run or add production bindings.
+          npx --no-install wrangler deploy --config wrangler.institute-public-candidate.jsonc --dry-run --outdir "$dir"
+          bundle_file="$(find "$dir" -type f \( -name '*.js' -o -name '*.mjs' \) -print -quit)"
+          test -n "$bundle_file"
+          test -s "$bundle_file"
+          BUNDLE_FILE="$bundle_file" node --input-type=module <<'NODE'
+          import {statSync} from 'node:fs';
+          const bytes=statSync(process.env.BUNDLE_FILE).size;
+          if(bytes<=0||bytes>8*1024*1024)throw Error('Public candidate bundle outside safe size boundary');
+          console.log('ANEVUM_INSTITUTE_PUBLIC_CANDIDATE_DRY_RUN_PASS',JSON.stringify({bytes}));
+          NODE
+      # Releasing the isolated Institute to Cloudflare is authorized for this PR
+      # only after the owner has pinned the exact known Worker and Access app.
+      # The next step never deploys production, and no broad Access rule is used.
+      - name: Report unavailable pinned preview configuration
+        if: github.event.pull_request.number == 816 && (vars.ANEVUM_WEB_PREVIEW_ACCESS_APP_ID == '' || vars.ANEVUM_WEB_PREVIEW_WORKER_UUID == '')
+        run: |
+          echo "ANEVUM_INSTITUTE_PREVIEW_NOT_DEPLOYED - pinned owner-only Access variables are absent."
+          echo "Protected hosted preview requires exact audited GitHub Actions variable pins." >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify exact owner-only Cloudflare Access before hosted preview
+        id: access
+        if: github.event.pull_request.number == 816 && vars.ANEVUM_WEB_PREVIEW_ACCESS_APP_ID != '' && vars.ANEVUM_WEB_PREVIEW_WORKER_UUID != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ANEVUM_WEB_PREVIEW_ACCESS_APP_ID: ${{ vars.ANEVUM_WEB_PREVIEW_ACCESS_APP_ID }}
+          ANEVUM_WEB_PREVIEW_WORKER_UUID: ${{ vars.ANEVUM_WEB_PREVIEW_WORKER_UUID }}
+        run: node scripts/verify-original-works-hosted-access.mjs
+      - name: Create owner-only Institute Preview without a production deployment
+        id: preview
+        if: steps.access.outcome == 'success'
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          # Wrangler derives exact Worker name from the dedicated no-bindings config.
+          # Never substitute 'wrangler deploy' here.
+          output="$(npx --no-install wrangler preview --config wrangler.institute-preview.jsonc --name institute-pr-816 --json)"
+          json="$(printf '%s\n' "$output" | sed -n '/^{/,$p')"
+          preview_url="$(printf '%s' "$json" | jq -er '.preview.urls[0]')"
+          echo "::add-mask::$preview_url"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+          echo "Isolated Institute Preview was created. Owner authentication and anonymous Access denial remain mandatory." >> "$GITHUB_STEP_SUMMARY"
+      - name: Prove all protected Preview routes deny anonymous access
+        if: steps.preview.outcome == 'success'
+        env:
+          BASE_URL: ${{ steps.preview.outputs.preview_url }}
+        run: node scripts/verify-original-works-protected-preview.mjs
+      - name: Prove real Institute pages and assets deny anonymous access
+        if: steps.preview.outcome == 'success'
+        env:
+          BASE_URL: ${{ steps.preview.outputs.preview_url }}
+        run: node scripts/verify-anevum-institute-protected-preview.mjs
+      - name: Record remaining authenticated Safari acceptance
+        if: steps.preview.outcome == 'success'
+        run: |
+          echo "Owner-authenticated iPhone Safari, screenshot, keyboard and media validation are pending." >> "$GITHUB_STEP_SUMMARY"
+          echo "No production merge, public deployment or academic accreditation is implied." >> "$GITHUB_STEP_SUMMARY"

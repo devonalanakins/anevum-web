@@ -9,7 +9,7 @@ const accountId = "2f7ee83107240152097efd956a4e8335";
 const token = "test-fake-token-not-a-credential";
 const ownerPolicy = {
   decision:"allow",
-  include:[{email:{email:"devon@anevum.com"}}],
+  include:[{email:{email:"id@devonakins.com"}}],
   exclude:[],
   require:[]
 };
@@ -144,4 +144,11 @@ test("the hosted-preview preflight must be executed before any wrangler preview 
   assert.match(pipeline,/ANEVUM_WEB_PREVIEW_ACCESS_APP_ID:/);
   assert.match(pipeline,/ANEVUM_WEB_PREVIEW_WORKER_UUID:/);
   assert.doesNotMatch(pipeline.slice(gate,preview),/wrangler (?:deploy|preview)|curl.*(POST|PUT|PATCH|DELETE)/);
+});
+
+
+test("retired owner mailbox never passes owner-only Access gate",()=>{
+  const input=valid();
+  input.policies[0].include=[{email:{email:"devon@anevum.com"}}];
+  assert.deepEqual(checkAccessPreviewGate(input),["ACCESS_ALLOW_NOT_OWNER_ONLY"]);
 });

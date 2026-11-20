@@ -1,0 +1,75 @@
+name: ANEVUM Open Institute Preview Verify
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/anevum-institute-preview/**"
+      - "scripts/ops/anevum-institute-preview-server.mjs"
+      - "scripts/ops/anevum-institute-preview-readiness.mjs"
+      - "scripts/ops/verify-anevum-institute-preview-browser.mjs"
+      - "tests/anevum-institute-preview.test.mjs"
+      - "docs/qa/ANEVUM.WEB.QA.2026-11-18.022.OWNER-SAFARI-ACCEPTANCE.md"
+      - "tests/anevum-institute-hosted-preview.test.mjs"
+      - "wrangler.institute-preview.jsonc"
+      - "tests/anevum-institute-preview-readiness.test.mjs"
+      - "tests/anevum-identity-review.test.mjs"
+      - "tests/member-learning-profile.test.mjs"
+      - "src/server/member-learning-profile.mjs"
+      - "src/server/member.mjs"
+      - "migrations-learning-preview/**"
+      - "scripts/ops/verify-anevum-learning-schema.py"
+      - "tests/anevum-local-member-card.test.mjs"
+      - "docs/design/ANEVUM.WEB.DESIGN.2026-11-17.001.OPEN-INSTITUTE-LEARNING-PREVIEW.md"
+      - ".github/workflows/anevum-institute-preview-verify.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  review-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Parse self-contained preview files
+        run: |
+          node --check scripts/ops/anevum-institute-preview-readiness.mjs
+          node --check apps/anevum-institute-preview/worker.mjs
+          node --check apps/anevum-institute-preview/styles.mjs
+          node --check apps/anevum-institute-preview/client.mjs
+          node --check apps/anevum-institute-preview/curriculum.mjs
+          node --check apps/anevum-institute-preview/transistor-lesson.mjs
+          node --check apps/anevum-institute-preview/study-tools.mjs
+          node --check apps/anevum-institute-preview/frontier-society.mjs
+          node --check apps/anevum-institute-preview/frontier-gl.mjs
+          node --check apps/anevum-institute-preview/dossier-ui.mjs
+          node --check apps/anevum-institute-preview/evidence-schema.mjs
+          node --check apps/anevum-institute-preview/evidence-workbench.mjs
+          node --check apps/anevum-institute-preview/learner-ui.mjs
+          node --check apps/anevum-institute-preview/local-member-schema.mjs
+          node --check apps/anevum-institute-preview/local-member-client.mjs
+          node --check src/server/member-learning-profile.mjs
+          node --check scripts/ops/anevum-institute-preview-server.mjs
+          node --check scripts/ops/verify-anevum-institute-preview-browser.mjs
+      - name: Verify isolated educational content and route contracts
+        run: node --test tests/anevum-institute-hosted-preview.test.mjs tests/anevum-institute-preview.test.mjs tests/anevum-evidence-schema.test.mjs tests/anevum-local-member-card.test.mjs tests/anevum-local-member.test.mjs tests/anevum-identity-review.test.mjs tests/member-learning-profile.test.mjs
+      - name: Verify fail-closed owner preview readiness diagnostic (synthetic only)
+        run: node --test tests/anevum-institute-preview-readiness.test.mjs
+      - name: Rehearse learning profile migration in disposable SQLite
+        run: python3 scripts/ops/verify-anevum-learning-schema.py
+      - name: Verify real Chromium interaction, accessibility and responsiveness
+        run: node scripts/ops/verify-anevum-institute-preview-browser.mjs
+      - name: Retain screenshots for visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: anevum-institute-design-review
+          path: "${{ runner.temp }}/anevum-institute-*.png"
+          if-no-files-found: warn
+          retention-days: 7
+
+# Source-only private preview member-profile contracts; no production route, DNS, auth configuration or deployment operations.
