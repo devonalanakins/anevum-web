@@ -32,6 +32,31 @@ class ScopeTests(unittest.TestCase):
     def test_root_readme_only_does_not_require_preview(self):
         self.assertFalse(scope.app_preview_required(["README.md"]))
 
+    def test_reviewed_readme_vector_assets_are_maintenance_only(self):
+        # Exact static README artwork has no application or deployment inputs.
+        paths = [
+            "README.md",
+            ".github/assets/readme-hero.svg",
+            ".github/assets/anevum-institute-hero.svg",
+            ".github/assets/anevum-directions.svg",
+        ]
+        self.assertTrue(set(paths).issubset(scope.MAINTENANCE_PATHS))
+        self.assertFalse(scope.app_preview_required(paths))
+        self.assertFalse(scope.isolated_review_required(paths))
+        self.assertFalse(scope.public_studio_required(paths))
+
+    def test_unknown_artwork_or_runtime_with_readme_never_skips_preview(self):
+        reviewed = [".github/assets/anevum-institute-hero.svg"]
+        for unsafe in [
+            ".github/assets/new-unreviewed-art.svg",
+            ".github/assets/../worker.mjs",
+            "src/App.tsx",
+            "wrangler.jsonc",
+            "scripts/verify-original-works-hosted-access.mjs",
+        ]:
+            with self.subTest(path=unsafe):
+                self.assertTrue(scope.app_preview_required(reviewed + [unsafe]))
+
     def test_readme_plus_runtime_requires_preview(self):
         self.assertTrue(scope.app_preview_required(["README.md", "src/App.tsx"]))
 
