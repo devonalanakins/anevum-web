@@ -7,6 +7,11 @@ import sys
 MAINTENANCE_PATHS = frozenset([
     # Repository overview text is not served or bundled into the web app.
     "README.md",
+    # Exact GitHub README illustrations, not consumed by the Vite/Worker runtime.
+    # Unknown assets still fail closed and require application preview verification.
+    ".github/assets/readme-hero.svg",
+    ".github/assets/anevum-institute-hero.svg",
+    ".github/assets/anevum-directions.svg",
     ".github/workflows/anevum-ops-progression-reset-20261021.yml",
     ".github/workflows/anevum-verify.yml",
     "docs/ANEVUM.OPS.MAINT.2026-10-21.002.MANUAL-RESET-RUNBOOK.md",
