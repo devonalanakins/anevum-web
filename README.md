@@ -1,4 +1,4 @@
-<p align="center"><img src=".github/assets/readme-hero.svg" alt="Original Anevum project illustration" width="100%" /></p>
+<p align="center"><img src=".github/assets/anevum-institute-hero.svg" alt="ANEVUM: a cinematic illustrated institute and creative archive, with botanical study and celestial motifs. Conceptual scene, not an existing institution." width="100%" /></p>
 
 # Anevum — Web
 
@@ -11,6 +11,8 @@ ANEVUM's public web source, educational research previews, creative archives and
 ANEVUM is an independent creative and research initiative led by Devon Alan Akins. Its emerging direction combines open technical learning, carefully documented experiments, nature and bonsai journals, original writing and creative experiences. The long-term public-interest mission is **a direction, not a statement of nonprofit incorporation, academic accreditation or formal institutional status**.
 
 ## Current development tracks
+
+<p align="center"><img src=".github/assets/anevum-directions.svg" alt="Three ANEVUM directions: Open Institute, Original Creative Work, and Preserved Legacy. Original illustrative artwork; actual release statuses are stated below." width="100%" /></p>
 
 | Track | Review source | Status / limits |
 | --- | --- | --- |
