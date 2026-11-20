@@ -87,6 +87,57 @@ ISOLATED_PUBLIC_STUDIO_PATHS = frozenset([
     "docs/design/ANEVUM.WEB.OPS.2026-11-03.027.CANONICAL-ORIGINAL-WORKS-LAUNCH.md",
 ])
 
+# The bonsai public Worker has no production route, assets binding, database or
+# operator access. It is verified by dedicated route/content and real-browser
+# checks. Only these exact reviewed paths may bypass the legacy V5 Access gate.
+# Unknown files, mixed application changes, or new media remain fail closed.
+ISOLATED_BONSAI_PATHS = frozenset([
+    ".github/workflows/anevum-bonsai-verify.yml",
+    "apps/anevum-bonsai/records.mjs",
+    "apps/anevum-bonsai/style.mjs",
+    "apps/anevum-bonsai/worker.mjs",
+    "scripts/ops/anevum-bonsai-preview-test-server.mjs",
+    "scripts/ops/verify-anevum-bonsai-browser.mjs",
+    "tests/anevum-bonsai.test.mjs",
+    "wrangler.anevum-bonsai-preview.jsonc",
+    "docs/design/ANEVUM.WEB.DESIGN.2026-11-15.001.BONSAI-LIVING-ARCHIVE.md",
+    "docs/design/ANEVUM.WEB.BUILD.2026-11-15.001.BONSAI-LIVING-ATLAS-IMPLEMENTATION.md",
+    "apps/anevum-bonsai/aaa-design/site/CONTENT-PROVENANCE.json",
+    "apps/anevum-bonsai/aaa-design/site/README.md",
+    "apps/anevum-bonsai/aaa-design/site/about/index.html",
+    "apps/anevum-bonsai/aaa-design/site/assets/site.css",
+    "apps/anevum-bonsai/aaa-design/site/assets/site.js",
+    "apps/anevum-bonsai/aaa-design/site/atelier/index.html",
+    "apps/anevum-bonsai/aaa-design/site/build_site.py",
+    "apps/anevum-bonsai/aaa-design/site/chronicle/index.html",
+    "apps/anevum-bonsai/aaa-design/site/collection/index.html",
+    "apps/anevum-bonsai/aaa-design/site/collection/tree-01/index.html",
+    "apps/anevum-bonsai/aaa-design/site/collection/tree-02/index.html",
+    "apps/anevum-bonsai/aaa-design/site/collection/tree-03/index.html",
+    "apps/anevum-bonsai/aaa-design/site/collection/tree-04/index.html",
+    "apps/anevum-bonsai/aaa-design/site/collection/tree-05/index.html",
+    "apps/anevum-bonsai/aaa-design/site/field-notes/acorn-01/index.html",
+    "apps/anevum-bonsai/aaa-design/site/index.html",
+    "apps/anevum-bonsai/aaa-design/site/journal/index.html",
+    "apps/anevum-bonsai/aaa-design/site/journal/time-is-the-medium/index.html",
+    "apps/anevum-bonsai/aaa-design/site/media/PROVENANCE.json",
+    "apps/anevum-bonsai/aaa-design/site/media/hero-desktop.webp",
+    "apps/anevum-bonsai/aaa-design/site/media/hero-mobile.webp",
+    "apps/anevum-bonsai/aaa-design/site/media/hero-small.webp",
+    "apps/anevum-bonsai/aaa-design/site/media/leaf-study.webp",
+    "apps/anevum-bonsai/aaa-design/site/media/light-study.webp",
+    "apps/anevum-bonsai/aaa-design/site/media/stone-study.webp",
+    "apps/anevum-bonsai/aaa-design/site/practice/index.html",
+    "apps/anevum-bonsai/aaa-design/site/scripts/browser_qa.py",
+    "apps/anevum-bonsai/aaa-design/site/scripts/standalone_bundle.py",
+    "apps/anevum-bonsai/aaa-design/site/scripts/static_qa.py",
+    "apps/anevum-bonsai/review-packed.mjs",
+    "tests/anevum-bonsai-review.test.mjs",
+])
+
+def bonsai_required(paths):
+    return bool(paths) and any(path in ISOLATED_BONSAI_PATHS for path in paths)
+
 def public_studio_required(paths):
     return bool(paths) and any(path in ISOLATED_PUBLIC_STUDIO_PATHS for path in paths)
 
@@ -96,7 +147,7 @@ def isolated_review_required(paths):
 def app_preview_required(paths):
     # Unknown or mixed application changes still require legacy preview safety.
     # Isolated review files use a separate mandatory review acceptance gate.
-    return not paths or any(path not in MAINTENANCE_PATHS | ISOLATED_ORIGINAL_WORKS_REVIEW_PATHS | ISOLATED_PUBLIC_STUDIO_PATHS for path in paths)
+    return not paths or any(path not in MAINTENANCE_PATHS | ISOLATED_ORIGINAL_WORKS_REVIEW_PATHS | ISOLATED_PUBLIC_STUDIO_PATHS | ISOLATED_BONSAI_PATHS for path in paths)
 
 def main():
     if len(sys.argv) != 3 or not all(re.fullmatch(r'[a-f0-9]{40}', s) for s in sys.argv[1:]):
@@ -106,6 +157,7 @@ def main():
     print('app_preview_required=' + str(app_preview_required(paths)).lower())
     print('isolated_review_required=' + str(isolated_review_required(paths)).lower())
     print('public_studio_required=' + str(public_studio_required(paths)).lower())
+    print('bonsai_required=' + str(bonsai_required(paths)).lower())
 
 if __name__ == '__main__':
     main()

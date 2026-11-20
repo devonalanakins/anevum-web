@@ -170,6 +170,33 @@ class ScopeTests(unittest.TestCase):
         self.assertFalse(scope.public_studio_required(["README.md"]))
         self.assertFalse(scope.public_studio_required([]))
 
+    def test_bonsai_isolated_worker_uses_exact_own_browser_gate(self):
+        paths = list(scope.ISOLATED_BONSAI_PATHS)
+        self.assertEqual(len(paths), 41)
+        self.assertFalse(scope.app_preview_required(paths))
+        self.assertTrue(scope.bonsai_required(paths))
+        self.assertFalse(scope.public_studio_required(paths))
+        self.assertFalse(scope.isolated_review_required(paths))
+        workflow = (target.parents[2] / ".github/workflows/anevum-verify.yml").read_text()
+        self.assertIn("steps.scope.outputs.bonsai_required == 'true'", workflow)
+        self.assertIn("node --test tests/anevum-bonsai.test.mjs", workflow)
+        browser = (target.parents[2] / ".github/workflows/anevum-bonsai-verify.yml").read_text()
+        self.assertIn("verify-anevum-bonsai-browser.mjs", browser)
+        self.assertIn("wrangler deploy --config wrangler.anevum-bonsai-preview.jsonc --dry-run", browser)
+
+    def test_bonsai_unknown_assets_and_protected_mixed_edits_fail_closed(self):
+        base = ["apps/anevum-bonsai/worker.mjs"]
+        for unknown in ("apps/anevum-bonsai/art/new.webp",
+                        "apps/anevum-bonsai/credentials.mjs",
+                        "apps/anevum-bonsai/new-database.mjs",
+                        "docs/design/ANEVUM.WEB.NEW.BONSAI.md",
+                        "src/App.tsx", "worker.mjs", "wrangler.jsonc"):
+            with self.subTest(path=unknown):
+                self.assertTrue(scope.bonsai_required(base + [unknown]))
+                self.assertTrue(scope.app_preview_required(base + [unknown]))
+        self.assertFalse(scope.bonsai_required([]))
+        self.assertTrue(scope.app_preview_required([]))
+
     def test_empty_input_cannot_skip_preview(self):
         self.assertTrue(scope.app_preview_required([]))
 
