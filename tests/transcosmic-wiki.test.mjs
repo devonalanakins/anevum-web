@@ -147,3 +147,23 @@ test("wiki uses Wikipedia-like information hierarchy and seven consistent catego
   assert.match(styles,/\.ow-wiki \.ow-wiki-result/);
   assert.doesNotMatch(styles,/(?:^|\n)\s*(?:html|body|:root)\s*\{/m);
 });
+
+test("connection explorer follows only explicit outgoing and incoming reader edges",()=>{
+  assert.match(wiki,/route==="special\/connections"\?<WikiConnectionsPage\/>/);
+  assert.match(wiki,/const CONNECTIONS = wikiHome \+ "\/special\/connections"/);
+  assert.match(wiki,/const requested=params\.get\("focus"\)/);
+  assert.match(wiki,/requested===null\?pages\[0\]:getWikiArticle\(requested\)/);
+  assert.match(wiki,/if\(getWikiArticle\(slug\)\) setParams/);
+  assert.match(wiki,/article\.related\.map\(\(link,i\)/);
+  assert.match(wiki,/article\.backlinks\.map\(\(link,i\)/);
+  assert.match(wiki,/to=\{connectionPath\(link\.slug\)\}/);
+  assert.match(wiki,/No reviewed outgoing references/);
+  assert.match(wiki,/No reviewed incoming references/);
+  assert.match(wiki,/data-wiki-explorer-entry="true"/);
+  assert.match(wiki,/to=\{connectionPath\(article\.slug\)\}/);
+  assert.match(wiki,/editorial references, not a map/);
+  assert.match(wiki,/Editorial clearance for publication is still required/);
+  assert.match(styles,/\.ow-wiki \.ow-wiki-explorer-branches/);
+  assert.match(styles,/\.ow-wiki \.ow-wiki-explorer-control select:focus-visible/);
+  assert.match(styles,/min-height:44px/);
+});
