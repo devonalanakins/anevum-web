@@ -235,10 +235,10 @@ async function view(pathname,width,height,name,saveScreenshot=false){
    return v?.path===pathname&&v?.heading?v:null;
   },"Living Laboratory "+name);
   if(!state.main||!state.skip||!state.menu||!state.artwork||state.artCount!==4||!state.anchors||state.scripts!==0)throw Error("Lab accessibility or link contract failed: "+JSON.stringify(state));
-  if(!state.title.includes("laboratory for the possible")||state.heading!=="ANEVUM"||!state.tagline?.includes("laboratory for the possible"))throw Error("Wrong laboratory identity: "+JSON.stringify(state));
+  if(!state.title.includes("Beyond the familiar")||state.heading!=="ANEVUM"||!state.tagline?.includes("Beyond the familiar"))throw Error("Wrong laboratory identity: "+JSON.stringify(state));
   if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1||state.bodyScroll>state.width+1)throw Error("Lab horizontal overflow: "+JSON.stringify(state));
   if(state.heroInset<(width<=530?14:width<=1100?24:38))throw Error("Lab desktop/mobile hero gutter missing: "+JSON.stringify(state));
-  if(state.nav.length!==5||!state.nav.includes("/original-works/experiments")||!state.nav.includes("/original-works/archive"))throw Error("Lab navigation broken: "+JSON.stringify(state));
+  if(state.nav.length!==7||!state.nav.includes("/original-works/works")||!state.nav.includes("/original-works/wiki")||!state.nav.includes("/original-works/experiments")||!state.nav.includes("/original-works/archive"))throw Error("Lab navigation broken: "+JSON.stringify(state));
   if((width<=800)!==state.menuVisible)throw Error("Lab menu breakpoint mismatch: "+JSON.stringify(state));
   if(state.menuVisible){
    const menu=await evalJS(`(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();const opened=d.open;const links=[...d.querySelectorAll('nav a')].map(a=>a.getAttribute('href'));d.querySelector('summary').click();return {opened,closed:!d.open,links}})()`);
