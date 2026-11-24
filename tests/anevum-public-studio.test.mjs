@@ -77,6 +77,23 @@ test("visual publication stays separated from reader canon and manuscript",async
  assert.match(wiki,/Canon articles remain under editorial review/);
  assert.match(wiki,/Articles not yet published/i);
  assert.doesNotMatch(wiki,/22 articles|408 entries|chronology|in-world written records/i);
+ assert.match(wiki,/aria-label="Encyclopedia sections"/);
+ assert.match(wiki,/aria-label="Jump to encyclopedia subject"/);
+ const categories=["worlds","people","places","infrastructure","institutions","science","history"];
+ const topicIds=[...wiki.matchAll(/<section id="wiki-([a-z]+)" class="wiki-topic"/g)].map(m=>m[1]);
+ assert.deepEqual(topicIds,categories);
+ assert.equal((wiki.match(/class="wiki-topic-state"/g)||[]).length,7);
+ for(const anchor of [...wiki.matchAll(/href="#(wiki-[a-z-]+)"/g)].map(m=>m[1])){
+  assert.equal((wiki.match(new RegExp('id="'+anchor+'"','g'))||[]).length,1,"Missing or duplicate anchor "+anchor);
+ }
+ assert.equal((wiki.match(/class="wiki-disclosure"/g)||[]).length,2);
+ assert.match(wiki,/Free access does not transfer copyright/);
+ assert.match(wiki,/Reader material will be free to access after editorial clearance/);
+ const reading=wiki.match(/<div class="wiki-reading-grid">([\s\S]*?)<\/div>/)?.[1];
+ assert.ok(reading);
+ for(const slug of ["reply","transcosmic","journal"])assert.match(reading,new RegExp('href="/original-works/'+slug+'"'));
+ assert.doesNotMatch(wiki,/href="\/original-works\/wiki\/|<script\b|<input\b|<form\b/i);
+ for(const category of categories)assert.equal((await req("/wiki/category/"+category)).status,404);
  const reply=await (await req("/reply")).text();
  assert.match(reply,/Revision in progress|author revision/i);
  assert.doesNotMatch(reply,/purchase now|preorder now|buy now/i);
