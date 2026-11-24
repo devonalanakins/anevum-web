@@ -14,6 +14,8 @@ import "../styles/transcosmic-wiki.css";
  * No public history or citations are invented for a design-review build.
  */
 const ROOT = "/design/original-works";
+const CONNECTIONS = wikiHome + "/special/connections";
+const connectionPath = (slug:string) => CONNECTIONS + "?focus=" + encodeURIComponent(slug);
 
 const categoryLabel = (category:WikiCategory) => ({
   World:"Worlds",Person:"People",Place:"Places",Infrastructure:"Infrastructure",
@@ -59,6 +61,7 @@ function WikiSidebar({active}:{active?:string}) {
       <Link to={wikiHome} aria-current={active==="home"?"page":undefined}>Main page</Link>
       <Link to={wikiSpecialPath("all-pages")} aria-current={active==="all"?"page":undefined}>All articles</Link>
       <Link to={wikiSpecialPath("about")} aria-current={active==="about"?"page":undefined}>About this wiki</Link>
+      <Link to={CONNECTIONS} aria-current={active==="connections"?"page":undefined}>Connection explorer</Link>
     </nav>
     <p className="ow-wiki-sidebar-label">By subject</p>
     <nav aria-label="Wiki categories" className="ow-wiki-side-links">
@@ -120,6 +123,7 @@ function WikiIndex() {
         <span className="ow-wiki-live-mark" aria-hidden="true" />
         <p><strong>Public-source cleared · website review.</strong> The publishing queue marks 22 Now-window subjects public, but this redesigned wiki and its newly distilled copy still require editorial review and release signoff. Later-window and private sources remain withheld.</p>
       </div>
+      <Link to={CONNECTIONS} className="ow-wiki-explorer-entry" data-wiki-explorer-entry="true"><span><strong>Follow the connections.</strong><span>Explore the direct relationships between curated reader articles.</span></span><span aria-hidden="true">↗</span></Link>
       <div className="ow-wiki-search-area">
         <label htmlFor="ow-wiki-search">Search the encyclopedia</label>
         <input id="ow-wiki-search" type="search" maxLength={80} autoComplete="off"
@@ -197,6 +201,7 @@ function WikiArticlePage({slug}:{slug:string}) {
       </div>
       <div className="ow-wiki-article-footer">
         <span>Category</span><Link to={wikiCategoryPath(article.category)}>{article.category}</Link>
+        <Link className="ow-wiki-explorer-link" to={connectionPath(article.slug)}>Explore connections</Link>
         <Link to={wikiSpecialPath("all-pages")}>All wiki pages <span aria-hidden="true">↗</span></Link>
       </div>
     </div>
@@ -270,6 +275,67 @@ function WikiAllPages() {
   </section>;
 }
 
+/** Navigate the existing editorial allowlist. No inferred or transitive edges. */
+function WikiConnectionsPage() {
+  const pages=wikiAllPages();
+  const [params,setParams]=useSearchParams();
+  const requested=params.get("focus");
+  const article=requested===null?pages[0]:getWikiArticle(requested);
+  const selectArticle=(slug:string)=>{
+    if(getWikiArticle(slug)) setParams(new URLSearchParams({focus:slug}));
+  };
+  return <section className="ow-wiki-layout ow-wiki-explorer" aria-labelledby="ow-wiki-explorer-title">
+    <WikiSidebar active="connections"/>
+    <div className="ow-wiki-main">
+      <WikiBreadcrumb items={[{label:"Connection explorer"}]}/>
+      <p className="ow-eyebrow">The Transcosmic / Editorial connections</p>
+      <h1 id="ow-wiki-explorer-title">Follow the connections.</h1>
+      <p className="ow-page-lead">Explore direct, directed relationships within the reviewed reader edition. These connections are editorial references, not a map of distance, travel, chronology or inferred relationships.</p>
+      <div className="ow-wiki-explorer-control">
+        <label htmlFor="ow-wiki-focus">Focus article</label>
+        <select id="ow-wiki-focus" value={article?.slug||""} onChange={e=>selectArticle(e.currentTarget.value)}>
+          {!article&&<option value="" disabled>Choose an article</option>}
+          {pages.map(item=><option key={item.slug} value={item.slug}>{item.title} · {categoryLabel(item.category)}</option>)}
+        </select>
+        <Link to={wikiSpecialPath("all-pages")}>Browse all articles</Link>
+      </div>
+      {article?<div className="ow-wiki-explorer-graph" data-focus-slug={article.slug}>
+        <div className="ow-wiki-explorer-center" data-wiki-category={article.category}>
+          <p className="ow-wiki-explorer-kicker">Selected article / {article.category}</p>
+          <h2>{article.title}</h2><p>{article.summary}</p>
+          <Link className="ow-wiki-explorer-link" to={article.href}>Read article <span aria-hidden="true">↗</span></Link>
+          <p className="ow-wiki-explorer-count" role="status" aria-live="polite">{article.title}: {article.related.length} outgoing · {article.backlinks.length} incoming</p>
+        </div>
+        <div className="ow-wiki-explorer-branches">
+          <section aria-labelledby="ow-wiki-outgoing">
+            <h3 id="ow-wiki-outgoing">Outgoing references <span aria-hidden="true">→</span></h3>
+            <p>From this article to another reviewed entry.</p>
+            {article.related.length?<ul className="ow-wiki-explorer-edges">
+              {article.related.map((link,i)=><li key={link.slug+":"+i} data-target={link.slug}>
+                <span>{link.relation}</span>
+                <Link className="ow-wiki-refocus" to={connectionPath(link.slug)}>{link.label}<span aria-hidden="true"> →</span></Link>
+                <Link to={link.href} className="ow-wiki-edge-read" aria-label={"Read "+link.label}>Read article</Link>
+              </li>)}
+            </ul>:<p className="ow-wiki-explorer-empty">No reviewed outgoing references.</p>}
+          </section>
+          <section aria-labelledby="ow-wiki-incoming">
+            <h3 id="ow-wiki-incoming"><span aria-hidden="true">← </span>Incoming references</h3>
+            <p>Other reviewed entries that reference this article.</p>
+            {article.backlinks.length?<ul className="ow-wiki-explorer-edges">
+              {article.backlinks.map((link,i)=><li key={link.slug+":"+i} data-source={link.slug}>
+                <span>{link.context}</span>
+                <Link className="ow-wiki-refocus" to={connectionPath(link.slug)}>{link.title}<span aria-hidden="true"> →</span></Link>
+                <Link to={link.href} className="ow-wiki-edge-read" aria-label={"Read "+link.title}>Read article</Link>
+              </li>)}
+            </ul>:<p className="ow-wiki-explorer-empty">No reviewed incoming references.</p>}
+          </section>
+        </div>
+      </div>:<div className="ow-wiki-empty" role="status"><h2>Article unavailable.</h2><p>Choose an entry from the reviewed reader edition.</p><Link to={CONNECTIONS}>Reset selection</Link></div>}
+      <div className="ow-wiki-worknote"><span>REVIEW EDITION</span><p>Only explicit relationships from the existing curated dataset are shown. Editorial clearance for publication is still required.</p></div>
+    </div>
+  </section>;
+}
+
 function WikiAbout() {
   return <section className="ow-wiki-layout ow-wiki-information" aria-labelledby="ow-wiki-about-title">
     <WikiSidebar active="about"/>
@@ -307,6 +373,7 @@ export default function TranscosmicWiki({path=""}:{path?:string}) {
     {route===""?<WikiIndex/>:
       route==="special/all-pages"?<WikiAllPages/>:
       route==="special/about"?<WikiAbout/>:
+      route==="special/connections"?<WikiConnectionsPage/>:
       route.startsWith("category/")?<WikiCategoryPage slug={route.slice("category/".length)}/>:
       !route.includes("/")?<WikiArticlePage slug={route}/>:
       <WikiMissing/>}
