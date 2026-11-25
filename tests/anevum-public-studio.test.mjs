@@ -77,6 +77,23 @@ test("visual publication stays separated from reader canon and manuscript",async
  assert.match(wiki,/Canon articles remain under editorial review/);
  assert.match(wiki,/Articles not yet published/i);
  assert.doesNotMatch(wiki,/22 articles|408 entries|chronology|in-world written records/i);
+ assert.match(wiki,/aria-label="Encyclopedia sections"/);
+ assert.match(wiki,/aria-label="Jump to encyclopedia subject"/);
+ const categories=["worlds","people","places","infrastructure","institutions","science","history"];
+ const topicIds=[...wiki.matchAll(/<section id="wiki-([a-z]+)" class="wiki-topic"/g)].map(m=>m[1]);
+ assert.deepEqual(topicIds,categories);
+ assert.equal((wiki.match(/class="wiki-topic-state"/g)||[]).length,7);
+ for(const anchor of [...wiki.matchAll(/href="#(wiki-[a-z-]+)"/g)].map(m=>m[1])){
+  assert.equal((wiki.match(new RegExp('id="'+anchor+'"','g'))||[]).length,1,"Missing or duplicate anchor "+anchor);
+ }
+ assert.equal((wiki.match(/class="wiki-disclosure"/g)||[]).length,2);
+ assert.match(wiki,/Free access does not transfer copyright/);
+ assert.match(wiki,/Reader material will be free to access after editorial clearance/);
+ const reading=wiki.match(/<div class="wiki-reading-grid">([\s\S]*?)<\/div>/)?.[1];
+ assert.ok(reading);
+ for(const slug of ["reply","transcosmic","journal"])assert.match(reading,new RegExp('href="/original-works/'+slug+'"'));
+ assert.doesNotMatch(wiki,/href="\/original-works\/wiki\/|<script\b|<input\b|<form\b/i);
+ for(const category of categories)assert.equal((await req("/wiki/category/"+category)).status,404);
  const reply=await (await req("/reply")).text();
  assert.match(reply,/Revision in progress|author revision/i);
  assert.doesNotMatch(reply,/purchase now|preorder now|buy now/i);
@@ -207,10 +224,19 @@ test("laboratory apex is a truthful independent studio while legacy reader home 
  assert.notEqual(rootHtml,legacyHtml,"The new apex must not overwrite archived Original Works");
  assert.match(legacyHtml,/<title>Anevum \| Original Works &amp; The Transcosmic<\/title>/);
  assert.match(legacyHtml,/Somewhere,/);
- assert.match(rootHtml,/<title>ANEVUM \| A laboratory for the possible<\/title>/);
+ assert.match(rootHtml,/<title>ANEVUM \| Beyond the familiar<\/title>/);
  assert.match(rootHtml,/<h1 id="lab-home-title" class="lab-heading">ANEVUM<\/h1>/);
- assert.match(rootHtml,/A laboratory for the possible/);
+ assert.match(rootHtml,/Beyond the familiar/);
  assert.match(rootHtml,/Created by Devon Akins/);
+ assert.match(rootHtml,/<a class="lab-action" href="\/original-works\/wiki">Explore the encyclopedia/);
+ assert.match(rootHtml,/<a class="lab-secondary" href="\/original-works\/reply">Discover REPLY/);
+ assert.match(rootHtml,/id="studio"/);
+ assert.match(rootHtml,/id="access"/);
+ assert.match(rootHtml,/Books, structured courses and merchandise/);
+ assert.match(rootHtml,/Free access does not transfer copyright/);
+ assert.match(rootHtml,/after editorial clearance/);
+ assert.doesNotMatch(rootHtml,/22 articles|buy now|preorder now|checkout now/i);
+ for (const path of ["/original-works/works","/original-works/wiki","/original-works/journal","/original-works/reply"]) assert.equal((await worker.fetch(new Request("https://anevum.com"+path))).status,200,path);
  assert.match(rootHtml,/<nav class="lab-nav" aria-label="Primary navigation">/);
  assert.match(rootHtml,/<details class="lab-mobile"><summary>Menu<\/summary>/);
  assert.match(rootHtml,/href="\/original-works\/archive"/);

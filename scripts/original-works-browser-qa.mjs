@@ -85,6 +85,7 @@ async function runCase(route, viewport) {
   const name = route === "/design/original-works" ? "original-works-home" :
     route === "/design/original-works/wiki" ? "original-works-wiki" :
     route === "/design/original-works/wiki/special/all-pages" ? "original-works-wiki-directory" :
+    route === "/design/original-works/wiki/special/connections" ? "original-works-wiki-connections" :
     route === "/design/original-works/wiki/ovara" ? "original-works-wiki-article" :
     route.endsWith("/reading-room") ? "original-works-reading-room" :
     route.endsWith("/reply") ? "original-works-reply" : "original-works-atlas";
@@ -283,6 +284,46 @@ async function runCase(route, viewport) {
           await sleep(110);
         }
         if(!returned)throw Error("Wiki index did not reload with complete curated articles");
+        // Exercise the actual connection explorer from the reader index.
+        await send("Runtime.evaluate",{expression:'document.querySelector("[data-wiki-explorer-entry]")?.click()'});
+        let explorerReady=false;
+        for(let n=0;n<65;n++){
+          if(await readWiki('location.pathname.endsWith("/special/connections")&&document.querySelector("#ow-wiki-focus")?.options.length===22')){explorerReady=true;break}
+          await sleep(95);
+        }
+        if(!explorerReady)throw Error("Connection explorer missing or did not mount");
+        await send("Runtime.evaluate",{expression:'(()=>{const s=document.querySelector("#ow-wiki-focus");s.focus();const set=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,"value").set;set.call(s,"ovara");s.dispatchEvent(new Event("change",{bubbles:true}));})()'});
+        let edgeState;
+        for(let n=0;n<65;n++){
+          edgeState=await readWiki('({focus:document.querySelector(".ow-wiki-explorer-graph")?.dataset.focusSlug,out:[...document.querySelectorAll("[data-target]")].map(x=>x.dataset.target).sort(),incoming:[...document.querySelectorAll("[data-source]")].map(x=>x.dataset.source).sort(),url:location.search,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,robots:document.querySelector("meta[name=\\\"robots\\\"]")?.content||""})');
+          if(edgeState?.focus==="ovara")break;
+          await sleep(95);
+        }
+        if(edgeState?.focus!=="ovara"||JSON.stringify(edgeState.out)!==JSON.stringify(["merva","nali-solan"])||JSON.stringify(edgeState.incoming)!==JSON.stringify(["merva","nali-solan"])||!edgeState.url.includes("focus=ovara")||edgeState.overflow||!edgeState.robots.startsWith("noindex"))throw Error("Explorer direct-edge contract failed: "+JSON.stringify(edgeState));
+        const explorerShot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
+        fs.writeFileSync(path.join(output,"original-works-connections-"+viewport.name+".png"),Buffer.from(explorerShot.data,"base64"));
+        await send("Runtime.evaluate",{expression:'document.querySelector("[data-target=\\\"nali-solan\\\"] .ow-wiki-refocus")?.click()'});
+        let followed=false;
+        for(let n=0;n<65;n++){
+          if(await readWiki('document.querySelector(".ow-wiki-explorer-graph")?.dataset.focusSlug==="nali-solan"&&location.search.includes("focus=nali-solan")')){followed=true;break}
+          await sleep(95);
+        }
+        if(!followed)throw Error("Explorer failed to follow an explicit reference");
+        await send("Page.navigate",{url:base+"/design/original-works/wiki/special/connections?focus=unknown-review-record"});
+        let closed=false;
+        for(let n=0;n<65;n++){
+          if(await readWiki('document.querySelector(".ow-wiki-empty h2")?.textContent==="Article unavailable."&&!document.querySelector(".ow-wiki-explorer-graph")')){closed=true;break}
+          await sleep(95);
+        }
+        if(!closed)throw Error("Unknown explorer selection did not fail closed");
+        await send("Page.navigate",{url:base+"/design/original-works/wiki"});
+        let explorerRestored=false;
+        for(let n=0;n<65;n++){
+          if((await readWiki('document.querySelectorAll(".ow-wiki-result").length'))===22){explorerRestored=true;break}
+          await sleep(95);
+        }
+        if(!explorerRestored)throw Error("Reader index failed to restore after explorer QA");
+
         if(viewport.name==="desktop"){
           // Direct navigation, category and 404 handling must work on the
           // expanded dataset, not only through the eight original articles.
@@ -560,7 +601,7 @@ try {
   if(process.env.ORIGINAL_WORKS_VERIFY_DISABLED==="1"){
     assertNoDraftReaderTextInDefaultBuild();
     const desktop=viewports[0];
-    for(const route of ["/design/original-works","/design/original-works/reply/reading-room","/design/original-works/wiki","/design/original-works/wiki/ovara"])
+    for(const route of ["/design/original-works","/design/original-works/reply/reading-room","/design/original-works/wiki","/design/original-works/wiki/ovara","/design/original-works/wiki/special/connections"])
       await runCase(route,desktop);
     console.log("Default production build gate verified: original-works routes are not mounted.");
   }else{
