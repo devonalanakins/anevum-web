@@ -35,11 +35,31 @@ async function waitFor(fn,label,{failFast=false}={}){
  throw Error("Timed out waiting for "+label+(lastError?": "+lastError.message:""));
 }
 
+// A heading can exist while the browser is still parsing the remaining HTML.
+// Bind each explicit navigation to its committed loader (including same-URL
+// reloads), then wait for the entire document, not an expected card count.
+async function navigateReady(pathname){
+ const expected=new URL(pathname,base).href;
+ const navigation=await send("Page.navigate",{url:expected});
+ if(navigation.errorText)throw Error("Navigation failed: "+navigation.errorText);
+ let observed;
+ await waitFor(async()=>{
+  const tree=await send("Page.getFrameTree");
+  const frame=tree.frameTree?.frame;
+  if(!frame||frame.id!==navigation.frameId||
+     (navigation.loaderId&&frame.loaderId!==navigation.loaderId))return null;
+  observed=await evalJS("({href:location.href,ready:document.readyState})");
+  return observed?.href===expected&&observed.ready==="complete"?observed:null;
+ },"complete document "+pathname).catch(error=>{
+  throw Error(error.message+"; observed: "+JSON.stringify(observed));
+ });
+}
+
 async function verifyModernNavigationA11y(){
  const pages=[["/",""],["/original-works/experiments","Experiments"],["/original-works/research","Research"],["/original-works/archive","Archive"]];
  for(const [pathname,label] of pages){
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
-  await send("Page.navigate",{url:base+pathname});
+  await navigateReady(pathname);
   // The headless CDP target may not own window focus even if .focus() sets
   // activeElement. Emulate the focused tab before testing :focus styling.
   await send("Page.bringToFront");
@@ -56,7 +76,7 @@ async function verifyModernNavigationA11y(){
 
 async function verifyClickThroughJourney(){
  await send("Emulation.setDeviceMetricsOverride",{width:1440,height:900,deviceScaleFactor:1,mobile:false});
- await send("Page.navigate",{url:base+"/"});
+ await navigateReady("/");
  await waitFor(async()=>await evalJS("location.pathname==='/'&&document.querySelector('main h1')?.textContent.trim()==='ANEVUM'"),"journey home");
  async function go(selector,url,heading,selected){
   const clicked=await evalJS("(()=>{const a=document.querySelector("+JSON.stringify(selector)+");if(!a||!a.getClientRects().length)return false;a.click();return true})()");
@@ -87,7 +107,7 @@ async function verifyClickThroughJourney(){
   await waitFor(async()=>await evalJS("location.pathname==='/'&&location.hash==="+JSON.stringify(hash)+"&&!!document.getElementById("+JSON.stringify(hash.slice(1))+")"),"public anchor "+hash);
  }
  await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
- await send("Page.navigate",{url:base+"/"});
+ await navigateReady("/");
  await waitFor(async()=>await evalJS("location.pathname==='/'&&!!document.querySelector('details.lab-mobile summary')"),"mobile journey");
  const opened=await evalJS("(()=>{const d=document.querySelector('details.lab-mobile');d.querySelector('summary').click();return d.open})()");
  if(!opened)throw Error("Mobile navigation did not open");
@@ -112,7 +132,7 @@ async function view(pathname,width,height,name,saveScreenshot=false){
  if(pathname==="/original-works/archive"){
   await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
-  await send("Page.navigate",{url:base+pathname});
+  await navigateReady(pathname);
   const state=await waitFor(async()=>{
    const v=await evalJS("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('main h1')?.textContent,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,links:[...document.querySelectorAll('.lab-arc-entry')].map(a=>a.getAttribute('href')),features:document.querySelectorAll('.lab-arc-feature').length,menu:!!document.querySelector('details.lab-mobile'),scripts:document.scripts.length,main:!!document.querySelector('main#main'),active:document.querySelector('.lab-nav a[aria-current=page]')?.textContent,art:[...document.querySelectorAll('.lab-arc-feature')].map(x=>getComputedStyle(x,':before').backgroundImage)}))()");
    return v?.path===pathname&&v?.heading?v:null;
@@ -150,7 +170,7 @@ async function view(pathname,width,height,name,saveScreenshot=false){
  if(pathname==="/original-works/research"){
   await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
-  await send("Page.navigate",{url:base+pathname});
+  await navigateReady(pathname);
   const state=await waitFor(async()=>{
    const result=await evalJS("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('main h1')?.textContent,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,cards:document.querySelectorAll('.lab-res-card').length,indexLinks:document.querySelectorAll('.lab-res-index a').length,disclosures:document.querySelectorAll('.lab-res-details').length,images:[...document.querySelectorAll('.lab-res-media img')].map(x=>({loaded:x.complete&&x.naturalWidth>0,width:x.naturalWidth})),scripts:document.scripts.length,menu:!!document.querySelector('details.lab-mobile'),main:!!document.querySelector('main#main'),anchors:[...document.querySelectorAll('.lab-res-index a')].every(x=>!!document.querySelector(x.getAttribute('href')))}))()");
    return result?.path===pathname&&result?.heading?result:null;
@@ -196,7 +216,7 @@ async function view(pathname,width,height,name,saveScreenshot=false){
   const requestedPath=pathname.split("?")[0];
   await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
-  await send("Page.navigate",{url:base+pathname});
+  await navigateReady(pathname);
   const state=await waitFor(async()=>{
    const v=await evalJS("(()=>({path:location.pathname,title:document.title,heading:document.querySelector('h1')?.textContent,count:document.querySelectorAll('.lab-exp-card').length,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,menu:!!document.querySelector('details.lab-mobile'),scripts:document.scripts.length,filterCount:document.querySelectorAll('.lab-exp-filter').length,active:document.querySelector('.lab-exp-filter[aria-current=page]')?.textContent,art:document.querySelector('.lab-exp-card')?.style.getPropertyValue('--art'),main:!!document.querySelector('main#main')}))()");
    return v?.path===requestedPath&&v?.heading?v:null;
@@ -204,7 +224,8 @@ async function view(pathname,width,height,name,saveScreenshot=false){
   const expectedCount=pathname.includes("?theme=interactive")?1:3;
   if(!state.main||!state.menu||state.count!==expectedCount||state.filterCount!==4||state.scripts!==0||!state.art||!state.title.startsWith("Experiments")||state.heading!=="Experiments")throw Error("Experiments content invalid: "+JSON.stringify(state));
   if(state.width>width||state.width<width-20||state.scrollWidth>state.width+1)throw Error("Experiments horizontal overflow: "+JSON.stringify(state));
-  if(expectedCount===1&&state.active!=="Interactive")throw Error("Experiments filter is not active: "+JSON.stringify(state));
+  const expectedActive=expectedCount===1?"Interactive":"All work";
+  if(state.active!==expectedActive)throw Error("Experiments filter is not active: "+JSON.stringify(state));
   if(width<650){
    const menu=await evalJS("(()=>{const x=document.querySelector('details.lab-mobile');x.querySelector('summary').click();const isOpen=x.open;const links=[...x.querySelectorAll('nav a')].map(a=>a.getAttribute('href'));x.querySelector('summary').click();return {isOpen,closed:!x.open,links}})()");
    if(!menu.isOpen||!menu.closed||!menu.links.includes("/original-works/experiments"))throw Error("Experiments mobile navigation failed: "+JSON.stringify(menu));
@@ -229,7 +250,7 @@ async function view(pathname,width,height,name,saveScreenshot=false){
  if(pathname==="/"){
   await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
-  await send("Page.navigate",{url:base+pathname});
+  await navigateReady(pathname);
   const state=await waitFor(async()=>{
    const v=await evalJS(`(()=>{const desktop=document.querySelector('nav.lab-nav'),mobile=document.querySelector('details.lab-mobile'),hero=document.querySelector('#lab-home-title');return {path:location.pathname,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,title:document.title,heading:hero?.textContent,tagline:document.querySelector('.lab-italic')?.textContent,nav:[...(desktop?.querySelectorAll('a')||[])].map(a=>a.getAttribute('href')),main:!!document.querySelector('main#main'),skip:!!document.querySelector('a.lab-skip[href="#main"]'),menu:!!mobile,menuVisible:!!mobile&&getComputedStyle(mobile).display!=='none',scripts:document.scripts.length,artwork:getComputedStyle(document.querySelector('.lab-art')).backgroundImage.includes('lab-hero-v1.webp'),artCount:document.querySelectorAll('.lab-theme-shape img').length,heroInset:Math.round(document.querySelector('.lab-hero-copy').getBoundingClientRect().left),anchors:[...document.querySelectorAll('a[href^="#"]')].map(a=>a.getAttribute('href').slice(1)).filter(Boolean).every(id=>!!document.getElementById(id))}})()`);
    return v?.path===pathname&&v?.heading?v:null;
@@ -266,7 +287,7 @@ async function view(pathname,width,height,name,saveScreenshot=false){
 
  await send("Emulation.setDeviceMetricsOverride",{width,height,deviceScaleFactor:1,mobile:width<650});
  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
- await send("Page.navigate",{url:base+pathname});
+ await navigateReady(pathname);
  const state=await waitFor(async()=>{
   const v=await evalJS(`(()=>{const desktop=document.querySelector('nav.desktop-nav'),mobile=document.querySelector('details.mobile-menu'),orbit=document.querySelector('.orb.a');return {path:location.pathname,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScroll:document.body.scrollWidth,heading:document.querySelector('main#main h1')?.textContent,links:[...(desktop?.querySelectorAll('a')||[])].map(a=>a.getAttribute('href')),main:!!document.querySelector('main#main'),skip:!!document.querySelector('a.skip[href="#main"]'),menu:!!mobile,menuVisible:!!mobile&&(getComputedStyle(mobile).display!=='none'),motion:orbit?getComputedStyle(orbit).animationName:null,scripts:document.scripts.length}})()`);
   return v?.path===pathname&&v?.heading?v:null;
